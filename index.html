@@ -13,7 +13,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .page.active{display:flex;}
 
 /* ===== 首页 ===== */
-.scroll{flex:1;overflow-y:auto;padding:12px 16px 20px;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 16px 20px;-webkit-overflow-scrolling:touch;}
 .title{font-size:20px;font-weight:700;margin-bottom:2px;}
 .hello{font-size:12px;color:#7a94b0;margin-bottom:12px;}
 
@@ -53,7 +53,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .top .ri{color:#7a94b0;font-size:12px;min-width:40px;text-align:right;}
 
 /* ===== 跟练页 ===== */
-.p-inner{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px;gap:6px;overflow-y:auto;}
+.p-inner{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px;gap:6px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
 
 .ei{text-align:center;margin-bottom:2px;flex-shrink:0;}
 .ei .en{font-size:18px;font-weight:700;}
@@ -338,6 +338,8 @@ function svD(){localStorage.setItem('nd_'+dk(),JSON.stringify(St.dn));}
 function dk(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 St.dn=(()=>{try{const r=localStorage.getItem('nd_'+dk());if(r)return JSON.parse(r);}catch(e){}return[];})();
 rH();
+// 阻止下拉刷新
+document.addEventListener('touchmove',function(e){if(!e.target.closest('.scroll')&&!e.target.closest('.p-inner'))e.preventDefault();},{passive:false});
 </script>
 </body>
 </html>
