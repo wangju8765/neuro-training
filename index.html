@@ -187,9 +187,9 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
   <div class="complete-icon">🎉</div>
   <div class="complete-text" id="completeText">完成！</div>
   <div class="complete-sub" id="completeSub"></div>
-  <div class="btn-row" style="max-width:300px;padding:0 20px;">
+  <div class="btn-row" style="max-width:300px;padding:0 20px;" id="completeButtons">
     <button class="btn btn-sec" onclick="goHome()">🏠 首页</button>
-    <button class="btn btn-pri" onclick="resetPractice()">🔄 再来一组</button>
+    <button class="btn btn-pri" id="completeActionBtn" onclick="resetPractice()">🔄 再来一组</button>
   </div>
 </div>
 
@@ -478,7 +478,6 @@ function updatePracticeUI() {
   }
 
   if (state.step >= totalSteps) {
-    nextExercise();
     return;
   }
 
@@ -552,11 +551,14 @@ function handleAction() {
   if (!ex) return;
 
   if (state.step === -1) {
+    // 首次点击「开始训练」→ 检查有无过渡提示需求
     state.step = 0;
     state.cycle = 1;
     updatePracticeUI();
-    // 如果是短练习直接开始
-    startStepTimer();
+    // 第一步如果有计时自动开始
+    if (ex.steps[0] && ex.steps[0].dur > 0) {
+      startStepTimer();
+    }
     return;
   }
 
@@ -596,8 +598,8 @@ function advanceStep() {
   state.step++;
   if (state.step >= ex.steps.length) {
     if (state.cycle >= cycles) {
-      // 全部完成
-      completePractice();
+      // 这个练习全部完成→检查套餐中是否还有下一个
+      finishCurrentExercise();
       return;
     }
     state.cycle++;
@@ -605,30 +607,51 @@ function advanceStep() {
   }
   state.isPlaying = false;
   updatePracticeUI();
-  // 自动开始
   if (ex.steps[state.step] && ex.steps[state.step].dur > 0) {
     startStepTimer();
   }
 }
 
-function nextExercise() {
+function finishCurrentExercise() {
   if (state.mode === 'plan' && state.currentPlan) {
     state.exIndex++;
     if (state.exIndex < state.currentPlan.exIds.length) {
-      loadExercise(state.currentPlan.exIds[state.exIndex]);
+      // 下一个练习
+      const nextEx = EXERCISES.find(e => e.id === state.currentPlan.exIds[state.exIndex]);
+      showTransitionMessage('下一个：' + (nextEx ? nextEx.icon + ' ' + nextEx.name : ''));
       return;
     }
   }
+  // 没有下一个练习→显示完成
   completePractice();
+}
+
+function showTransitionMessage(msg) {
+  const overlay = document.getElementById('completeOverlay');
+  document.getElementById('completeText').textContent = '✅ ' + state.currentEx.icon + ' ' + state.currentEx.name + ' 完成！';
+  document.getElementById('completeSub').textContent = msg;
+  const buttons = document.getElementById('completeButtons');
+  buttons.innerHTML = '<button class="btn btn-pri" onclick="loadNextExercise()">▶ 继续</button>';
+  overlay.classList.add('show');
+}
+
+function loadNextExercise() {
+  document.getElementById('completeOverlay').classList.remove('show');
+  const buttons = document.getElementById('completeButtons');
+  buttons.innerHTML = '<button class="btn btn-sec" onclick="goHome()">🏠 首页</button><button class="btn btn-pri" onclick="resetPractice()">🔄 再来一组</button>';
+  if (state.currentPlan && state.exIndex < state.currentPlan.exIds.length) {
+    loadExercise(state.currentPlan.exIds[state.exIndex]);
+  }
 }
 
 function completePractice() {
   document.getElementById('completeOverlay').classList.add('show');
   const ex = state.currentEx;
-  document.getElementById('completeText').textContent = `${ex.icon} ${ex.name} 完成！`;
-  document.getElementById('completeSub').textContent = state.mode === 'plan'
-    ? `套餐已完成 ✅ 今日训练达标！`
-    : `做得棒！神经系统正在升级 🌟`;
+  const isPlan = state.mode === 'plan';
+  document.getElementById('completeText').textContent = isPlan ? '🎉 套餐全部完成！' : ex.icon + ' ' + ex.name + ' 完成！';
+  document.getElementById('completeSub').textContent = isPlan ? '今日训练全部达标 ✅' : '做得棒！神经系统正在升级 🌟';
+  const buttons = document.getElementById('completeButtons');
+  buttons.innerHTML = '<button class="btn btn-sec" onclick="goHome()">🏠 首页</button><button class="btn btn-pri" onclick="resetPractice()">🔄 再来一组</button>';
   logComplete();
 }
 
