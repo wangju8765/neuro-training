@@ -9,498 +9,400 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;background:#0f1923;color:#e8edf2;min-height:100dvh;overflow:hidden;}
 
-.page{display:none;flex-direction:column;height:100dvh;animation:fadeIn .25s ease;}
+.page{display:none;flex-direction:column;height:100dvh;}
 .page.active{display:flex;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-/* ===== 顶栏 ===== */
-.topbar{display:flex;align-items:center;padding:14px 16px;gap:10px;border-bottom:1px solid #1f3348;flex-shrink:0;}
-.topbar .tt{flex:1;font-size:16px;font-weight:600;}
-.topbar .sub{font-size:12px;color:#7a94b0;}
+.page .fl{flex:1;overflow-y:auto;padding:20px 16px;}
 
 /* ===== 首页 ===== */
-.scroll{flex:1;overflow-y:auto;padding:16px;}
-.head{font-size:24px;font-weight:700;margin-bottom:2px;}
+.heading{font-size:24px;font-weight:700;margin-bottom:2px;}
 .head-sub{color:#7a94b0;font-size:13px;margin-bottom:18px;}
 
 /* 进度卡片 */
-.pg{background:#1a2b3c;border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid #1f3348;}
-.pg-top{display:flex;justify-content:space-between;font-size:12px;color:#7a94b0;margin-bottom:7px;}
-.pg-top .n{color:#4fc3f7;font-size:16px;font-weight:700;}
-.pg-bar{height:6px;background:#1f3348;border-radius:3px;overflow:hidden;margin-bottom:6px;}
-.pg-bar .f{height:100%;border-radius:3px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
-.pg-sub{font-size:11px;color:#5a7a98;}
+.card{background:#1a2b3c;border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid #1f3348;}
+.card-top{display:flex;justify-content:space-between;font-size:12px;color:#7a94b0;margin-bottom:7px;}
+.card-top .n{color:#4fc3f7;font-size:16px;font-weight:700;}
+.pbar{height:6px;background:#1f3348;border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.pbar .f{height:100%;border-radius:3px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
+.card-sub{font-size:11px;color:#5a7a98;}
 
-/* 套餐头部 */
-.plan-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.plan-head .l{font-size:13px;color:#8aa0b8;font-weight:600;}
-.plan-head .r{display:flex;gap:4px;overflow-x:auto;}
-.plan-head .r::-webkit-scrollbar{display:none;}
-.ph-btn{flex-shrink:0;padding:5px 11px;border-radius:16px;font-size:11px;background:#1a2b3c;border:1px solid #1f3348;color:#8aa0b8;cursor:pointer;transition:.15s;white-space:nowrap;}
-.ph-btn:active{background:#2d4c6e;}
-.ph-btn.act{background:#2d4c6e;border-color:#4fc3f7;color:#4fc3f7;}
+/* 套餐头部 + 标签切换条 */
+.planh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.planh .l{font-size:13px;font-weight:600;color:#8aa0b8;}
+.planh .tabs{display:flex;gap:4px;overflow-x:auto;}
+.planh .tabs::-webkit-scrollbar{display:none;}
+.ptab{flex-shrink:0;padding:5px 11px;border-radius:16px;font-size:11px;background:#1a2b3c;border:1px solid #1f3348;color:#8aa0b8;cursor:pointer;transition:.15s;white-space:nowrap;}
+.ptab:active{background:#2d4c6e;}
+.ptab.ac{background:#2d4c6e;border-color:#4fc3f7;color:#4fc3f7;}
 
 /* 练习列表 */
-.exl{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.el{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
 .ex{display:flex;align-items:center;gap:10px;padding:11px 12px;background:#1a2b3c;border-radius:10px;cursor:pointer;transition:.15s;border:1px solid #1f3348;}
 .ex:active{background:#1f3348;transform:scale(.98);}
 .ex .ck{width:20px;height:20px;border-radius:50%;border:2px solid #2d4c6e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#4fc3f7;transition:.3s;}
 .ex.done .ck{border-color:#4fc3f7;background:rgba(79,195,247,.1);}
-.ex .ic{font-size:18px;width:24px;text-align:center;flex-shrink:0;}
+.ex .ic{font-size:18px;width:26px;text-align:center;flex-shrink:0;}
 .ex .in{flex:1;min-width:0;}
 .ex .in .nm{font-size:14px;font-weight:600;}
 .ex .in .sub{font-size:10px;color:#5a7a98;margin-top:1px;}
 .ex .tm{font-size:11px;color:#5a7a98;flex-shrink:0;}
-.ex .dne{font-size:10px;color:#4fc3f7;flex-shrink:0;}
+
+/* 本周 */
+.wl{display:flex;gap:4px;justify-content:center;margin-top:6px;}
+.wl div{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;background:#1a2b3c;color:#5a7a98;}
+.wl .dn{background:#2d4c6e;color:#4fc3f7;}
+.wl .td{border:2px solid #4fc3f7;color:#4fc3f7;}
+
+/* 使用说明 */
+.us{background:#1a2b3c;border-radius:10px;padding:10px;border:1px solid #1f3348;font-size:12px;margin-top:14px;}
+.us .ut{color:#8aa0b8;margin-bottom:4px;font-weight:600;}
+.us .ud{color:#7a94b0;line-height:1.6;}
 
 /* ===== 跟练页 ===== */
-.pscroll{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 16px;overflow-y:auto;}
-.ptitle{text-align:center;margin-bottom:4px;flex-shrink:0;}
-.ptitle .en{font-size:19px;font-weight:700;}
-.ptitle .cap{font-size:11px;color:#5a7a98;margin-top:1px;}
-.pcanv{width:200px;height:200px;background:#1a2b3c;border-radius:14px;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.3);margin-bottom:8px;flex-shrink:0;}
+.top{display:flex;align-items:center;padding:14px 16px;gap:10px;border-bottom:1px solid #1f3348;flex-shrink:0;}
+.top .bk{font-size:18px;cursor:pointer;opacity:.7;flex-shrink:0;}
+.top .mid{flex:1;font-size:16px;font-weight:600;text-align:center;}
+.top .rid{font-size:12px;color:#7a94b0;}
+
+.fl2{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 16px;overflow-y:auto;}
+
+/* 练习信息行 */
+.exinfo{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-shrink:0;}
+.exinfo .en{font-size:19px;font-weight:700;}
+.exinfo .note{font-size:11px;color:#5a7a98;}
+
+/* 画布 */
+.cw{width:200px;height:200px;background:#1a2b3c;border-radius:14px;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.3);margin-bottom:8px;flex-shrink:0;}
 #pc{width:100%;height:100%;display:block;}
-.ptim{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
-.ptim .pn{font-size:32px;font-weight:200;color:#4fc3f7;line-height:1;}
-.ptim .pl{font-size:10px;color:#5a7a98;}
+.pt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.pt .pn{font-size:32px;font-weight:200;color:#4fc3f7;line-height:1;}
+.pt .pl{font-size:10px;color:#5a7a98;}
 
-.pstep{width:100%;max-width:380px;background:#1a2b3c;border-radius:12px;padding:12px 14px;margin-bottom:6px;border:1px solid #1f3348;flex-shrink:0;}
-.pstep .sn{font-size:10px;color:#5a7a98;margin-bottom:2px;}
-.pstep .st{font-size:14px;line-height:1.5;}
-.pstep .st .hl{color:#4fc3f7;}
-.pstep .sh{font-size:11px;color:#8aa0b8;margin-top:5px;border-left:2px solid #2d4c6e;padding-left:10px;}
-.pstep .sh .tag2{display:inline-block;background:#2d4c6e;padding:1px 6px;border-radius:3px;margin-top:3px;font-size:10px;color:#a0c4e8;}
+/* 步骤指示 */
+.stepi{display:flex;gap:5px;justify-content:center;margin:3px 0;flex-shrink:0;}
+.stepi div{width:6px;height:6px;border-radius:50%;background:#1f3348;transition:.25s;}
+.stepi .act{background:#4fc3f7;transform:scale(1.15);}
+.stepi .dn{background:#a5d6a7;}
 
-.pp{width:100%;max-width:380px;display:flex;align-items:center;gap:6px;margin:4px 0 6px;flex-shrink:0;}
-.pp .b{flex:1;height:3px;background:#1f3348;border-radius:2px;overflow:hidden;}
-.pp .b .f{height:100%;border-radius:2px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .3s;}
-.pp .lb{font-size:10px;color:#7a94b0;white-space:nowrap;}
+/* 步骤卡片 */
+.sc{width:100%;max-width:340px;background:#1a2b3c;border-radius:12px;padding:12px 14px;margin-bottom:6px;border:1px solid #1f3348;flex-shrink:0;}
+.sc .sn{font-size:10px;color:#5a7a98;margin-bottom:2px;}
+.sc .st{font-size:14px;line-height:1.5;}
+.sc .st .hl{color:#4fc3f7;}
+.sc .sh{font-size:11px;color:#8aa0b8;margin-top:5px;border-left:2px solid #2d4c6e;padding-left:10px;}
+.sc .sh .tag2{display:inline-block;background:#2d4c6e;padding:1px 6px;border-radius:3px;margin-top:3px;font-size:10px;color:#a0c4e8;}
 
-.pdt{display:flex;gap:5px;justify-content:center;margin:3px 0;flex-shrink:0;}
-.pdt div{width:6px;height:6px;border-radius:50%;background:#1f3348;transition:.25s;}
-.pdt .act{background:#4fc3f7;transform:scale(1.15);}
-.pdt .dn{background:#a5d6a7;}
+.br{font-size:13px;margin-bottom:4px;flex-shrink:0;}
+.br .i{color:#4fc3f7;font-weight:600;}
+.br .e{color:#a5d6a7;font-weight:600;}
 
-.pbreath{font-size:13px;margin-bottom:4px;flex-shrink:0;}
-.pbreath .i{color:#4fc3f7;font-weight:600;}
-.pbreath .e{color:#a5d6a7;font-weight:600;}
-.pbreath .h{color:#fff176;font-weight:600;}
-.pbreath .r{color:#8aa0b8;}
-
-/* 按钮行 */
-.act-row{width:100%;max-width:380px;display:flex;gap:8px;margin-top:auto;padding:6px 0;flex-shrink:0;}
-.act-row .b{flex:1;padding:14px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;transition:.12s;text-align:center;}
-.act-row .b:active{transform:scale(.97);}
-.b-pri{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;}
-.b-pri:disabled{opacity:.3;cursor:not-allowed;transform:none;}
-.b-sec{background:#1f3348;color:#8aa0b8;}
-.b-out{background:transparent;border:1px solid #2d4c6e;color:#8aa0b8;flex:0 0 auto;padding:14px 12px;}
-.b-out:active{background:#1f3348;}
+/* 按钮区域 */
+.act{width:100%;max-width:340px;display:flex;gap:8px;margin-top:auto;padding:8px 0 4px;flex-shrink:0;flex-direction:column;}
+.act .row1{display:flex;gap:8px;}
+.act .row1 .b{flex:1;padding:14px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:.12s;}
+.act .row1 .b:active{transform:scale(.97);}
+.bp{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;}
+.bp:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+.bs{background:#1f3348;color:#8aa0b8;}
+.bo{width:100%;padding:12px;border:1px solid #2d4c6e;border-radius:11px;background:transparent;color:#8aa0b8;cursor:pointer;font-size:14px;font-weight:600;text-align:center;transition:.12s;}
+.bo:active{background:#1f3348;}
 
 /* 完成弹窗 */
 .ol{display:none;position:fixed;inset:0;background:rgba(15,25,35,.95);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
 .ol.show{display:flex;}
 .ol-ic{font-size:48px;}
-.ol-t{font-size:20px;font-weight:700;color:#a5d6a7;}
+.ol-t{font-size:20px;font-weight:700;color:#a5d6a7;text-align:center;}
 .ol-sub{font-size:12px;color:#7a94b0;text-align:center;line-height:1.5;max-width:260px;}
-.ol-btn{width:100%;max-width:280px;padding:0 20px;}
+.ol-btn{display:flex;gap:10px;width:100%;max-width:280px;padding:0 20px;}
+.ol-btn .b{flex:1;padding:14px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;}
 
-/* 退出确认弹窗 */
-.confirm{display:none;position:fixed;inset:0;background:rgba(15,25,35,.92);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
-.confirm.show{display:flex;}
-.confirm .box{background:#1a2b3c;border-radius:16px;padding:20px 24px;border:1px solid #1f3348;text-align:center;max-width:280px;}
-.confirm .box .t{font-size:16px;font-weight:600;margin-bottom:4px;}
-.confirm .box .s{font-size:12px;color:#7a94b0;margin-bottom:14px;}
-.confirm .box .r{display:flex;gap:10px;}
-.confirm .box .r .b{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
-.confirm .box .r .b:active{transform:scale(.97);}
-
-/* ===== 完成状态全览 ===== */
-.weekline{display:flex;gap:4px;justify-content:center;margin-top:12px;}
-.weekline div{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;background:#1a2b3c;color:#5a7a98;}
-.weekline .dn{background:#2d4c6e;color:#4fc3f7;}
-.weekline .td{border:2px solid #4fc3f7;color:#4fc3f7;}
+/* 退出确认 */
+.cf{display:none;position:fixed;inset:0;background:rgba(15,25,35,.92);z-index:99;align-items:center;justify-content:center;}
+.cf.show{display:flex;}
+.cf .bx{background:#1a2b3c;border-radius:16px;padding:20px 24px;border:1px solid #1f3348;text-align:center;max-width:280px;}
+.cf .bx .t{font-size:16px;font-weight:600;margin-bottom:4px;}
+.cf .bx .s{font-size:12px;color:#7a94b0;margin-bottom:14px;}
+.cf .bx .r{display:flex;gap:10px;}
+.cf .bx .r .b{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
 </style>
 </head>
 <body>
 
+<!-- ===== 首页 ===== -->
 <div class="page active" id="pH">
-  <div class="scroll">
-    <div class="head">🧠 神经训练</div>
-    <div class="head-sub" id="greeting">🌅 早上好，茂懿</div>
+  <div class="fl">
+    <div class="heading">🧠 神经训练</div>
+    <div class="head-sub" id="greet">🌅 早上好，茂懿</div>
 
-    <div class="pg">
-      <div class="pg-top"><span>今日完成</span><span class="n" id="pgNum">0 / 3</span></div>
-      <div class="pg-bar"><div class="f" id="pgBar" style="width:0%"></div></div>
-      <div class="pg-sub" id="pgSub">点击练习开始</div>
+    <div class="card">
+      <div class="card-top"><span>今日完成</span><span class="n" id="pgN">0 / 3</span></div>
+      <div class="pbar"><div class="f" id="pgB" style="width:0%"></div></div>
+      <div class="card-sub" id="pgS">点击练习开始</div>
     </div>
 
-    <div class="plan-head">
-      <span class="l" id="planName">☀️ 早晨套餐</span>
-      <div class="r" id="planTabs"></div>
+    <div class="planh">
+      <span class="l" id="plName">☀️ 早晨套餐</span>
+      <div class="tabs" id="plTabs"></div>
     </div>
 
-    <div class="exl" id="exList"></div>
+    <div class="el" id="exL"></div>
 
-    <div class="pg" style="padding:10px;">
-      <div class="pg-top" style="margin-bottom:4px;"><span>本周</span></div>
-      <div class="weekline" id="weekLine"></div>
+    <div class="card" style="padding:10px;">
+      <div class="card-top" style="margin-bottom:5px;"><span>本周</span></div>
+      <div class="wl" id="wkL"></div>
+    </div>
+
+    <div class="us" id="usBox">
+      <div class="ut">💡 使用说明</div>
+      <div class="ud">每个练习可跟练（有步骤引导），也可自由做（做完点"我做完了"）。熟练后无需每次都跟练。</div>
     </div>
   </div>
 </div>
 
+<!-- ===== 跟练页 ===== -->
 <div class="page" id="pP">
-  <div class="topbar">
-    <span class="sub" onclick="confirmExit()" style="cursor:pointer;">✕</span>
-    <span class="tt" id="pTit">练习</span>
-    <span class="sub" id="pRnd"></span>
+  <div class="top">
+    <span class="bk" onclick="cfExit()">✕</span>
+    <span class="mid" id="pTit">练习</span>
+    <span class="rid" id="pRnd"></span>
   </div>
-  <div class="pscroll">
-    <div class="ptitle">
-      <div class="en" id="pEn">⛏️ 交叉爬行</div>
-      <div class="cap" id="pCap">原始反射整合</div>
+  <div class="fl2">
+
+    <div class="exinfo">
+      <span class="en" id="pEn">⛏️ 交叉爬行</span>
+      <span class="note" id="pNote">原始反射整合</span>
     </div>
 
-    <div class="pbreath" id="pBr">🌬️</div>
+    <div class="br" id="pBr">🌬️</div>
 
-    <div class="pcanv">
+    <div class="cw">
       <canvas id="pc" width="200" height="200"></canvas>
-      <div class="ptim"><div class="pn" id="pTim"></div><div class="pl" id="pTimL"></div></div>
+      <div class="pt"><div class="pn" id="pTim"></div><div class="pl" id="pTimL"></div></div>
     </div>
 
-    <div class="pstep">
+    <div class="stepi" id="pDt"></div>
+
+    <div class="sc">
       <div class="sn" id="pSn">准备</div>
       <div class="st" id="pSt">选一个练习开始吧</div>
       <div class="sh" id="pSh"></div>
     </div>
 
-    <div class="pp">
-      <div class="b"><div class="f" id="pPf"></div></div>
-      <span class="lb" id="pPl">0%</span>
-    </div>
-
-    <div class="pdt" id="pDt"></div>
-
-    <div class="act-row">
-      <button class="b b-sec" onclick="resetPractice()">🔄 重来</button>
-      <button class="b b-pri" id="pBtn">▶ 开始</button>
-      <button class="b b-out" id="doneBtn" onclick="donePractice()">✅ 我做完了</button>
+    <div class="act">
+      <div class="row1">
+        <button class="b bs" onclick="resetP()">🔄 重来</button>
+        <button class="b bp" id="pBtn">▶ 开始</button>
+      </div>
+      <button class="bo" id="doneBtn" onclick="doneP()">✅ 我做完了（跳过跟练）</button>
     </div>
   </div>
 </div>
 
+<!-- 完成弹窗 -->
 <div class="ol" id="ol">
   <div class="ol-ic">🎉</div>
   <div class="ol-t" id="olT">完成！</div>
-  <div class="ol-sub" id="olSub"></div>
-  <div class="ol-btn act-row" id="olBtns"></div>
+  <div class="ol-sub" id="olS"></div>
+  <div class="ol-btn">
+    <button class="b bs" onclick="clOl();goH()">🏠 首页</button>
+    <button class="b bp" onclick="clOl();goH()">📋 继续任务</button>
+  </div>
 </div>
 
-<div class="confirm" id="cf">
-  <div class="box">
+<!-- 退出确认 -->
+<div class="cf" id="cf">
+  <div class="bx">
     <div class="t">退出练习？</div>
     <div class="s">进度不会丢失，下次继续</div>
     <div class="r">
-      <button class="b b-sec" onclick="closeConfirm()" style="flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#1f3348;color:#8aa0b8;">留在这里</button>
-      <button class="b b-pri" onclick="doExit()" style="flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;">退出</button>
+      <button class="b bs" onclick="clCf()" style="background:#1f3348;color:#8aa0b8;">留在这里</button>
+      <button class="b bp" onclick="doExit()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;">退出</button>
     </div>
   </div>
 </div>
 
 <script>
 // ===== 数据 =====
-const EXS = [
-  {id:'yawn', name:'打哈欠激活', icon:'🥱', time:'30s', cat:'预备',
+const EX = [
+  {i:'yawn', n:'打哈欠激活', ic:'🥱', t:'30s', c:'预备',
     s:[{t:'用力打一个真正的哈欠',h:'假打也能变成真打',d:0},{t:'捏住鼻子闭嘴呼气',h:'不出气',d:8},{t:'松开深呼吸一次',h:'',d:6},{t:'最后一次深呼吸',h:'',d:6}]},
-  {id:'ear', name:'耳朵拉拽', icon:'👂', time:'30s', cat:'预备',
-    s:[{t:'从耳朵上端向下轻拉',h:'沿耳朵外侧到耳垂',d:8},{t:'换另一只耳朵',h:'',d:8},{t:'两只耳朵同时拉',h:'',d:6},{t:'揉一揉放松',h:'',d:4}]},
-  {id:'shake', name:'全身抖动', icon:'💃', time:'1min', cat:'预备',
+  {i:'ear', n:'耳朵拉拽', ic:'👂', t:'30s', c:'预备',
+    s:[{t:'从耳朵上端向下轻拉',h:'',d:8},{t:'换另一只耳朵',h:'',d:8},{t:'两只耳朵同时拉',h:'',d:6},{t:'揉一揉放松',h:'',d:4}]},
+  {i:'shake', n:'全身抖动', ic:'💃', t:'1min', c:'预备',
     s:[{t:'站起来从手开始甩',h:'',d:8},{t:'手臂一起甩',h:'',d:8},{t:'全身都抖起来',h:'',d:12},{t:'慢慢停下深呼吸',h:'',d:6}]},
-  {id:'starfish', name:'海星呼吸', icon:'🦑', time:'2min', cat:'反射整合', cycles:5,
-    s:[{t:'仰卧躺平手脚展开',h:'',d:0},{t:'慢慢吸气手脚向外展开',h:'像海星',d:4},{t:'屏住呼吸保持展开',h:'',d:2},{t:'慢慢呼气手脚收回胸前',h:'抱胸弯腿',d:6},{t:'放松休息一下',h:'',d:3}]},
-  {id:'crawl', name:'交叉爬行', icon:'⛏️', time:'2min', cat:'反射整合',
-    s:[{t:'四肢着地',h:'',d:0},{t:'抬右手时抬左膝',h:'慢慢来',d:15},{t:'抬左手时抬右膝',h:'',d:15},{t:'加快速度交替',h:'',d:15},{t:'放慢做最后5次',h:'',d:10}]},
-  {id:'snow', name:'雪天使', icon:'❄️', time:'2min', cat:'反射整合',
+  {i:'starfish', n:'海星呼吸', ic:'🦑', t:'2min', c:'反射整合', cy:5,
+    s:[{t:'仰卧躺平手脚展开',h:'',d:0},{t:'慢慢吸气手脚向外展开',h:'像海星张开',d:4},{t:'屏住呼吸保持展开',h:'',d:2},{t:'慢慢呼气手脚收回胸前',h:'抱胸弯腿',d:6},{t:'放松休息一下',h:'',d:3}]},
+  {i:'crawl', n:'交叉爬行', ic:'⛏️', t:'2min', c:'反射整合',
+    s:[{t:'四肢着地',h:'',d:0},{t:'抬右手时抬左膝',h:'慢慢来',d:15},{t:'抬左手时抬右膝',h:'',d:15},{t:'加快速度交替',h:'',d:15},{t:'放慢最后5次',h:'',d:10}]},
+  {i:'snow', n:'雪天使', ic:'❄️', t:'2min', c:'反射整合',
     s:[{t:'仰卧手臂放两侧',h:'脊椎贴地',d:0},{t:'呼气手臂滑向头顶',h:'',d:6},{t:'吸气手臂滑回',h:'',d:6},{t:'重复：呼上吸下',h:'保持慢速',d:24},{t:'最后一次放松',h:'',d:6}]},
-  {id:'ball', name:'球上平衡', icon:'🏐', time:'2min', cat:'反射整合',note:'需瑜伽球',
-    s:[{t:'趴在球上手腳撑地',h:'',d:0},{t:'轻轻前后滚',h:'',d:20},{t:'试着举手平衡',h:'',d:16},{t:'慢慢停下深呼吸',h:'',d:8}]},
-  {id:'spin', name:'旋转脱敏', icon:'🌀', time:'2min', cat:'前庭-小脑',
+  {i:'ball', n:'球上平衡', ic:'🏐', t:'2min', c:'反射整合',no:'需瑜伽球',
+    s:[{t:'趴在球上手脚撑地',h:'',d:0},{t:'轻轻前后滚',h:'',d:20},{t:'试着举手平衡',h:'',d:16},{t:'慢慢停下深呼吸',h:'',d:8}]},
+  {i:'spin', n:'旋转脱敏', ic:'🌀', t:'2min', c:'前庭-小脑',
     s:[{t:'闭眼原地转3圈',h:'',d:12},{t:'停下来看固定点',h:'',d:8},{t:'再闭眼转3圈',h:'',d:10},{t:'看固定点',h:'',d:8},{t:'深呼吸2次',h:'',d:6}]},
-  {id:'oneLeg', name:'单脚站', icon:'🦩', time:'2min', cat:'前庭-小脑',
+  {i:'oneLeg', n:'单脚站', ic:'🦩', t:'2min', c:'前庭-小脑',
     s:[{t:'叉腰左脚抬起',h:'',d:15},{t:'换右脚',h:'',d:15},{t:'左脚闭眼试试',h:'',d:10},{t:'右脚闭眼',h:'',d:10},{t:'放松抖抖腿',h:'',d:6}]},
-  {id:'bounce', name:'弹跳训练', icon:'🏀', time:'2min', cat:'前庭-小脑',note:'有蹦床更佳',
+  {i:'bounce', n:'弹跳训练', ic:'🏀', t:'2min', c:'前庭-小脑',no:'有蹦床更佳',
     s:[{t:'原地自由弹跳',h:'',d:20},{t:'跳高摸墙',h:'',d:20},{t:'边跳边拍手',h:'',d:15},{t:'慢慢停下深呼吸',h:'',d:8}]},
-  {id:'bee', name:'蜜蜂呼吸', icon:'🐝', time:'2min', cat:'迷走神经',
-    s:[{t:'坐直闭眼',h:'',d:0},{t:'深吸一口气',h:'',d:4},{t:'呼气时嗡嗡嗡——',h:'感受胸腔震动',d:8},{t:'深呼吸再来一次',h:'',d:4},{t:'呼气嗡——',h:'',d:8},{t:'最后一次深呼吸',h:'',d:4},{t:'呼气嗡——睁眼',h:'',d:10}]},
-  {id:'cold', name:'冷水唤醒', icon:'❄️', time:'1min', cat:'迷走神经',note:'洗漱时做',
+  {i:'bee', n:'蜜蜂呼吸', ic:'🐝', t:'2min', c:'迷走神经',
+    s:[{t:'坐直闭眼',h:'',d:0},{t:'深吸一口气',h:'',d:4},{t:'呼气时嗡嗡嗡——',h:'感受震动',d:8},{t:'深呼吸再来一次',h:'',d:4},{t:'呼气嗡——',h:'',d:8},{t:'最后一次深呼吸',h:'',d:4},{t:'呼气嗡——睁眼',h:'',d:10}]},
+  {i:'cold', n:'冷水唤醒', ic:'❄️', t:'1min', c:'迷走神经',no:'洗漱时做',
     s:[{t:'冷水拍脸颊眼周',h:'',d:8},{t:'冷水拍脖子前侧',h:'',d:6},{t:'深吸气缓慢呼出',h:'',d:8},{t:'深呼吸第二次',h:'',d:8},{t:'深呼吸第三次',h:'',d:8}]},
-  {id:'yawn2', name:'哈欠深呼吸', icon:'😮', time:'1min', cat:'迷走神经',
+  {i:'yawn2', n:'哈欠深呼吸', ic:'😮', t:'1min', c:'迷走神经',
     s:[{t:'张嘴打一个大哈欠',h:'',d:6},{t:'用力吞咽口水',h:'',d:4},{t:'伸个懒腰',h:'',d:6},{t:'再打哈欠再吞咽',h:'',d:6},{t:'深呼吸放松',h:'',d:6}]},
-  {id:'finger', name:'指尖对碰', icon:'🤏', time:'2min', cat:'精细运动',
+  {i:'finger', n:'指尖对碰', ic:'🤏', t:'2min', c:'精细运动',
     s:[{t:'拇指依次碰食中无名小指',h:'右手先做',d:12},{t:'换左手',h:'',d:12},{t:'左右手同时',h:'',d:12},{t:'闭眼再做',h:'',d:12},{t:'抖抖手放松',h:'',d:4}]},
-  {id:'rubber', name:'橡皮筋拉伸', icon:'🪢', time:'2min', cat:'精细运动',note:'需橡皮筋',
-    s:[{t:'指尖套橡皮筋',h:'',d:0},{t:'拇指和食指撑开',h:'',d:12},{t:'拇指和中指撑开',h:'',d:12},{t:'拇指和无名指撑开',h:'',d:12},{t:'拇指和小指撑开',h:'',d:12},{t:'换左手重复',h:'',d:20}]},
+  {i:'rubber', n:'橡皮筋拉伸', ic:'🪢', t:'2min', c:'精细运动',no:'需橡皮筋',
+    s:[{t:'指尖套橡皮筋',h:'',d:0},{t:'拇指食指撑开',h:'',d:12},{t:'拇指中指撑开',h:'',d:12},{t:'拇指无名指撑开',h:'',d:12},{t:'拇指小指撑开',h:'',d:12},{t:'换左手重复',h:'',d:20}]},
 ];
 
-const PLANS = [
-  {id:'morning', icon:'☀️', name:'早晨套餐', ids:['cold','bee','crawl']},
-  {id:'am', icon:'🌤️', name:'上午套餐', ids:['starfish','oneLeg','finger']},
-  {id:'pm', icon:'🏃', name:'下午套餐', ids:['snow','ball','spin','bee']},
-  {id:'night', icon:'🌙', name:'睡前套餐', ids:['snow','starfish','yawn2']},
+const PL = [
+  {i:'morning', ic:'☀️', n:'早晨套餐', ids:['cold','bee','crawl']},
+  {i:'am', ic:'🌤️', n:'上午套餐', ids:['starfish','oneLeg','finger']},
+  {i:'pm', ic:'🏃', n:'下午套餐', ids:['snow','ball','spin','bee']},
+  {i:'night', ic:'🌙', n:'睡前套餐', ids:['snow','starfish','yawn2']},
 ];
+
+function ex(i){return EX.find(x=>x.i===i);}
 
 // ===== 状态 =====
-let S = {
-  plan: 0,
-  done: [],
-  ex: null, cycle: 1, cycles: 1, step: -1, steps: [],
-  playing: false, timer: null, remain: 0,
-};
-
-function e(id) { return EXS.find(x => x.id === id); }
+let St={pi:0,dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0};
 
 // ===== 首页 =====
-function renderHome() {
-  const p = PLANS[S.plan];
-  document.getElementById('planName').textContent = p.icon + ' ' + p.name;
-
-  document.getElementById('planTabs').innerHTML = PLANS.map((x,i) =>
-    `<div class="ph-btn ${i===S.plan?'act':''}" onclick="S.plan=${i};renderHome()">${x.icon} ${x.name}</div>`
-  ).join('');
-
-  const l = document.getElementById('exList');
-  l.innerHTML = p.ids.map(id => {
-    const x = e(id); if (!x) return '';
-    const dn = S.done.includes(id);
-    return `<div class="ex ${dn?'done':''}" onclick="startEx('${id}')">
-      <div class="ck">${dn?'✓':''}</div>
-      <div class="ic">${x.icon}</div>
-      <div class="in"><div class="nm">${x.name}</div><div class="sub">${x.note||x.cat} · ${x.time}</div></div>
-      <div class="tm">${dn?'✅':x.time}</div>
-    </div>`;
+function rH() {
+  const p=PL[St.pi];
+  document.getElementById('plName').textContent=p.ic+' '+p.n;
+  document.getElementById('plTabs').innerHTML=PL.map((x,i)=>`<div class="ptab ${i===St.pi?'ac':''}" onclick="St.pi=${i};rH()">${x.ic} ${x.n}</div>`).join('');
+  const l=document.getElementById('exL');
+  l.innerHTML=p.ids.map(id=>{const x=ex(id);if(!x)return'';const dn=St.dn.includes(id);
+    return`<div class="ex ${dn?'done':''}" onclick="sX('${id}')">
+      <div class="ck">${dn?'✓':''}</div><div class="ic">${x.ic}</div>
+      <div class="in"><div class="nm">${x.n}</div><div class="sub">${x.no||x.c} · ${x.t}</div></div>
+      <div class="tm">${dn?'✅':x.t}</div></div>`;
   }).join('');
-
-  updateProgress();
-  updateWeek();
+  upPr();upW();
 }
 
-function updateProgress() {
-  const p = PLANS[S.plan];
-  const t = p.ids.length;
-  const d = p.ids.filter(id => S.done.includes(id)).length;
-  document.getElementById('pgNum').textContent = `${d} / ${t}`;
-  document.getElementById('pgBar').style.width = `${t>0?d/t*100:0}%`;
-  document.getElementById('pgSub').textContent = d===t ? '🎉 全部完成！' : '点击练习开始';
+function upPr() {
+  const p=PL[St.pi];const t=p.ids.length;const d=p.ids.filter(id=>St.dn.includes(id)).length;
+  document.getElementById('pgN').textContent=`${d} / ${t}`;
+  document.getElementById('pgB').style.width=`${t>0?d/t*100:0}%`;
+  document.getElementById('pgS').textContent=d===t?'🎉 全部完成！':'点击练习开始';
 }
 
-function updateWeek() {
-  const w = document.getElementById('weekLine');
-  const days = ['一','二','三','四','五','六','日'];
-  const td = new Date().getDay();
-  const ti = td===0?6:td-1;
-  const logs = getLogs();
-  w.innerHTML = days.map((d,i) => {
-    let cls = '';
-    if (i===ti) cls=' td';
-    else if (logs[i]) cls=' dn';
-    return `<div class="${cls}">${d}</div>`;
-  }).join('');
+function upW() {
+  const w=document.getElementById('wkL');const dy=['一','二','三','四','五','六','日'];
+  const td=new Date().getDay();const ti=td===0?6:td-1;const lg=getL();
+  w.innerHTML=dy.map((d,i)=>{let c='';if(i===ti)c=' td';else if(lg[i])c=' dn';return`<div class="${c}">${d}</div>`;}).join('');
 }
 
 // ===== 跟练 =====
-function startEx(id) {
-  const x = e(id); if (!x) return;
-  S.ex = x; S.cycles = x.cycles||1; S.cycle = 1; S.step = -1;
-  S.steps = x.s; S.playing = false;
-  if (S.timer) { clearInterval(S.timer); S.timer = null; }
-
-  document.getElementById('pEn').textContent = x.icon + ' ' + x.name;
-  document.getElementById('pCap').textContent = (x.note?x.note+' · ':'') + x.cat;
+function sX(id) {
+  const x=ex(id);if(!x)return;
+  St.ex=x;St.cs=x.cy||1;St.cy=1;St.st=-1;St.ss=x.s;St.pl=false;
+  if(St.ti){clearInterval(St.ti);St.ti=null;}
+  document.getElementById('pEn').textContent=x.ic+' '+x.n;
+  document.getElementById('pNote').textContent=(x.no?x.no+' · ':'')+x.c;
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pP').classList.add('active');
-  updateP();
+  uP();
 }
 
-function updateP() {
-  if (!S.ex) return;
-  const x = S.ex; const m = S.cycles > 1;
-  document.getElementById('pRnd').textContent = m ? `${S.cycle}/${S.cycles}轮` : '';
-  document.getElementById('pTit').textContent = x.icon + ' ' + x.name;
+function uP() {
+  if(!St.ex)return;
+  const x=St.ex;const m=St.cs>1;
+  document.getElementById('pRnd').textContent=m?`${St.cy}/${St.cs}轮`:'';
+  document.getElementById('pTit').textContent=x.ic+' '+x.n;
+  const sn=document.getElementById('pSn'),st=document.getElementById('pSt'),sh=document.getElementById('pSh');
+  const br=document.getElementById('pBr'),tn=document.getElementById('pTim'),tl=document.getElementById('pTimL');
+  const btn=document.getElementById('pBtn');
 
-  const sn=document.getElementById('pSn'), st=document.getElementById('pSt'), sh=document.getElementById('pSh');
-  const br=document.getElementById('pBr'), tn=document.getElementById('pTim'), tl=document.getElementById('pTimL');
-  const pf=document.getElementById('pPf'), pl=document.getElementById('pPl'), btn=document.getElementById('pBtn');
-
-  if (S.step===-1) {
-    sn.textContent='准备'; st.textContent=S.steps[0].t;
-    sh.innerHTML=S.steps[0].h?`💡 ${S.steps[0].h}`:'';
-    br.innerHTML='🌬️'; tn.textContent=''; tl.textContent='';
-    pf.style.width='0%'; pl.textContent='0%';
-    btn.textContent='▶ 开始'; btn.disabled=false;
-    draw(0.1); rDt(1,0);
-    return;
+  if(St.st===-1){
+    sn.textContent='准备';st.textContent=St.ss[0].t;
+    sh.innerHTML=St.ss[0].h?`💡 ${St.ss[0].h}`:'';
+    br.innerHTML='🌬️';tn.textContent='';tl.textContent='';
+    btn.textContent='▶ 开始';btn.disabled=false;
+    dr(0.1);rD(1,0);return;
   }
-  const s=S.steps[S.step];
-  sn.textContent=m?`第${S.cycle}轮 · 步${S.step+1}`:`第${S.step+1}/${S.steps.length}步`;
+  const s=St.ss[St.st];
+  sn.textContent=m?`第${St.cy}轮 · 步${St.st+1}`:`第${St.st+1}/${St.ss.length}步`;
   st.innerHTML=s.t;
-  sh.innerHTML=(s.h?`💡 ${s.h}`:'')+(x.note&&S.step===0?`<br><span class="tag2">📌 ${x.note}</span>`:'');
-
+  sh.innerHTML=(s.h?`💡 ${s.h}`:'')+(x.no&&St.st===0?`<br><span class="tag2">📌 ${x.no}</span>`:'');
   const txt=s.t;
-  if(txt.includes('吸气')) br.innerHTML='🌬️ <span class="i">吸气 ↑</span>';
-  else if(txt.includes('呼气')) br.innerHTML='🌬️ <span class="e">呼气 ↓</span>';
-  else if(txt.includes('屏')) br.innerHTML='🌬️ <span class="h">屏息 —</span>';
-  else if(txt.includes('放松')||txt.includes('休息')) br.innerHTML='🌿 <span class="r">放松</span>';
+  if(txt.includes('吸气'))br.innerHTML='🌬️ <span class="i">吸气 ↑</span>';
+  else if(txt.includes('呼气'))br.innerHTML='🌬️ <span class="e">呼气 ↓</span>';
   else br.innerHTML='🌬️';
-
-  if(s.d>0){tn.textContent=S.playing?S.remain:s.d;tl.textContent='秒';}
-  else{tn.textContent='';tl.textContent='';}
-
-  const tt=S.steps.length*S.cycles;
-  const dn=(S.cycle-1)*S.steps.length+S.step;
-  const p=Math.min(100,dn/tt*100);
-  pf.style.width=p+'%'; pl.textContent=Math.floor(p)+'%';
-
-  if(m) rDt(S.cycles, S.cycle-1); else rDt(S.steps.length, S.step);
-
-  if(S.playing){btn.textContent='⏳ 进行中...';btn.disabled=true;}
-  else{btn.textContent='▶ 下一步';btn.disabled=false;}
-
-  let r=0.1;
-  if(S.step>=1&&S.step<=2) r=S.playing?0.3+0.7*(1-S.remain/s.d):1;
-  draw(Math.max(0.1,Math.min(1,r)));
+  if(s.d>0){tn.textContent=St.pl?St.rm:s.d;tl.textContent='秒';}else{tn.textContent='';tl.textContent='';}
+  const tt=St.ss.length*St.cs;const dn=(St.cy-1)*St.ss.length+St.st;const p=Math.min(100,dn/tt*100);
+  if(m)rD(St.cs,St.cy-1);else rD(St.ss.length,St.st);
+  if(St.pl){btn.textContent='⏳ 进行中...';btn.disabled=true;}else{btn.textContent='▶ 下一步';btn.disabled=false;}
+  let r=0.1;if(St.st>=1&&St.st<=2)r=St.pl?0.3+0.7*(1-St.rm/s.d):1;
+  dr(Math.max(0.1,Math.min(1,r)));
 }
 
-function rDt(n,a){
-  const c=document.getElementById('pDt');
-  c.innerHTML=Array.from({length:n},(_,i)=>{
-    let cls='';if(i<a)cls=' dn';else if(i===a)cls=' act';
-    return `<div class="${cls}"></div>`;
-  }).join('');
-}
+function rD(n,a){const c=document.getElementById('pDt');
+  c.innerHTML=Array.from({length:n},(_,i)=>{let cl='';if(i<a)cl=' dn';else if(i===a)cl=' act';return`<div class="${cl}"></div>`;}).join('');}
 
-// ===== 跟练按钮 =====
 document.getElementById('pBtn').addEventListener('click',()=>{
-  if(!S.ex)return;
-  if(S.step===-1){S.step=0;S.cycle=1;updateP();if(S.steps[0]&&S.steps[0].d>0)startT();return;}
-  if(!S.playing)startT();
+  if(!St.ex)return;
+  if(St.st===-1){St.st=0;St.cy=1;uP();if(St.ss[0]&&St.ss[0].d>0)sT();return;}
+  if(!St.pl)sT();
 });
 
-function startT(){
-  const s=S.steps[S.step];
-  if(!s||s.d<=0){adv();return;}
-  S.remain=s.d;S.playing=true;updateP();
-  S.timer=setInterval(()=>{S.remain--;updateP();if(S.remain<=0){clearInterval(S.timer);S.timer=null;S.playing=false;adv();}},1000);
-}
+function sT(){const s=St.ss[St.st];if(!s||s.d<=0){ad();return;}St.rm=s.d;St.pl=true;uP();
+  St.ti=setInterval(()=>{St.rm--;uP();if(St.rm<=0){clearInterval(St.ti);St.ti=null;St.pl=false;ad();}},1000);}
 
-function adv(){
-  S.step++;S.playing=false;
-  if(S.step>=S.steps.length){
-    if(S.cycle>=S.cycles){finishEx();return;}
-    S.cycle++;S.step=0;
-  }
-  updateP();
-  if(S.step<S.steps.length&&S.steps[S.step].d>0)startT();
-}
+function ad(){St.st++;St.pl=false;
+  if(St.st>=St.ss.length){if(St.cy>=St.cs){fEx();return;}St.cy++;St.st=0;}
+  uP();if(St.st<St.ss.length&&St.ss[St.st].d>0)sT();}
 
-// ===== "我做完了" =====
-function donePractice() {
-  finishEx();
-}
+// ===== 完成 =====
+function doneP(){fEx();}
 
-function finishEx() {
-  const id = S.ex.id;
-  if (!S.done.includes(id)) S.done.push(id);
-  saveDone();
-
-  const plan = PLANS[S.plan];
-  const allDone = plan.ids.every(xid => S.done.includes(xid));
+function fEx(){
+  const id=St.ex.i;if(!St.dn.includes(id))St.dn.push(id);
+  svD();const p=PL[St.pi];const ad=p.ids.every(xid=>St.dn.includes(xid));
   document.getElementById('ol').classList.add('show');
-  document.getElementById('olT').textContent = `${S.ex.icon} ${S.ex.name} 完成！`;
-  document.getElementById('olSub').textContent = allDone ? '🎉 今日全部完成！茂懿真棒！' : '继续加油，还有练习等着你 💪';
-  document.getElementById('olBtns').innerHTML = `<button class="b b-sec" onclick="closeOL();goHome()" style="flex:1;padding:14px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;background:#1f3348;color:#8aa0b8;">🏠 首页</button>
-    <button class="b b-pri" onclick="closeOL();goHome()" style="flex:1;padding:14px;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;">📋 继续任务</button>`;
+  document.getElementById('olT').textContent=`${St.ex.ic} ${St.ex.n} 完成！`;
+  document.getElementById('olS').textContent=ad?'🎉 今日全部完成！茂懿真棒！':'继续加油，还有练习等着你 💪';
 }
 
-function resetPractice() {
-  closeOL();
-  if (S.timer) { clearInterval(S.timer); S.timer=null; }
-  if (S.ex) { S.step=-1; S.cycle=1; S.playing=false; S.remain=0; updateP(); }
-}
+function resetP(){clOl();if(St.ti){clearInterval(St.ti);St.ti=null;}if(St.ex){St.st=-1;St.cy=1;St.pl=false;St.rm=0;uP();}}
+function clOl(){document.getElementById('ol').classList.remove('show');}
+function goH(){clOl();clCf();if(St.ti){clearInterval(St.ti);St.ti=null;}document.getElementById('pP').classList.remove('active');document.getElementById('pH').classList.add('active');rH();}
+function cfExit(){document.getElementById('cf').classList.add('show');}
+function clCf(){document.getElementById('cf').classList.remove('show');}
+function doExit(){clCf();goH();}
 
-function closeOL(){document.getElementById('ol').classList.remove('show');}
-
-function goHome() {
-  closeOL(); closeConfirm();
-  if (S.timer) { clearInterval(S.timer); S.timer=null; }
-  document.getElementById('pP').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
-  renderHome();
-}
-
-// ===== 退出确认 =====
-function confirmExit(){document.getElementById('cf').classList.add('show');}
-function closeConfirm(){document.getElementById('cf').classList.remove('show');}
-function doExit(){closeConfirm();goHome();}
-
-// ===== 打卡存储 =====
-function saveDone() {
-  const k = 'nd_'+dk();
-  localStorage.setItem(k, JSON.stringify(S.done));
-}
-function loadDone() {
-  try {
-    const raw = localStorage.getItem('nd_'+dk());
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return [];
-}
-function dk() {
-  const d = new Date();
-  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-}
-function getLogs() {
-  try {
-    const raw = localStorage.getItem('neuro_week');
-    if (raw) return JSON.parse(raw);
-  } catch(e){}
-  return [false,false,false,false,false,false,false];
-}
+// ===== 存储 =====
+function svD(){localStorage.setItem('nd_'+dk(),JSON.stringify(St.dn));}
+function getL(){try{const r=localStorage.getItem('nd_'+dk());if(r)return JSON.parse(r);}catch(e){}return[];}
+function dk(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 
 // ===== 绘图 =====
-function draw(sp) {
+function dr(sp){
   const c=document.getElementById('pc'),ctx=c.getContext('2d');
-  const w=c.width,h=c.height, cx=w/2,cy=h/2;
+  const w=c.width,h=c.height,cx=w/2,cy=h/2;
   ctx.clearRect(0,0,w,h);
-  const aa=30+60*sp, la=15+40*sp;
-  ctx.beginPath();ctx.arc(cx,cy,80,0,Math.PI*2);
-  ctx.fillStyle='rgba(79,195,247,0.04)';ctx.fill();
+  const aa=30+60*sp,la=15+40*sp;
+  ctx.beginPath();ctx.arc(cx,cy,80,0,Math.PI*2);ctx.fillStyle='rgba(79,195,247,0.04)';ctx.fill();
   const hy=cy-48-10*(1-sp);ctx.save();
   ctx.beginPath();ctx.ellipse(cx,hy+30,12,22,0,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
   ctx.beginPath();ctx.arc(cx,hy,15,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
-  ctx.fillStyle='#0f1923';
-  ctx.beginPath();ctx.arc(cx-4,hy-1,2,0,Math.PI*2);ctx.arc(cx+4,hy-1,2,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(cx,hy+4,5,0.1*Math.PI,0.9*Math.PI);
-  ctx.strokeStyle='#0f1923';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#0f1923';ctx.beginPath();ctx.arc(cx-4,hy-1,2,0,Math.PI*2);ctx.arc(cx+4,hy-1,2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,hy+4,5,0.1*Math.PI,0.9*Math.PI);ctx.strokeStyle='#0f1923';ctx.lineWidth=1.5;ctx.stroke();
   const sy=hy+16;ctx.strokeStyle='#4fc3f7';ctx.lineWidth=7;ctx.lineCap='round';
-  let lx=cx-12-60*Math.cos((90-aa)*Math.PI/180)*sp;
-  let ly=sy-8+60*Math.sin((90-aa)*Math.PI/180)*sp;
+  let lx=cx-12-60*Math.cos((90-aa)*Math.PI/180)*sp;let ly=sy-8+60*Math.sin((90-aa)*Math.PI/180)*sp;
   ctx.beginPath();ctx.moveTo(cx-12,sy);ctx.lineTo(lx,ly);ctx.stroke();
-  let rx=cx+12+60*Math.cos((90-aa)*Math.PI/180)*sp;
-  let ry=sy-8+60*Math.sin((90-aa)*Math.PI/180)*sp;
+  let rx=cx+12+60*Math.cos((90-aa)*Math.PI/180)*sp;let ry=sy-8+60*Math.sin((90-aa)*Math.PI/180)*sp;
   ctx.beginPath();ctx.moveTo(cx+12,sy);ctx.lineTo(rx,ry);ctx.stroke();
-  const hy2=hy+50;
-  lx=cx-6-45*Math.cos((90-la)*Math.PI/180)*sp;
-  ly=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
+  const hy2=hy+50;lx=cx-6-45*Math.cos((90-la)*Math.PI/180)*sp;ly=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
   ctx.beginPath();ctx.moveTo(cx-6,hy2);ctx.lineTo(lx,ly);ctx.stroke();
-  rx=cx+6+45*Math.cos((90-la)*Math.PI/180)*sp;
-  ry=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
-  ctx.beginPath();ctx.moveTo(cx+6,hy2);ctx.lineTo(rx,ry);ctx.stroke();
-  ctx.restore();
+  rx=cx+6+45*Math.cos((90-la)*Math.PI/180)*sp;ry=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
+  ctx.beginPath();ctx.moveTo(cx+6,hy2);ctx.lineTo(rx,ry);ctx.stroke();ctx.restore();
 }
 
 // ===== 启动 =====
-S.done = loadDone();
-renderHome();
+St.dn=getL();rH();
 </script>
 </body>
 </html>
