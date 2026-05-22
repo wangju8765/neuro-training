@@ -89,7 +89,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .sc .tg2{display:inline-block;background:#2d4c6e;padding:.125rem .5rem;border-radius:.25rem;margin-top:.25rem;font-size:.75rem;color:#a0c4e8;}
 
 /* 底部区域 */
-.bot{width:100%;max-width:21.25rem;margin-top:auto;display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;padding-bottom:.5rem;}
+.bot{width:100%;max-width:21.25rem;display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;padding-bottom:.5rem;margin-top:.5rem;}
 
 /* 按钮 */
 .act{width:100%;display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;}
@@ -245,10 +245,10 @@ const EX = [
 ];
 
 const PL = [
-  {i:'morning',ic:'☀️', n:'早晨套餐', ids:['cold','bee','crawl']},
-  {i:'am',     ic:'🌤️', n:'上午套餐', ids:['starfish','oneLeg','finger']},
-  {i:'pm',     ic:'🏃',  n:'下午套餐', ids:['snow','ball','spin','bee']},
-  {i:'night',  ic:'🌙',  n:'睡前套餐', ids:['snow','starfish','yawn2']},
+  {i:'morning',ic:'☀️', n:'早晨', ids:['cold','bee','crawl']},
+  {i:'am',     ic:'🌤️', n:'上午', ids:['starfish','oneLeg','finger']},
+  {i:'pm',     ic:'🏃',  n:'下午', ids:['snow','ball','spin','bee']},
+  {i:'night',  ic:'🌙',  n:'睡前', ids:['snow','starfish','yawn2']},
 ];
 
 function ex(i){return EX.find(x=>x.i===i);}
