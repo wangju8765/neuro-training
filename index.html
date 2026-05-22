@@ -5,646 +5,632 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>🧠 神经功能训练</title>
+<title>🧠 神经训练</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;background:#0f1923;color:#e8edf2;min-height:100dvh;overflow:hidden;}
 .page{display:none;flex-direction:column;height:100dvh;animation:fadeIn .3s ease;}
 .page.active{display:flex;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
 .topbar{display:flex;align-items:center;padding:14px 16px;gap:12px;border-bottom:1px solid #1f3348;flex-shrink:0;}
-.topbar .back{font-size:22px;cursor:pointer;padding:4px;opacity:.7;transition:.2s;}
+.topbar .back{font-size:22px;cursor:pointer;padding:4px;opacity:.7;}
 .topbar .back:active{opacity:1;transform:scale(.9);}
 .topbar .tt{flex:1;font-size:17px;font-weight:600;}
 .topbar .sub{font-size:13px;color:#7a94b0;}
-.home-scroll{flex:1;overflow-y:auto;padding:16px;}
-.home-header{padding:20px 4px 8px;}
-.home-header h1{font-size:26px;font-weight:700;}
-.home-header p{color:#7a94b0;font-size:14px;margin-top:4px;}
-.section-title{font-size:15px;font-weight:600;color:#8aa0b8;margin:20px 0 12px 4px;}
-.plan-grid{display:flex;flex-direction:column;gap:10px;}
-.plan-card{background:#1a2b3c;border-radius:16px;padding:16px;cursor:pointer;transition:.2s;border:1px solid #1f3348;display:flex;align-items:center;gap:14px;}
-.plan-card:active{background:#1f3348;transform:scale(.98);}
-.plan-card .icon{font-size:28px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#0f1923;border-radius:12px;flex-shrink:0;}
-.plan-card .info{flex:1;}
-.plan-card .info .name{font-size:16px;font-weight:600;}
-.plan-card .info .desc{font-size:12px;color:#7a94b0;margin-top:2px;}
-.plan-card .info .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;margin-top:4px;background:#2d4c6e;color:#a0c4e8;}
-.plan-card .time{font-size:14px;color:#7a94b0;font-weight:600;}
-.weekstrip{display:flex;gap:6px;justify-content:center;padding:16px 0;margin-top:8px;flex-shrink:0;}
-.weekday{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:#1a2b3c;color:#5a7a98;}
-.weekday.done{background:#2d4c6e;color:#4fc3f7;}
-.weekday.today{border:2px solid #4fc3f7;color:#4fc3f7;}
-.exercise-quick{display:flex;flex-wrap:wrap;gap:8px;padding:8px 4px;}
-.eq-btn{background:#1a2b3c;border:1px solid #1f3348;border-radius:20px;padding:8px 16px;font-size:13px;color:#c8d6e5;cursor:pointer;transition:.2s;}
-.eq-btn:active{background:#2d4c6e;}
-.practice-scroll{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;overflow-y:auto;}
-.practice-canvas-wrap{width:280px;height:280px;background:#1a2b3c;border-radius:20px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.4);margin-bottom:14px;flex-shrink:0;}
-@media(max-width:420px){.practice-canvas-wrap{width:220px;height:220px;}}
-#practiceCanvas{width:100%;height:100%;display:block;}
-.exercise-timer{text-align:center;margin-bottom:12px;flex-shrink:0;}
-.exercise-timer .num{font-size:42px;font-weight:200;color:#4fc3f7;letter-spacing:2px;line-height:1;}
-.exercise-timer .label{font-size:13px;color:#5a7a98;}
-.breath-label{text-align:center;font-size:16px;margin-bottom:10px;flex-shrink:0;}
-.breath-label .inhale{color:#4fc3f7;font-weight:600;}
-.breath-label .exhale{color:#a5d6a7;font-weight:600;}
-.breath-label .hold{color:#fff176;font-weight:600;}
-.breath-label .rest{color:#8aa0b8;}
-.step-text-box{width:100%;max-width:400px;background:#1a2b3c;border-radius:14px;padding:16px;margin-bottom:8px;border:1px solid #1f3348;flex-shrink:0;}
-.step-text-box .num{font-size:12px;color:#5a7a98;margin-bottom:4px;}
-.step-text-box .text{font-size:17px;line-height:1.5;}
-.step-text-box .text .hl{color:#4fc3f7;}
-.step-text-box .hint{font-size:13px;color:#8aa0b8;margin-top:8px;border-left:3px solid #2d4c6e;padding-left:12px;}
-.progress-row{width:100%;max-width:400px;display:flex;align-items:center;gap:10px;margin:6px 0 10px;flex-shrink:0;}
-.progress-row .bar{flex:1;height:5px;background:#1f3348;border-radius:3px;overflow:hidden;}
-.progress-row .bar .fill{height:100%;width:0%;background:linear-gradient(90deg,#4fc3f7,#81d4fa);border-radius:3px;transition:width .4s;}
-.progress-row .label{font-size:12px;color:#7a94b0;white-space:nowrap;}
-.step-dots{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-shrink:0;}
-.step-dot{width:8px;height:8px;border-radius:50%;background:#1f3348;transition:.3s;}
-.step-dot.active{background:#4fc3f7;transform:scale(1.2);}
-.step-dot.done{background:#a5d6a7;}
-.btn-row{width:100%;max-width:400px;display:flex;gap:10px;margin-top:auto;padding:8px 0;flex-shrink:0;}
-.btn{flex:1;padding:16px;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;transition:.15s;}
+
+/* ===== 首页 ===== */
+.scroll{flex:1;overflow-y:auto;padding:16px;}
+.greeting{font-size:22px;font-weight:700;margin-bottom:4px;}
+.greeting-sub{color:#7a94b0;font-size:14px;margin-bottom:20px;}
+
+/* 进度条 */
+.progress-section{background:#1a2b3c;border-radius:14px;padding:16px;margin-bottom:20px;border:1px solid #1f3348;}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.progress-top .label{font-size:14px;color:#8aa0b8;}
+.progress-top .num{font-size:18px;font-weight:700;color:#4fc3f7;}
+.progress-bar{height:8px;background:#1f3348;border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.progress-bar .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
+.progress-sub{font-size:12px;color:#5a7a98;text-align:right;}
+
+/* 区块标题 */
+.sec-title{font-size:14px;font-weight:600;color:#8aa0b8;margin-bottom:10px;display:flex;justify-content:space-between;}
+.sec-title .more{color:#4fc3f7;font-size:12px;cursor:pointer;}
+
+/* 练习列表 */
+.ex-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.ex-item{display:flex;align-items:center;gap:12px;padding:14px 14px;background:#1a2b3c;border-radius:12px;cursor:pointer;transition:.15s;border:1px solid #1f3348;}
+.ex-item:active{background:#1f3348;transform:scale(.98);}
+.ex-item .check{width:24px;height:24px;border-radius:50%;border:2px solid #2d4c6e;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:#4fc3f7;transition:.3s;}
+.ex-item.done .check{border-color:#4fc3f7;background:rgba(79,195,247,.1);}
+.ex-item .ico{font-size:22px;width:32px;text-align:center;flex-shrink:0;}
+.ex-item .info{flex:1;min-width:0;}
+.ex-item .info .nm{font-size:15px;font-weight:600;}
+.ex-item .info .cat{font-size:11px;color:#5a7a98;margin-top:1px;}
+.ex-item .tm{font-size:12px;color:#5a7a98;flex-shrink:0;}
+
+/* 底部快捷切换套餐 */
+.quick-plans{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;}
+.quick-plans::-webkit-scrollbar{display:none;}
+.qp-btn{flex-shrink:0;padding:8px 14px;border-radius:20px;background:#1a2b3c;border:1px solid #1f3348;font-size:13px;color:#c8d6e5;cursor:pointer;transition:.15s;white-space:nowrap;}
+.qp-btn:active{background:#2d4c6e;}
+.qp-btn.active{background:#2d4c6e;border-color:#4fc3f7;color:#4fc3f7;}
+
+/* ===== 跟练页 ===== */
+.p-scroll{flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 16px;overflow-y:auto;}
+.p-canvas-wrap{width:260px;height:260px;background:#1a2b3c;border-radius:18px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.4);margin-bottom:12px;flex-shrink:0;}
+@media(max-width:420px){.p-canvas-wrap{width:200px;height:200px;}}
+#cvs{width:100%;height:100%;display:block;}
+
+.p-timer{text-align:center;margin-bottom:10px;flex-shrink:0;}
+.p-timer .n{font-size:48px;font-weight:200;color:#4fc3f7;line-height:1;letter-spacing:2px;}
+.p-timer .l{font-size:12px;color:#5a7a98;}
+
+.p-breath{text-align:center;font-size:14px;margin-bottom:8px;flex-shrink:0;}
+.p-breath .i{color:#4fc3f7;font-weight:600;}
+.p-breath .e{color:#a5d6a7;font-weight:600;}
+.p-breath .h{color:#fff176;font-weight:600;}
+.p-breath .r{color:#8aa0b8;}
+
+.p-card{width:100%;max-width:400px;background:#1a2b3c;border-radius:14px;padding:14px 16px;margin-bottom:6px;border:1px solid #1f3348;flex-shrink:0;}
+.p-card .num{font-size:11px;color:#5a7a98;margin-bottom:3px;}
+.p-card .txt{font-size:16px;line-height:1.5;}
+.p-card .txt .hl{color:#4fc3f7;}
+.p-card .hint{font-size:12px;color:#8aa0b8;margin-top:6px;border-left:3px solid #2d4c6e;padding-left:10px;}
+.p-card .hint .m{display:inline-block;background:#2d4c6e;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:4px;color:#a0c4e8;}
+
+.p-progress{width:100%;max-width:400px;display:flex;align-items:center;gap:8px;margin:4px 0 8px;flex-shrink:0;}
+.p-progress .b{flex:1;height:4px;background:#1f3348;border-radius:2px;overflow:hidden;}
+.p-progress .b .f{height:100%;border-radius:2px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
+.p-progress .lb{font-size:11px;color:#7a94b0;white-space:nowrap;}
+
+.p-dots{display:flex;gap:6px;justify-content:center;margin:4px 0;flex-shrink:0;}
+.p-dot{width:7px;height:7px;border-radius:50%;background:#1f3348;transition:.3s;}
+.p-dot.active{background:#4fc3f7;transform:scale(1.2);}
+.p-dot.done{background:#a5d6a7;}
+
+.btn-row{width:100%;max-width:400px;display:flex;gap:10px;margin-top:auto;padding:6px 0;flex-shrink:0;}
+.btn{flex:1;padding:15px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:.15s;}
 .btn:active{transform:scale(.97);}
 .btn-pri{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;}
 .btn-pri:disabled{opacity:.3;cursor:not-allowed;transform:none;}
 .btn-sec{background:#1f3348;color:#8aa0b8;}
 .btn-stop{background:#3d1f1f;color:#ef9a9a;}
-.complete-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,35,.95);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
-.complete-overlay.show{display:flex;}
-.complete-icon{font-size:60px;}
-.complete-text{font-size:22px;font-weight:700;color:#a5d6a7;}
-.complete-sub{font-size:14px;color:#7a94b0;text-align:center;line-height:1.6;}
+
+/* 完成弹窗 */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,25,35,.95);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.overlay.show{display:flex;}
+.over-icon{font-size:56px;}
+.over-t{font-size:21px;font-weight:700;color:#a5d6a7;text-align:center;}
+.over-sub{font-size:13px;color:#7a94b0;text-align:center;line-height:1.6;max-width:280px;}
+.over-btn{max-width:300px;padding:0 20px;}
+
+/* 午别标签 */
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;color:#a0c4e8;margin-left:6px;flex-shrink:0;}
+.tag.t1{background:#1a3a3a;color:#80cbc4;}
+.tag.t2{background:#2d2d4e;color:#9fa8da;}
+.tag.t3{background:#3d2d1f;color:#ffcc80;}
+.tag.t4{background:#2d1f3d;color:#ce93d8;}
+.tag.t5{background:#1f3d2d;color:#a5d6a7;}
 </style>
 </head>
 <body>
 
+<!-- ===== 首页 ===== -->
 <div class="page active" id="pageHome">
-  <div class="home-scroll">
-    <div class="home-header">
-      <h1>🧠 神经训练</h1>
-      <p>茂懿的每日跟练 · 坚持就是进步</p>
+  <div class="scroll">
+    <div class="greeting" id="greeting">🌅 早上好，茂懿</div>
+    <div class="greeting-sub">今天也要加油喔</div>
+
+    <div class="progress-section" id="progressSection">
+      <div class="progress-top">
+        <span class="label">今日完成</span>
+        <span class="num" id="progressNum">0 / 3</span>
+      </div>
+      <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-sub" id="progressSub">点击练习开始跟练</div>
     </div>
-    <div class="section-title">📋 今日套餐</div>
-    <div class="plan-grid" id="planGrid"></div>
-    <div class="section-title">🏋️ 全部练习</div>
-    <div class="exercise-quick" id="exerciseQuick"></div>
-    <div class="section-title">📅 本周</div>
-    <div class="weekstrip" id="weekStrip"></div>
-    <div style="height:20px"></div>
+
+    <div class="sec-title">
+      <span id="planTitle">☀️ 早晨套餐</span>
+      <span class="more" onclick="switchPlan()">切换 ▸</span>
+    </div>
+    <div class="ex-list" id="exList"></div>
+
+    <div class="sec-title">
+      <span>快速切换</span>
+    </div>
+    <div class="quick-plans" id="quickPlans"></div>
   </div>
 </div>
 
+<!-- ===== 跟练页 ===== -->
 <div class="page" id="pagePractice">
   <div class="topbar">
     <span class="back" onclick="exitPractice()">✕</span>
-    <span class="tt" id="practiceTitle">练习</span>
-    <span class="sub" id="practiceRound"></span>
+    <span class="tt" id="pTitle">练习</span>
+    <span class="sub" id="pRound"></span>
   </div>
-  <div class="practice-scroll" id="practiceScroll">
-    <div class="breath-label" id="breathLabel">🌬️ 准备</div>
-    <div class="practice-canvas-wrap">
-      <canvas id="practiceCanvas" width="280" height="280"></canvas>
-      <div class="exercise-timer" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
-        <div class="num" id="timerNum"></div>
-        <div class="label" id="timerLabel"></div>
+  <div class="p-scroll" id="pScroll">
+    <div class="p-breath" id="pBreath">🌬️</div>
+    <div class="p-canvas-wrap">
+      <canvas id="cvs" width="260" height="260"></canvas>
+      <div class="p-timer" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+        <div class="n" id="pTimer"></div>
+        <div class="l" id="pTimerLabel"></div>
       </div>
     </div>
-    <div class="step-text-box">
-      <div class="num" id="stepNum">准备</div>
-      <div class="text" id="stepText">选择练习，开始吧</div>
-      <div class="hint" id="stepHint"></div>
+    <div class="p-card">
+      <div class="num" id="pStepNum">准备</div>
+      <div class="txt" id="pStepText">选一个练习开始吧</div>
+      <div class="hint" id="pStepHint"></div>
     </div>
-    <div class="progress-row">
-      <div class="bar"><div class="fill" id="progressFill"></div></div>
-      <span class="label" id="progressLabel">0%</span>
+    <div class="p-progress">
+      <div class="b"><div class="f" id="pFill"></div></div>
+      <span class="lb" id="pLabel">0%</span>
     </div>
-    <div class="step-dots" id="stepDots"></div>
+    <div class="p-dots" id="pDots"></div>
     <div class="btn-row">
-      <button class="btn btn-stop" id="resetBtn" onclick="resetPractice()">🔄 重来</button>
-      <button class="btn btn-pri" id="actionBtn" onclick="handleAction()">▶ 开始训练</button>
+      <button class="btn btn-stop" onclick="resetPractice()">🔄 重来</button>
+      <button class="btn btn-pri" id="pBtn">▶ 开始</button>
     </div>
   </div>
 </div>
 
-<div class="complete-overlay" id="completeOverlay">
-  <div class="complete-icon">🎉</div>
-  <div class="complete-text" id="completeText">完成！</div>
-  <div class="complete-sub" id="completeSub"></div>
-  <div class="btn-row" style="max-width:300px;padding:0 20px;" id="completeButtons">
-    <button class="btn btn-sec" onclick="goHome()">🏠 首页</button>
-    <button class="btn btn-pri" onclick="resetPractice()">🔄 再来一组</button>
-  </div>
+<!-- ===== 完成弹窗 ===== -->
+<div class="overlay" id="overlay">
+  <div class="over-icon">🎉</div>
+  <div class="over-t" id="overTitle">完成！</div>
+  <div class="over-sub" id="overSub"></div>
+  <div class="btn-row over-btn" id="overBtns"></div>
 </div>
 
 <script>
-// ====== 数据 ======
-const EXERCISES = [
-  { id:'yawn', name:'打哈欠激活', icon:'🥱', cat:'预备唤醒', catClass:'cat1', time:'30s',
+// ========== 数据 ==========
+const ALL_EX = [
+  {id:'yawn', name:'打哈欠激活', icon:'🥱', time:'30s', cat:'预备', catTag:'t1',
     steps:[
-      {text:'用力打一个真正的哈欠', hint:'假打也能变成真打', dur:0},
-      {text:'捏住鼻子，闭嘴试着呼气', hint:'不出气，感受喉咙的紧张', dur:8},
-      {text:'松开，深呼吸一次', hint:'重复3次', dur:6},
-      {text:'再做一次深呼吸', hint:'', dur:6},
-      {text:'最后一次深呼吸', hint:'', dur:6},
+      {t:'用力打一个真正的哈欠', h:'假打也能变成真打', d:0},
+      {t:'捏住鼻子，闭嘴试着呼气', h:'不出气，感受喉咙紧张', d:8},
+      {t:'松开，深呼吸一次', h:'重复3次', d:6},
+      {t:'最后一次深呼吸', h:'', d:6},
     ]},
-  { id:'earPull', name:'耳朵拉拽', icon:'👂', cat:'预备唤醒', catClass:'cat1', time:'30s',
+  {id:'ear', name:'耳朵拉拽', icon:'👂', time:'30s', cat:'预备', catTag:'t1',
     steps:[
-      {text:'从耳朵最上端开始，轻轻向下拉', hint:'沿耳朵外侧慢慢拉到耳垂', dur:8},
-      {text:'换另一只耳朵，从上到下轻拉', hint:'', dur:8},
-      {text:'两只耳朵同时拉一遍', hint:'', dur:6},
-      {text:'揉一揉耳朵，放松', hint:'', dur:4},
+      {t:'从耳朵上端向下轻拉', h:'沿耳朵外侧到耳垂', d:8},
+      {t:'换另一只耳朵', h:'', d:8},
+      {t:'两只耳朵同时拉一遍', h:'', d:6},
+      {t:'揉一揉放松', h:'', d:4},
     ]},
-  { id:'shake', name:'全身抖动', icon:'💃', cat:'预备唤醒', catClass:'cat1', time:'1min',
+  {id:'shake', name:'全身抖动', icon:'💃', time:'1min', cat:'预备', catTag:'t1',
     steps:[
-      {text:'站起来，从手开始甩', hint:'像MC被击退后的效果', dur:8},
-      {text:'手臂一起甩', hint:'让手臂像面条一样晃动', dur:8},
-      {text:'带动肩膀抖动', hint:'', dur:8},
-      {text:'全身都抖起来', hint:'像甩干机一样', dur:10},
-      {text:'慢慢停下来，站直深呼吸', hint:'', dur:6},
+      {t:'站起来，从手开始甩', h:'', d:8},
+      {t:'手臂一起甩', h:'让手臂像面条一样', d:8},
+      {t:'全身都抖起来', h:'像甩干机', d:12},
+      {t:'慢慢停下，站直深呼吸', h:'', d:6},
     ]},
-  { id:'starfish', name:'海星呼吸', icon:'🦑', cat:'原始反射整合', catClass:'cat2', time:'2min', cycles:5,
+  {id:'starfish', name:'海星呼吸', icon:'🦑', time:'2min', cat:'反射整合', catTag:'t2', cycles:5,
     steps:[
-      {text:'仰卧躺平，手脚自然展开', hint:'找一个舒服平坦的地方', dur:0},
-      {text:'慢慢<span class="hl">吸气</span>，同时手脚向外展开', hint:'像海星一样张开', dur:4},
-      {text:'屏住呼吸，保持展开', hint:'感受胸腔的扩展', dur:2},
-      {text:'慢慢<span class="hl">呼气</span>，手脚收回胸前', hint:'手臂交叉抱胸，腿弯曲', dur:6},
-      {text:'全身放松，休息一下', hint:'感受身体的平静', dur:3},
+      {t:'仰卧躺平，手脚展开', h:'', d:0},
+      {t:'慢慢<span class="hl">吸气</span>，手脚向外展开', h:'像海星张开', d:4},
+      {t:'屏住呼吸，保持展开', h:'', d:2},
+      {t:'慢慢<span class="hl">呼气</span>，手脚收回胸前', h:'手臂交叉抱胸，腿弯曲', d:6},
+      {t:'放松，休息一下', h:'', d:3},
     ]},
-  { id:'crossCrawl', name:'交叉爬行', icon:'⛏️', cat:'原始反射整合', catClass:'cat2', time:'2min',
+  {id:'crawl', name:'交叉爬行', icon:'⛏️', time:'2min', cat:'反射整合', catTag:'t2',
     steps:[
-      {text:'四肢着地，做好准备', hint:'像MC里的苦力怕爬行', dur:0},
-      {text:'抬右手时抬左膝', hint:'慢一点，感受对侧协调', dur:15},
-      {text:'抬左手时抬右膝', hint:'','dur':15},
-      {text:'加快速度，保持交替', hint:'','dur':15},
-      {text:'放慢速度做最后的5次', hint:'深呼吸收尾', dur:10},
+      {t:'四肢着地', h:'', d:0},
+      {t:'抬右手时抬左膝', h:'慢慢来', d:15},
+      {t:'抬左手时抬右膝', h:'', d:15},
+      {t:'加快速度交替', h:'', d:15},
+      {t:'放慢做最后5次', h:'深呼吸收尾', d:10},
     ]},
-  { id:'snowAngel', name:'雪天使', icon:'❄️', cat:'原始反射整合', catClass:'cat2', time:'2min',
+  {id:'snow', name:'雪天使', icon:'❄️', time:'2min', cat:'反射整合', catTag:'t2',
     steps:[
-      {text:'仰卧，双腿伸直，手臂放身体两侧', hint:'脊椎要贴紧地面', dur:0},
-      {text:'<span class="hl">呼气</span>，手臂沿地面滑向头顶', hint:'像在雪里画天使翅膀', dur:6},
-      {text:'<span class="hl">吸气</span>，手臂滑回身体两侧', hint:'', dur:6},
-      {text:'重复：呼气上滑，吸气下滑', hint:'保持慢速', dur:24},
-      {text:'最后一次，做完放松', hint:'感受背部的舒展', dur:6},
+      {t:'仰卧，手臂放两侧', h:'脊椎贴紧地面', d:0},
+      {t:'<span class="hl">呼气</span>，手臂滑向头顶', h:'像画天使翅膀', d:6},
+      {t:'<span class="hl">吸气</span>，手臂滑回', h:'', d:6},
+      {t:'重复：呼气上滑，吸气下滑', h:'保持慢速', d:24},
+      {t:'最后一次，放松', h:'', d:6},
     ]},
-  { id:'ballBalance', name:'球上平衡', icon:'🏐', cat:'原始反射整合', catClass:'cat2', time:'2min',
-    note:'需要瑜伽球',
+  {id:'ball', name:'球上平衡', icon:'🏐', time:'2min', cat:'反射整合', catTag:'t2', note:'需瑜伽球',
     steps:[
-      {text:'趴在瑜伽球上，手脚支撑地面', hint:'球直径55-65cm最佳', dur:0},
-      {text:'轻轻前后滚动，保持平衡', hint:'幅度不超过30°', dur:20},
-      {text:'试着举手保持平衡', hint:'像High Five', dur:16},
-      {text:'慢慢停下来，深呼吸', hint:'', dur:8},
+      {t:'趴在球上，手脚撑地', h:'', d:0},
+      {t:'轻轻前后滚，保持平衡', h:'幅度不超过30°', d:20},
+      {t:'试着举手保持平衡', h:'', d:16},
+      {t:'慢慢停下，深呼吸', h:'', d:8},
     ]},
-  { id:'spin', name:'旋转脱敏', icon:'🌀', cat:'前庭-小脑', catClass:'cat3', time:'2min',
+  {id:'spin', name:'旋转脱敏', icon:'🌀', time:'2min', cat:'前庭-小脑', catTag:'t3',
     steps:[
-      {text:'站起来，闭眼原地转3圈', hint:'慢慢转', dur:12},
-      {text:'停下来，睁眼看一个固定点', hint:'记录多久恢复平衡', dur:8},
-      {text:'再次闭眼转3圈', hint:'可以稍微快一点', dur:10},
-      {text:'停下来，固定一点看', hint:'', dur:8},
-      {text:'深呼吸2次', hint:'', dur:6},
+      {t:'闭眼原地转3圈', h:'慢慢转', d:12},
+      {t:'停下来看一个固定点', h:'', d:8},
+      {t:'再闭眼转3圈', h:'', d:10},
+      {t:'停下来看固定点', h:'', d:8},
+      {t:'深呼吸2次', h:'', d:6},
     ]},
-  { id:'oneLeg', name:'单脚站挑战', icon:'🦩', cat:'前庭-小脑', catClass:'cat3', time:'2min',
+  {id:'oneLeg', name:'单脚站挑战', icon:'🦩', time:'2min', cat:'前庭-小脑', catTag:'t3',
     steps:[
-      {text:'双手叉腰，左脚抬起', hint:'记录能站多久', dur:15},
-      {text:'换右脚站立', hint:'', dur:15},
-      {text:'左脚再来一次，闭眼试试', hint:'闭眼更难！', dur:10},
-      {text:'换右脚闭眼站立', hint:'', dur:10},
-      {text:'放松，抖抖腿', hint:'', dur:6},
+      {t:'双手叉腰，左脚抬起', h:'', d:15},
+      {t:'换右脚站立', h:'', d:15},
+      {t:'左脚闭眼试试', h:'闭眼更难', d:10},
+      {t:'右脚闭眼站立', h:'', d:10},
+      {t:'放松抖抖腿', h:'', d:6},
     ]},
-  { id:'bounce', name:'弹跳训练', icon:'🏀', cat:'前庭-小脑', catClass:'cat3', time:'2min',
-    note:'有蹦床更佳',
+  {id:'bounce', name:'弹跳训练', icon:'🏀', time:'2min', cat:'前庭-小脑', catTag:'t3', note:'有蹦床更佳',
     steps:[
-      {text:'原地自由弹跳', hint:'像在MC里跳方块', dur:20},
-      {text:'跳高摸墙或者摸天花板', hint:'', dur:20},
-      {text:'边跳边拍手', hint:'增加协调难度', dur:15},
-      {text:'慢慢停下，深呼吸', hint:'', dur:8},
+      {t:'原地自由弹跳', h:'', d:20},
+      {t:'跳高摸墙', h:'', d:20},
+      {t:'边跳边拍手', h:'', d:15},
+      {t:'慢慢停下深呼吸', h:'', d:8},
     ]},
-  { id:'beeBreath', name:'蜜蜂呼吸', icon:'🐝', cat:'迷走神经', catClass:'cat4', time:'2min',
+  {id:'bee', name:'蜜蜂呼吸', icon:'🐝', time:'2min', cat:'迷走神经', catTag:'t4',
     steps:[
-      {text:'坐直，闭上眼睛', hint:'', dur:0},
-      {text:'深吸一口气', hint:'', dur:4},
-      {text:'<span class="hl">呼气</span>时发出"嗡嗡嗡——"声', hint:'感受嘴唇和胸腔震动', dur:8},
-      {text:'深呼吸，再来一次', hint:'', dur:4},
-      {text:'<span class="hl">呼气</span>嗡——', hint:'', dur:8},
-      {text:'最后一次深呼吸', hint:'', dur:4},
-      {text:'<span class="hl">呼气</span>嗡——，慢慢睁眼', hint:'', dur:10},
+      {t:'坐直闭眼', h:'', d:0},
+      {t:'深吸一口气', h:'', d:4},
+      {t:'<span class="hl">呼气</span>时"嗡嗡嗡——"', h:'感受嘴唇胸腔震动', d:8},
+      {t:'深呼吸再来一次', h:'', d:4},
+      {t:'<span class="hl">呼气</span>嗡——', h:'', d:8},
+      {t:'最后一次深呼吸', h:'', d:4},
+      {t:'<span class="hl">呼气</span>嗡——，睁眼', h:'', d:10},
     ]},
-  { id:'coldWake', name:'冷水唤醒', icon:'❄️', cat:'迷走神经', catClass:'cat4', time:'1min',
-    note:'在洗漱时一起做',
+  {id:'cold', name:'冷水唤醒', icon:'❄️', time:'1min', cat:'迷走神经', catTag:'t4', note:'洗漱时做',
     steps:[
-      {text:'用冷水拍脸颊和眼周', hint:'不需要浸全身', dur:8},
-      {text:'冷水拍脖子前侧', hint:'', dur:6},
-      {text:'深吸气，缓慢呼出', hint:'感受脸部冰凉后的清醒', dur:8},
-      {text:'深呼吸第二次', hint:'', dur:8},
-      {text:'深呼吸第三次', hint:'完成！', dur:8},
+      {t:'冷水拍脸颊和眼周', h:'', d:8},
+      {t:'冷水拍脖子前侧', h:'', d:6},
+      {t:'深吸气缓慢呼出', h:'', d:8},
+      {t:'深呼吸第二次', h:'', d:8},
+      {t:'深呼吸第三次', h:'', d:8},
     ]},
-  { id:'gagReflex', name:'哈欠深呼吸', icon:'😮', cat:'迷走神经', catClass:'cat4', time:'1min',
+  {id:'yawn2', name:'哈欠深呼吸', icon:'😮', time:'1min', cat:'迷走神经', catTag:'t4',
     steps:[
-      {text:'张大嘴打一个大哈欠', hint:'假打很快就变成真打', dur:6},
-      {text:'用力吞咽口水', hint:'', dur:4},
-      {text:'用力伸个懒腰', hint:'', dur:6},
-      {text:'再打一个哈欠，然后吞咽', hint:'', dur:6},
-      {text:'深呼吸，放松', hint:'', dur:6},
+      {t:'张嘴打一个大哈欠', h:'', d:6},
+      {t:'用力吞咽口水', h:'', d:4},
+      {t:'伸个懒腰', h:'', d:6},
+      {t:'再打哈欠再吞咽', h:'', d:6},
+      {t:'深呼吸放松', h:'', d:6},
     ]},
-  { id:'fingerTap', name:'指尖对碰', icon:'🤏', cat:'精细运动', catClass:'cat5', time:'2min',
+  {id:'finger', name:'指尖对碰', icon:'🤏', time:'2min', cat:'精细运动', catTag:'t5',
     steps:[
-      {text:'大拇指依次碰食指→中指→无名指→小指', hint:'右手先做', dur:12},
-      {text:'换左手做一遍', hint:'', dur:12},
-      {text:'加速！左右手同时做', hint:'', dur:12},
-      {text:'<span class="hl">闭眼</span>再做一次', hint:'去掉视觉补偿效果更好', dur:12},
-      {text:'抖抖手放松', hint:'', dur:4},
+      {t:'拇指依次碰食中无名小指', h:'右手先做', d:12},
+      {t:'换左手', h:'', d:12},
+      {t:'左右手同时加速', h:'', d:12},
+      {t:'<span class="hl">闭眼</span>再做一次', h:'去掉视觉补偿', d:12},
+      {t:'抖抖手放松', h:'', d:4},
     ]},
-  { id:'rubberBand', name:'橡皮筋拉伸', icon:'🪢', cat:'精细运动', catClass:'cat5', time:'2min',
-    note:'需要橡皮筋',
+  {id:'rubber', name:'橡皮筋拉伸', icon:'🪢', time:'2min', cat:'精细运动', catTag:'t5', note:'需橡皮筋',
     steps:[
-      {text:'指尖套一根橡皮筋', hint:'', dur:0},
-      {text:'大拇指和食指把橡皮筋撑开', hint:'', dur:12},
-      {text:'大拇指和中指撑开', hint:'', dur:12},
-      {text:'大拇指和无名指撑开', hint:'', dur:12},
-      {text:'大拇指和小指撑开', hint:'', dur:12},
-      {text:'换左手重复一遍', hint:'', dur:20},
+      {t:'指尖套橡皮筋', h:'', d:0},
+      {t:'拇指和食指撑开', h:'', d:12},
+      {t:'拇指和中指撑开', h:'', d:12},
+      {t:'拇指和无名指撑开', h:'', d:12},
+      {t:'拇指和小指撑开', h:'', d:12},
+      {t:'换左手重复', h:'', d:20},
     ]},
 ];
 
 const PLANS = [
-  {id:'morning', icon:'☀️', name:'早晨套餐', tag:'唤醒', exIds:['coldWake','beeBreath','crossCrawl']},
-  {id:'am', icon:'🌤️', name:'上午套餐', tag:'专注', exIds:['starfish','oneLeg','fingerTap']},
-  {id:'pm', icon:'🏃', name:'下午套餐', tag:'激活', exIds:['snowAngel','ballBalance','spin','beeBreath']},
-  {id:'night', icon:'🌙', name:'睡前套餐', tag:'放松', exIds:['snowAngel','starfish','gagReflex']},
+  {id:'morning', icon:'☀️', name:'早晨套餐', exIds:['cold','bee','crawl']},
+  {id:'am', icon:'🌤️', name:'上午套餐', exIds:['starfish','oneLeg','finger']},
+  {id:'pm', icon:'🏃', name:'下午套餐', exIds:['snow','ball','spin','bee']},
+  {id:'night', icon:'🌙', name:'睡前套餐', exIds:['snow','starfish','yawn2']},
 ];
 
-// ====== 状态 ======
+// ========== 状态 ==========
 let S = {
-  mode: null,          // 'plan' | 'single'
-  plan: null,          // 当前套餐对象
-  ex: null,            // 当前练习对象
-  exIdx: 0,            // 套餐中的练习索引
+  planIdx: 0,           // 当前选中的套餐索引
+  planId: 'morning',
+  doneIds: [],          // 今天已完成的练习ID
+  ex: null,
   cycle: 1,
-  cycles: 1,           // 当前练习总轮数
-  step: -1,            // -1=未开始
-  steps: [],           // 当前练习的步骤数组
+  cycles: 1,
+  step: -1,
+  steps: [],
   playing: false,
   timer: null,
   remain: 0,
 };
 
-// ====== 工具 ======
-function findEx(id) { return EXERCISES.find(e => e.id === id); }
+function exById(id) { return ALL_EX.find(e => e.id === id); }
 
-// ====== 导航 ======
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function goHome() {
-  cleanupTimer();
-  closeOverlay();
-  showPage('pageHome');
-  renderHome();
-}
-
-function exitPractice() {
-  cleanupTimer();
-  closeOverlay();
-  goHome();
-}
-
-// ====== 首页 ======
+// ========== 首页 ==========
 function renderHome() {
-  const grid = document.getElementById('planGrid');
-  grid.innerHTML = PLANS.map(p => {
-    const names = p.exIds.map(id => { const e = findEx(id); return e ? e.name : ''; }).filter(Boolean).join('、');
-    return `<div class="plan-card" onclick="startPlan('${p.id}')">
-      <div class="icon">${p.icon}</div>
+  const plan = PLANS[S.planIdx];
+  document.getElementById('planTitle').textContent = plan.icon + ' ' + plan.name;
+
+  // 快速切换条
+  const qp = document.getElementById('quickPlans');
+  qp.innerHTML = PLANS.map((p, i) =>
+    `<div class="qp-btn ${i===S.planIdx?'active':''}" onclick="switchToPlan(${i})">${p.icon} ${p.name}</div>`
+  ).join('');
+
+  // 练习列表
+  const exList = document.getElementById('exList');
+  exList.innerHTML = plan.exIds.map(id => {
+    const ex = exById(id);
+    if (!ex) return '';
+    const done = S.doneIds.includes(id);
+    return `<div class="ex-item ${done?'done':''}" onclick="startEx('${id}')">
+      <div class="check">${done ? '✓' : ''}</div>
+      <div class="ico">${ex.icon}</div>
       <div class="info">
-        <div class="name">${p.name}</div>
-        <div class="desc">${names}</div>
-        <span class="tag">${p.tag}</span>
+        <div class="nm">${ex.name}</div>
+        <div class="cat">${ex.note||ex.cat}</div>
       </div>
-      <div class="time">${p.exIds.length}个</div>
+      <div class="tm">${ex.time}</div>
+      ${done ? '<span class="tag t2" style="margin-left:6px;">已完成</span>' : ''}
     </div>`;
   }).join('');
 
-  const eq = document.getElementById('exerciseQuick');
-  eq.innerHTML = EXERCISES.map(e => `<div class="eq-btn" onclick="startSingle('${e.id}')">${e.icon} ${e.name}</div>`).join('');
-
-  const week = document.getElementById('weekStrip');
-  const days = ['一','二','三','四','五','六','日'];
-  const today = new Date().getDay();
-  const ti = today === 0 ? 6 : today - 1;
-  const logs = getLogs();
-  week.innerHTML = days.map((d,i) => {
-    const cls = ['weekday'];
-    if (i === ti) cls.push('today');
-    if (logs[i]) cls.push('done');
-    return `<div class="${cls.join(' ')}">${d}</div>`;
-  }).join('');
+  updateProgress();
 }
 
-// ====== 启动练习 ======
-function startPlan(pid) {
-  const p = PLANS.find(x => x.id === pid);
-  if (!p) return;
-  S.mode = 'plan';
-  S.plan = p;
-  S.exIdx = 0;
-  loadEx(p.exIds[0]);
+function switchToPlan(i) {
+  S.planIdx = i;
+  S.planId = PLANS[i].id;
+  renderHome();
 }
 
-function startSingle(eid) {
-  const e = findEx(eid);
-  if (!e) return;
-  S.mode = 'single';
-  S.plan = null;
-  loadEx(eid);
+// ========== 进度 ==========
+function updateProgress() {
+  const plan = PLANS[S.planIdx];
+  const total = plan.exIds.length;
+  const done = plan.exIds.filter(id => S.doneIds.includes(id)).length;
+  document.getElementById('progressNum').textContent = `${done} / ${total}`;
+  document.getElementById('progressFill').style.width = `${total > 0 ? (done/total*100) : 0}%`;
+  document.getElementById('progressSub').textContent = done === total ? '🎉 今天的任务全部完成！' : '点击练习开始跟练';
 }
 
-function loadEx(eid) {
-  const e = findEx(eid);
-  if (!e) return;
-  S.ex = e;
-  S.cycle = 1;
-  S.cycles = e.cycles || 1;
-  S.step = -1;
-  S.steps = e.steps;
-  S.playing = false;
-  cleanupTimer();
-
-  document.getElementById('practiceTitle').textContent = e.icon + ' ' + e.name;
-  showPage('pagePractice');
-  updateUI();
-}
-
-// ====== UI 更新 ======
-function updateUI() {
-  const ex = S.ex;
+// ========== 启动练习 ==========
+function startEx(id) {
+  const ex = exById(id);
   if (!ex) return;
+  S.ex = ex;
+  S.cycles = ex.cycles || 1;
+  S.cycle = 1;
+  S.step = -1;
+  S.steps = ex.steps;
+  S.playing = false;
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
 
+  document.getElementById('pTitle').textContent = ex.icon + ' ' + ex.name;
+  document.getElementById('pageHome').classList.remove('active');
+  document.getElementById('pagePractice').classList.add('active');
+  updatePractice();
+}
+
+// ========== 跟练UI ==========
+function updatePractice() {
+  if (!S.ex) return;
+  const ex = S.ex;
   const multi = S.cycles > 1;
-  document.getElementById('practiceRound').textContent = multi ? `第${S.cycle}/${S.cycles}轮` : '';
+  const r = document.getElementById('pRound');
+  r.textContent = multi ? `${S.cycle}/${S.cycles}轮` : '';
 
-  const stepNum = document.getElementById('stepNum');
-  const stepText = document.getElementById('stepText');
-  const stepHint = document.getElementById('stepHint');
-  const bl = document.getElementById('breathLabel');
-  const tn = document.getElementById('timerNum');
-  const tl = document.getElementById('timerLabel');
-  const pf = document.getElementById('progressFill');
-  const pl = document.getElementById('progressLabel');
-  const ab = document.getElementById('actionBtn');
+  const sn = document.getElementById('pStepNum');
+  const st = document.getElementById('pStepText');
+  const sh = document.getElementById('pStepHint');
+  const br = document.getElementById('pBreath');
+  const tn = document.getElementById('pTimer');
+  const tl = document.getElementById('pTimerLabel');
+  const pf = document.getElementById('pFill');
+  const pl = document.getElementById('pLabel');
+  const btn = document.getElementById('pBtn');
 
   if (S.step === -1) {
-    stepNum.textContent = '准备';
-    stepText.textContent = S.steps[0].text;
-    stepHint.textContent = S.steps[0].hint || '💡 准备好了吗？';
-    bl.innerHTML = '🌬️ 准备';
+    sn.textContent = '准备';
+    st.textContent = S.steps[0].t;
+    sh.innerHTML = S.steps[0].h ? `💡 ${S.steps[0].h}` : '';
+    br.innerHTML = '🌬️';
     tn.textContent = ''; tl.textContent = '';
     pf.style.width = '0%'; pl.textContent = '0%';
-    ab.textContent = '▶ 开始训练'; ab.disabled = false;
+    btn.textContent = '▶ 开始'; btn.disabled = false;
     drawChar(0.1);
-    renderDots(multi ? S.cycles : S.steps.length, 0);
+    renderDots(1, 0);
     return;
   }
 
   const s = S.steps[S.step];
-  stepNum.textContent = multi ? `第${S.cycle}轮 · 步${S.step+1}` : `第${S.step+1}/${S.steps.length}步`;
-  stepText.innerHTML = s.text;
-  stepHint.textContent = s.hint || '';
+  sn.textContent = multi ? `第${S.cycle}轮 · 步${S.step+1}` : `第${S.step+1}/${S.steps.length}步`;
+  st.innerHTML = s.t;
+  sh.innerHTML = s.h ? `💡 ${s.h}` : '';
+  if (ex.note && S.step === 0) sh.innerHTML += `<br><span class="m">📌 ${ex.note}</span>`;
 
-  const t = s.text;
-  if (t.includes('吸气')) bl.innerHTML = '🌬️ <span class="inhale">吸气 ↑</span>';
-  else if (t.includes('呼气')) bl.innerHTML = '🌬️ <span class="exhale">呼气 ↓</span>';
-  else if (t.includes('屏住') || t.includes('屏息')) bl.innerHTML = '🌬️ <span class="hold">屏息 —</span>';
-  else if (t.includes('放松') || t.includes('休息')) bl.innerHTML = '🌿 <span class="rest">放松</span>';
-  else bl.innerHTML = '🌬️';
+  const txt = s.t;
+  if (txt.includes('吸气')) br.innerHTML = '🌬️ <span class="i">吸气 ↑</span>';
+  else if (txt.includes('呼气')) br.innerHTML = '🌬️ <span class="e">呼气 ↓</span>';
+  else if (txt.includes('屏住')||txt.includes('屏息')) br.innerHTML = '🌬️ <span class="h">屏息 —</span>';
+  else if (txt.includes('放松')||txt.includes('休息')) br.innerHTML = '🌿 <span class="r">放松</span>';
+  else br.innerHTML = '🌬️';
 
-  if (s.dur > 0) {
-    tn.textContent = S.playing ? S.remain : s.dur;
+  if (s.d > 0) {
+    tn.textContent = S.playing ? S.remain : s.d;
     tl.textContent = '秒';
   } else {
     tn.textContent = ''; tl.textContent = '';
   }
 
   const total = S.steps.length * S.cycles;
-  const done = (S.cycle - 1) * S.steps.length + S.step;
-  const pct = Math.min(100, done / total * 100);
-  pf.style.width = pct + '%'; pl.textContent = Math.floor(pct) + '%';
+  const done = (S.cycle-1)*S.steps.length + S.step;
+  const pct = Math.min(100, done/total*100);
+  pf.style.width = pct + '%'; pl.textContent = Math.floor(pct)+'%';
 
-  if (multi) renderDots(S.cycles, S.cycle - 1);
+  if (multi) renderDots(S.cycles, S.cycle-1);
   else renderDots(S.steps.length, S.step);
 
-  if (S.playing) {
-    ab.textContent = '⏳ 进行中...'; ab.disabled = true;
-  } else {
-    ab.textContent = '▶ 下一步'; ab.disabled = false;
-  }
+  btn.textContent = S.playing ? '⏳ 进行中...' : '▶ 下一步';
+  btn.disabled = S.playing;
 
-  // 动画：第0步合拢，1-2步展开，其余合拢
   let ratio = 0.1;
   if (S.step >= 1 && S.step <= 2) {
-    ratio = S.playing ? 0.3 + 0.7 * (1 - S.remain / s.dur) : 1;
+    ratio = S.playing ? 0.3 + 0.7*(1-S.remain/s.d) : 1;
   }
   drawChar(Math.max(0.1, Math.min(1, ratio)));
 }
 
 function renderDots(n, active) {
-  const c = document.getElementById('stepDots');
-  c.innerHTML = Array.from({length: n}, (_, i) => {
-    let cls = 'step-dot';
+  const c = document.getElementById('pDots');
+  c.innerHTML = Array.from({length:n}, (_,i) => {
+    let cls = 'p-dot';
     if (i < active) cls += ' done';
     else if (i === active) cls += ' active';
     return `<div class="${cls}"></div>`;
   }).join('');
 }
 
-// ====== 动作逻辑 ======
-function handleAction() {
-  if (!S.ex || S.step < 0 || S.step >= S.steps.length) return;
-
-  if (S.step >= 0 && !S.playing) {
-    startTimer();
+// ========== 跟练按钮 ==========
+document.getElementById('pBtn').addEventListener('click', () => {
+  if (!S.ex) return;
+  if (S.step === -1) {
+    S.step = 0;
+    S.cycle = 1;
+    updatePractice();
+    if (S.steps[0] && S.steps[0].d > 0) startTimer();
+    return;
   }
-}
+  if (!S.playing) startTimer();
+});
 
 function startTimer() {
   const s = S.steps[S.step];
-  if (!s || s.dur <= 0) {
-    advance();
-    return;
-  }
-  S.remain = s.dur;
+  if (!s || s.d <= 0) { advance(); return; }
+  S.remain = s.d;
   S.playing = true;
-  updateUI();
+  updatePractice();
   S.timer = setInterval(() => {
     S.remain--;
-    updateUI();
+    updatePractice();
     if (S.remain <= 0) {
-      cleanupTimer();
+      clearInterval(S.timer); S.timer = null;
       S.playing = false;
       advance();
     }
   }, 1000);
 }
 
-function cleanupTimer() {
-  if (S.timer) { clearInterval(S.timer); S.timer = null; }
-}
-
 function advance() {
   S.step++;
   S.playing = false;
-
-  // 检查是否完成该练习的所有轮次
   if (S.step >= S.steps.length) {
-    if (S.cycle >= S.cycles) {
-      // 全部完成→跳到下一个练习
-      nextExOrFinish();
-      return;
-    }
+    if (S.cycle >= S.cycles) { finishEx(); return; }
     S.cycle++;
     S.step = 0;
   }
-
-  updateUI();
-  // 有计时则自动开始
-  if (S.step < S.steps.length && S.steps[S.step].dur > 0) {
-    startTimer();
-  }
+  updatePractice();
+  if (S.step < S.steps.length && S.steps[S.step].d > 0) startTimer();
 }
 
-function nextExOrFinish() {
-  // 套餐模式下，检查是否还有下一个练习
-  if (S.mode === 'plan' && S.plan) {
-    S.exIdx++;
-    if (S.exIdx < S.plan.exIds.length) {
-      loadEx(S.plan.exIds[S.exIdx]);
-      return;
-    }
-  }
-  // 没有下一个→整体完成
-  finishAll();
-}
+function finishEx() {
+  // 标记完成
+  const id = S.ex.id;
+  if (!S.doneIds.includes(id)) S.doneIds.push(id);
+  saveDone();
 
-function finishAll() {
-  const isPlan = S.mode === 'plan';
-  document.getElementById('completeText').textContent = isPlan ? '🎉 套餐全部完成！' : S.ex.icon + ' ' + S.ex.name + ' 完成！';
-  document.getElementById('completeSub').textContent = isPlan ? '茂懿好棒！今日训练达标 ✅' : '做得棒！神经系统正在升级 🌟';
-  const btns = document.getElementById('completeButtons');
-  btns.innerHTML = '<button class="btn btn-sec" onclick="goHome()">🏠 首页</button><button class="btn btn-pri" onclick="resetPractice()">🔄 再来一组</button>';
-  document.getElementById('completeOverlay').classList.add('show');
-  logComplete();
+  // 检查套餐是否全部完成
+  const plan = PLANS[S.planIdx];
+  const allDone = plan.exIds.every(eid => S.doneIds.includes(eid));
+
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('overTitle').textContent = `${S.ex.icon} ${S.ex.name} 完成！`;
+  document.getElementById('overSub').textContent = allDone
+    ? '🎉 今天的练习全部完成！茂懿真棒！'
+    : '继续加油，还有练习等着你 💪';
+  const btns = document.getElementById('overBtns');
+  btns.innerHTML = `<button class="btn btn-sec" onclick="closeOverlay(); goHome();">🏠 首页</button>
+    <button class="btn btn-pri" onclick="closeOverlay(); goHome();">▶ 继续</button>`;
 }
 
 function resetPractice() {
   closeOverlay();
-  cleanupTimer();
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
   if (S.ex) {
-    S.step = -1;
-    S.cycle = 1;
-    S.playing = false;
-    S.remain = 0;
-    updateUI();
+    S.step = -1; S.cycle = 1; S.playing = false; S.remain = 0;
+    updatePractice();
   }
 }
 
 function closeOverlay() {
-  document.getElementById('completeOverlay').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
 }
 
-// ====== 开始训练按钮逻辑（点击后自动进入第一步，dur>0自动开始）=====
-document.getElementById('actionBtn').addEventListener('click', function() {
-  if (!S.ex) return;
-  if (S.step === -1) {
-    S.step = 0;
-    S.cycle = 1;
-    updateUI();
-    if (S.steps[0] && S.steps[0].dur > 0) {
-      startTimer();
-    }
-    return;
-  }
-  // 已经是进行中 → 调 handleAction
-  handleAction();
-});
+function goHome() {
+  closeOverlay();
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
+  document.getElementById('pagePractice').classList.remove('active');
+  document.getElementById('pageHome').classList.add('active');
+  renderHome();
+}
 
-// ====== 绘图 ======
+function exitPractice() {
+  goHome();
+}
+
+// ========== 打卡存储 ==========
+function saveDone() {
+  const key = 'neuro_'+dateKey();
+  localStorage.setItem(key, JSON.stringify(S.doneIds));
+}
+function loadDone() {
+  const key = 'neuro_'+dateKey();
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return [];
+}
+function dateKey() {
+  const d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+// ========== 绘图 ==========
 function drawChar(spread) {
-  const c = document.getElementById('practiceCanvas');
-  const ctx = c.getContext('2d');
-  const w = c.width, h = c.height;
+  const cvs = document.getElementById('cvs');
+  const ctx = cvs.getContext('2d');
+  const w = cvs.width, h = cvs.height;
   const cx = w/2, cy = h/2;
   ctx.clearRect(0,0,w,h);
 
-  const armA = 30 + 60 * spread;
-  const legA = 15 + 40 * spread;
+  const armA = 30 + 60*spread, legA = 15 + 40*spread;
+  ctx.beginPath(); ctx.arc(cx,cy,90,0,Math.PI*2);
+  ctx.fillStyle='rgba(79,195,247,0.04)'; ctx.fill();
 
-  ctx.beginPath();
-  ctx.arc(cx, cy, 100, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(79,195,247,0.04)';
-  ctx.fill();
-
-  const hy = cy - 48 - 10 * (1 - spread);
+  const hy = cy-48-10*(1-spread);
   ctx.save();
 
-  ctx.beginPath();
-  ctx.ellipse(cx, hy + 30, 14, 24, 0, 0, Math.PI*2);
-  ctx.fillStyle = '#4fc3f7'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx,hy+30,14,24,0,0,Math.PI*2);
+  ctx.fillStyle='#4fc3f7'; ctx.fill();
 
-  ctx.beginPath();
-  ctx.arc(cx, hy, 17, 0, Math.PI*2);
-  ctx.fillStyle = '#4fc3f7'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,hy,17,0,Math.PI*2);
+  ctx.fillStyle='#4fc3f7'; ctx.fill();
 
-  ctx.fillStyle = '#0f1923';
-  ctx.beginPath();
-  ctx.arc(cx - 5, hy - 2, 2.5, 0, Math.PI*2);
-  ctx.arc(cx + 5, hy - 2, 2.5, 0, Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx, hy + 4, 6, 0.1*Math.PI, 0.9*Math.PI);
-  ctx.strokeStyle = '#0f1923'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle='#0f1923';
+  ctx.beginPath(); ctx.arc(cx-5,hy-2,2.5,0,Math.PI*2);
+  ctx.arc(cx+5,hy-2,2.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,hy+4,6,0.1*Math.PI,0.9*Math.PI);
+  ctx.strokeStyle='#0f1923'; ctx.lineWidth=1.5; ctx.stroke();
 
-  const sy = hy + 16;
-  ctx.strokeStyle = '#4fc3f7'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  const sy=hy+16; ctx.strokeStyle='#4fc3f7'; ctx.lineWidth=8; ctx.lineCap='round';
+  let lx=cx-14-70*Math.cos((90-armA)*Math.PI/180)*spread;
+  let ly=sy-10+70*Math.sin((90-armA)*Math.PI/180)*spread;
+  ctx.beginPath(); ctx.moveTo(cx-14,sy); ctx.lineTo(lx,ly); ctx.stroke();
 
-  const lx = cx - 14 - 70 * Math.cos((90 - armA) * Math.PI / 180) * spread;
-  const ly = sy - 10 + 70 * Math.sin((90 - armA) * Math.PI / 180) * spread;
-  ctx.beginPath(); ctx.moveTo(cx - 14, sy); ctx.lineTo(lx, ly); ctx.stroke();
+  let rx=cx+14+70*Math.cos((90-armA)*Math.PI/180)*spread;
+  let ry=sy-10+70*Math.sin((90-armA)*Math.PI/180)*spread;
+  ctx.beginPath(); ctx.moveTo(cx+14,sy); ctx.lineTo(rx,ry); ctx.stroke();
 
-  const rx = cx + 14 + 70 * Math.cos((90 - armA) * Math.PI / 180) * spread;
-  const ry = sy - 10 + 70 * Math.sin((90 - armA) * Math.PI / 180) * spread;
-  ctx.beginPath(); ctx.moveTo(cx + 14, sy); ctx.lineTo(rx, ry); ctx.stroke();
+  const hy2=hy+52;
+  lx=cx-8-50*Math.cos((90-legA)*Math.PI/180)*spread;
+  ly=hy2+50*Math.sin((90-legA)*Math.PI/180)*spread;
+  ctx.beginPath(); ctx.moveTo(cx-8,hy2); ctx.lineTo(lx,ly); ctx.stroke();
 
-  const hy2 = hy + 52;
-  const llx = cx - 8 - 50 * Math.cos((90 - legA) * Math.PI / 180) * spread;
-  const lly = hy2 + 50 * Math.sin((90 - legA) * Math.PI / 180) * spread;
-  ctx.beginPath(); ctx.moveTo(cx - 8, hy2); ctx.lineTo(llx, lly); ctx.stroke();
-
-  const rlx = cx + 8 + 50 * Math.cos((90 - legA) * Math.PI / 180) * spread;
-  const rly = hy2 + 50 * Math.sin((90 - legA) * Math.PI / 180) * spread;
-  ctx.beginPath(); ctx.moveTo(cx + 8, hy2); ctx.lineTo(rlx, rly); ctx.stroke();
-
+  rx=cx+8+50*Math.cos((90-legA)*Math.PI/180)*spread;
+  ry=hy2+50*Math.sin((90-legA)*Math.PI/180)*spread;
+  ctx.beginPath(); ctx.moveTo(cx+8,hy2); ctx.lineTo(rx,ry); ctx.stroke();
   ctx.restore();
 }
 
-// ====== 打卡记录（localStorage） ======
-function getLogs() {
-  try {
-    const raw = localStorage.getItem('neuro_logs');
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return [false,false,false,false,false,false,false];
-}
-
-function logComplete() {
-  const today = new Date().getDay();
-  const idx = today === 0 ? 6 : today - 1;
-  const logs = getLogs();
-  logs[idx] = true;
-  localStorage.setItem('neuro_logs', JSON.stringify(logs));
-}
-
-// ====== 启动 ======
+// ========== 启动 ==========
+S.doneIds = loadDone();
 renderHome();
 </script>
 </body>
