@@ -139,7 +139,12 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
     <div class="el" id="exL"></div>
 
-    <div class="tags" id="tgT"></div>
+    <div class="tags" id="tgS">
+      <div class="tagb ac" data-i="0" onclick="swT(0)">☀️ 早晨</div>
+      <div class="tagb" data-i="1" onclick="swT(1)">🌤️ 上午</div>
+      <div class="tagb" data-i="2" onclick="swT(2)">🏃 下午</div>
+      <div class="tagb" data-i="3" onclick="swT(3)">🌙 睡前</div>
+    </div>
 
     <div class="us">
       <div class="ut">💡 使用说明</div>
@@ -257,10 +262,11 @@ function ex(i){return EX.find(x=>x.i===i);}
 let St={pi:0,dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0};
 
 // ===== 首页渲染 =====
+function swT(i){St.pi=i;rH();}
 function rH(){
   const p=PL[St.pi];
   document.getElementById('plT').textContent=p.ic+' '+p.n;
-  document.getElementById('tgT').innerHTML=PL.map((x,i)=>`<div class="tagb ${i===St.pi?'ac':''}" onclick="St.pi=${i};rH()">${x.ic} ${x.n}</div>`).join('');
+  document.getElementById('tgS').childNodes.forEach(n=>{n.classList.toggle('ac',n.dataset.i==St.pi);});
   const l=document.getElementById('exL');
   l.innerHTML=p.ids.map(id=>{
     const x=ex(id);if(!x)return'';
