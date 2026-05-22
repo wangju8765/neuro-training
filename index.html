@@ -7,139 +7,123 @@
 <title>🧠 神经训练</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;background:#0f1923;color:#e8edf2;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;display:flex;flex-direction:column;}
+body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;background:#0f1923;color:#e8edf2;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;}
 
-.page{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.page{display:none;flex-direction:column;height:100%;}
 .page.active{display:flex;}
 
-/* ===== 顶栏 ===== */
-.top{background:#1a2b3c;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1f3348;flex-shrink:0;}
-.top .tt{font-weight:600;color:#c8d6e5;font-size:16px;}
-
 /* ===== 首页 ===== */
-.scroll{flex:1;padding:20px 16px;overflow-y:auto;}
-.hd{font-size:24px;font-weight:700;margin-bottom:2px;}
-.hs{font-size:14px;color:#7a94b0;margin-bottom:20px;}
+.scroll{flex:1;overflow-y:auto;padding:12px 16px 20px;}
+.title{font-size:20px;font-weight:700;margin-bottom:2px;}
+.hello{font-size:12px;color:#7a94b0;margin-bottom:12px;}
 
-/* 进度卡片 */
-.pc{background:#1a2b3c;border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid #1f3348;}
-.pc .r{display:flex;justify-content:space-between;font-size:14px;color:#8aa0b8;margin-bottom:8px;}
-.pc .r .n{font-size:20px;font-weight:700;color:#4fc3f7;}
-.pb{height:8px;background:#1f3348;border-radius:4px;overflow:hidden;margin-bottom:6px;}
-.pb .f{height:100%;border-radius:4px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
-.pc .sub{font-size:13px;color:#7a94b0;}
+.pc{background:#1a2b3c;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #1f3348;}
+.pc .r{display:flex;justify-content:space-between;font-size:11px;color:#7a94b0;margin-bottom:5px;}
+.pc .r .n{color:#4fc3f7;font-size:14px;font-weight:700;}
+.pb{height:5px;background:#1f3348;border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.pb .f{height:100%;border-radius:2px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);transition:width .4s;}
+.pc .sub{font-size:10px;color:#5a7a98;}
 
-/* 套餐标题 */
-.pt{font-size:16px;font-weight:600;color:#c8d6e5;margin-bottom:12px;}
+.plan-l{font-size:12px;color:#8aa0b8;font-weight:600;margin-bottom:6px;}
 
-/* 练习列表 */
-.el{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-.ex{display:flex;align-items:center;gap:12px;padding:14px;background:#1a2b3c;border-radius:12px;cursor:pointer;border:1px solid #1f3348;transition:.15s;}
+.el{display:flex;flex-direction:column;gap:5px;}
+.ex{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;background:#1a2b3c;border:1px solid #1f3348;cursor:pointer;transition:.12s;}
 .ex:active{background:#1f3348;transform:scale(.98);}
-.ex .ck{width:22px;height:22px;border-radius:50%;border:2px solid #2d4c6e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#4fc3f7;}
+.ex .ck{width:18px;height:18px;border-radius:50%;border:2px solid #2d4c6e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#4fc3f7;transition:.2s;}
 .ex.done .ck{border-color:#4fc3f7;background:rgba(79,195,247,.1);}
-.ex .ic{font-size:20px;width:28px;text-align:center;flex-shrink:0;}
-.ex .in{flex:1;min-width:0;}
-.ex .in .nm{font-size:15px;font-weight:600;}
-.ex .in .sub{font-size:12px;color:#5a7a98;margin-top:2px;}
-.ex .tm{font-size:13px;color:#7a94b0;flex-shrink:0;}
+.ex .ic{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.ex .inf{flex:1;font-size:12px;font-weight:600;}
+.ex .inf .s{font-size:10px;font-weight:400;color:#5a7a98;}
+.ex .tm{font-size:10px;color:#5a7a98;flex-shrink:0;}
 .ex .tm.done{color:#4fc3f7;}
 
-/* 切换标签 */
-.tg{display:flex;gap:6px;margin-bottom:16px;}
-.tb{background:#2d4c6e;padding:5px 14px;border-radius:20px;font-size:13px;color:#a0c4e8;cursor:pointer;border:none;white-space:nowrap;}
-.tb.ac{background:#4fc3f7;color:#0f1923;font-weight:600;}
+.tags{display:flex;gap:5px;margin-top:10px;overflow-x:auto;}
+.tags::-webkit-scrollbar{display:none;}
+.tagb{flex-shrink:0;padding:5px 11px;border-radius:16px;font-size:11px;background:#1a2b3c;border:1px solid #1f3348;color:#8aa0b8;cursor:pointer;white-space:nowrap;transition:.12s;}
+.tagb:active{background:#2d4c6e;}
+.tagb.ac{background:#2d4c6e;border-color:#4fc3f7;color:#4fc3f7;}
 
-/* 使用说明 */
-.us{background:#1a2b3c;border-radius:12px;padding:14px;border:1px solid #1f3348;font-size:13px;color:#8aa0b8;line-height:1.6;}
-.us .ut{color:#c8d6e5;font-weight:600;margin-bottom:4px;}
+.us{background:#1a2b3c;border-radius:8px;padding:8px 10px;border:1px solid #1f3348;font-size:11px;color:#7a94b0;margin-top:12px;line-height:1.5;}
+.us .ut{color:#8aa0b8;font-weight:600;margin-bottom:2px;}
+
+/* ===== 顶栏 ===== */
+.top{display:flex;align-items:center;padding:12px 14px;gap:8px;border-bottom:1px solid #1f3348;font-size:12px;flex-shrink:0;}
+.top .bk{font-size:16px;opacity:.7;cursor:pointer;}
+.top .mi{flex:1;text-align:center;font-weight:600;font-size:14px;}
+.top .ri{color:#7a94b0;font-size:12px;min-width:40px;text-align:right;}
 
 /* ===== 跟练页 ===== */
-.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;overflow-y:auto;}
-.et{font-size:24px;font-weight:700;margin-bottom:4px;text-align:center;}
-.es{font-size:14px;color:#7a94b0;margin-bottom:20px;text-align:center;}
+.p-inner{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px;gap:6px;overflow-y:auto;}
 
-/* 步骤标签（画布上方） */
-.sl{font-size:14px;color:#7a94b0;margin-bottom:8px;text-align:center;}
-.sl .st{color:#c8d6e5;font-weight:500;}
-.sl .st .hl{color:#4fc3f7;}
+.ei{text-align:center;margin-bottom:2px;flex-shrink:0;}
+.ei .en{font-size:18px;font-weight:700;}
+.ei .inf{font-size:10px;color:#5a7a98;}
 
-/* 画布 */
-.cw{width:260px;height:260px;background:#1a2b3c;border-radius:20px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.4);margin-bottom:12px;flex-shrink:0;}
-@media(max-width:420px){.cw{width:220px;height:220px;}}
+.sn{font-size:11px;color:#5a7a98;flex-shrink:0;}
+.sn .st{color:#c8d6e5;margin-left:4px;}
+.sn .st .hl{color:#4fc3f7;}
+
+.cv{width:180px;height:180px;background:#1a2b3c;border-radius:12px;position:relative;box-shadow:0 3px 16px rgba(0,0,0,.3);flex-shrink:0;}
 #pc{width:100%;height:100%;display:block;}
-.cw .tm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
-.cw .tm .n{font-size:40px;font-weight:200;color:#4fc3f7;line-height:1;}
-.cw .tm .l{font-size:12px;color:#5a7a98;}
+.cv .tm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.cv .tm .n{font-size:28px;font-weight:200;color:#4fc3f7;line-height:1;}
+.cv .tm .l{font-size:10px;color:#5a7a98;}
 
-/* 步骤点 */
-.dt{display:flex;gap:6px;justify-content:center;margin-bottom:12px;flex-shrink:0;}
-.dt div{width:8px;height:8px;border-radius:50%;background:#1f3348;transition:.25s;}
-.dt .act{background:#4fc3f7;transform:scale(1.2);}
-.dt .dn{background:#a5d6a7;}
+.dots{display:flex;gap:4px;flex-shrink:0;}
+.dots div{width:5px;height:5px;border-radius:50%;background:#1f3348;transition:.2s;}
+.dots .act{background:#4fc3f7;transform:scale(1.15);}
+.dots .dn{background:#a5d6a7;}
 
-/* 步骤卡片 */
-.sc{width:100%;max-width:380px;background:#1a2b3c;border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #1f3348;flex-shrink:0;}
-.sc .sn{font-size:13px;color:#5a7a98;margin-bottom:4px;font-weight:600;}
-.sc .st{font-size:17px;line-height:1.5;}
-.sc .st .hl{color:#4fc3f7;}
-.sc .sh{font-size:13px;color:#8aa0b8;margin-top:8px;border-left:3px solid #2d4c6e;padding-left:12px;}
-.sc .sh .tg2{display:inline-block;background:#2d4c6e;padding:2px 8px;border-radius:4px;margin-top:4px;font-size:12px;color:#a0c4e8;}
+.sc{width:100%;max-width:290px;margin-top:auto;background:#1a2b3c;border-radius:10px;padding:10px 12px;border:1px solid #1f3348;font-size:11px;color:#8aa0b8;flex-shrink:0;}
+.sc .tg2{display:inline-block;background:#2d4c6e;padding:1px 6px;border-radius:3px;margin-top:3px;font-size:10px;color:#a0c4e8;}
 
-/* 呼吸 */
-.br{font-size:15px;color:#7a94b0;margin-bottom:8px;flex-shrink:0;}
-.br .i{color:#4fc3f7;font-weight:600;}
-.br .e{color:#a5d6a7;font-weight:600;}
-
-/* 按钮 */
-.act{width:100%;max-width:380px;display:flex;flex-direction:column;gap:8px;margin-top:auto;padding:4px 0;flex-shrink:0;}
-.act .r1{display:flex;gap:10px;}
-.act .r1 .b{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:.15s;}
+.act{width:100%;max-width:290px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;padding-bottom:4px;}
+.act .r1{display:flex;gap:6px;}
+.act .r1 .b{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.12s;}
 .act .r1 .b:active{transform:scale(.97);}
 .bp{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#0f1923;}
 .bp:disabled{opacity:.3;cursor:not-allowed;transform:none;}
 .bs{background:#1f3348;color:#8aa0b8;}
-.bo{width:100%;padding:13px;border:1px solid #2d4c6e;border-radius:12px;background:transparent;color:#8aa0b8;font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:.15s;}
+.bo{padding:11px;border-radius:10px;border:1px solid #2d4c6e;background:transparent;color:#8aa0b8;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.12s;}
 .bo:active{background:#1f3348;}
 
 /* 弹窗 */
-.ol,.cf{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;flex-direction:column;}
+.ol,.cf{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;}
 .ol.show,.cf.show{display:flex;}
-.ol{background:rgba(15,25,35,.95);gap:16px;}
-.ol .oi{font-size:56px;}
-.ol .ot{font-size:22px;font-weight:700;color:#a5d6a7;text-align:center;}
-.ol .os{font-size:14px;color:#7a94b0;text-align:center;max-width:280px;}
-.ol .od{font-size:13px;color:#5a7a98;text-align:center;line-height:1.6;}
-.ob{display:flex;gap:12px;width:300px;padding:0;}
-.ob .b{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;}
+.ol{background:rgba(15,25,35,.95);flex-direction:column;gap:10px;}
+.ol .oi{font-size:44px;}
+.ol .ot{font-size:16px;font-weight:700;color:#a5d6a7;text-align:center;}
+.ol .os{font-size:11px;color:#7a94b0;text-align:center;max-width:250px;}
+.ol .od{font-size:10px;color:#5a7a98;text-align:center;line-height:1.5;}
+.ol-btn{display:flex;gap:8px;width:260px;padding:0;}
+.ol-btn .b{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;}
 
 .cf{background:rgba(15,25,35,.92);}
-.cf .bx{background:#1a2b3c;border-radius:16px;padding:24px;border:1px solid #1f3348;text-align:center;max-width:280px;}
-.cf .bx .ct{font-size:18px;font-weight:600;margin-bottom:6px;}
-.cf .bx .cs{font-size:13px;color:#7a94b0;margin-bottom:16px;}
-.cf .bx .cr{display:flex;gap:10px;}
-.cf .bx .cr .b{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;}
+.cf .bx{background:#1a2b3c;border-radius:14px;padding:20px 22px;border:1px solid #1f3348;text-align:center;max-width:260px;}
+.cf .bx .ct{font-size:15px;font-weight:600;margin-bottom:4px;}
+.cf .bx .cs{font-size:11px;color:#7a94b0;margin-bottom:14px;}
+.cf .bx .cr{display:flex;gap:8px;}
+.cf .bx .cr .b{flex:1;padding:10px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <div class="page active" id="pH">
   <div class="scroll">
-    <div class="hd">🧠 神经训练</div>
-    <div class="hs" id="gr">🌅 早上好，茂懿</div>
+    <div class="title">🧠 神经训练</div>
+    <div class="hello" id="gr">🌅 早上好，茂懿</div>
 
     <div class="pc">
       <div class="r"><span>今日完成</span><span class="n" id="pgN">0 / 3</span></div>
-      <div class="pb"><div class="f" id="pgB"></div></div>
+      <div class="pb"><div class="f" id="pgB" style="width:0%"></div></div>
       <div class="sub" id="pgT">点击练习开始</div>
     </div>
 
-    <div class="pt" id="plT">☀️ 早晨套餐</div>
+    <div class="plan-l" id="plT">☀️ 早晨套餐</div>
 
     <div class="el" id="exL"></div>
 
-    <div class="tg" id="tgT"></div>
-    <div style="flex:1;min-height:16px;"></div>
+    <div class="tags" id="tgT"></div>
 
     <div class="us">
       <div class="ut">💡 使用说明</div>
@@ -150,31 +134,27 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
 <div class="page" id="pP">
   <div class="top">
-    <span style="cursor:pointer;font-size:18px;opacity:.7;" onclick="cfExit()">✕</span>
-    <span class="tt" style="font-size:15px;" id="pTi">练习</span>
-    <span style="font-size:13px;color:#7a94b0;" id="pPd"></span>
+    <span class="bk" onclick="cfExit()">✕</span>
+    <span class="mi" id="pTi">练习</span>
+    <span class="ri" id="pPd"></span>
   </div>
-  <div class="main">
+  <div class="p-inner">
 
-    <div class="et" id="pEn">⛏️ 交叉爬行</div>
-    <div class="es" id="pIf">原始反射整合 · 约2分钟</div>
+    <div class="ei">
+      <div class="en" id="pEn">⛏️ 交叉爬行</div>
+      <div class="inf" id="pIf">原始反射整合 · 约2分钟</div>
+    </div>
 
-    <div class="sl" id="pSl">准备</div>
+    <div class="sn"><span id="pSn">准备</span> <span class="st" id="pSt"></span></div>
 
-    <div class="br" id="pBr">🌬️</div>
-
-    <div class="cw">
-      <canvas id="pc" width="260" height="260"></canvas>
+    <div class="cv">
+      <canvas id="pc" width="180" height="180"></canvas>
       <div class="tm"><div class="n" id="pTim"></div><div class="l" id="pTimL"></div></div>
     </div>
 
-    <div class="dt" id="pDt"></div>
+    <div class="dots" id="pDt"></div>
 
-    <div class="sc">
-      <div class="sn" id="pSn">准备</div>
-      <div class="st" id="pSt"></div>
-      <div class="sh" id="pSh"></div>
-    </div>
+    <div class="sc" id="pSc"></div>
 
     <div class="act">
       <div class="r1">
@@ -192,7 +172,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
   <div class="ot" id="olT">完成！</div>
   <div class="os" id="olS"></div>
   <div class="od" id="olD"></div>
-  <div class="ob">
+  <div class="ol-btn">
     <button class="b bs" onclick="clOl();goH()">🏠 首页</button>
     <button class="b bp" onclick="clOl();goH()">📋 继续任务</button>
   </div>
@@ -254,12 +234,12 @@ let St={pi:0,dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0};
 function rH(){
   const p=PL[St.pi];
   document.getElementById('plT').textContent=p.ic+' '+p.n;
-  document.getElementById('tgT').innerHTML=PL.map((x,i)=>`<div class="tb ${i===St.pi?'ac':''}" onclick="St.pi=${i};rH()">${x.ic} ${x.n}</div>`).join('');
+  document.getElementById('tgT').innerHTML=PL.map((x,i)=>`<div class="tagb ${i===St.pi?'ac':''}" onclick="St.pi=${i};rH()">${x.ic} ${x.n}</div>`).join('');
   const l=document.getElementById('exL');
   l.innerHTML=p.ids.map(id=>{const x=ex(id);if(!x)return'';const dn=St.dn.includes(id);
     return`<div class="ex ${dn?'done':''}" onclick="sX('${id}')">
       <div class="ck">${dn?'✓':''}</div><div class="ic">${x.ic}</div>
-      <div class="in"><div class="nm">${x.n}</div><div class="sub">${x.no||x.c} · ${x.t}</div></div>
+      <div class="inf">${x.n} <span class="s">${x.no||x.c} · ${x.t}</span></div>
       <div class="tm ${dn?'done':''}">${dn?'✅ 已完成':x.t}</div></div>`;
   }).join('');
   upPr();
@@ -268,8 +248,8 @@ function upPr(){
   const p=PL[St.pi];const t=p.ids.length;const d=p.ids.filter(id=>St.dn.includes(id)).length;
   document.getElementById('pgN').textContent=`${d} / ${t}`;
   document.getElementById('pgB').style.width=`${t>0?d/t*100:0}%`;
-  const doneNames=p.ids.filter(id=>St.dn.includes(id)).map(id=>{const x=ex(id);return x?x.ic+x.n:'';}).filter(Boolean);
-  document.getElementById('pgT').textContent=d===t?'🎉 全部完成！':(doneNames.length?'✅ '+doneNames.join(' · '):'点击练习开始');
+  const dn2=p.ids.filter(id=>St.dn.includes(id)).map(id=>{const x=ex(id);return x?x.ic+x.n:'';}).filter(Boolean);
+  document.getElementById('pgT').textContent=d===t?'🎉 全部完成！':(dn2.length?'✅ '+dn2.join(' · '):'点击练习开始');
 }
 function sX(id){
   const x=ex(id);if(!x)return;
@@ -286,58 +266,48 @@ function uPpd(){
   document.getElementById('pPd').textContent=`${d}/${p.ids.length}`;
 }
 function uP(){
-  if(!St.ex)return;
-  const x=St.ex;const m=St.cs>1;
-  const sl=document.getElementById('pSl'),sn=document.getElementById('pSn'),st=document.getElementById('pSt'),sh=document.getElementById('pSh');
-  const br=document.getElementById('pBr'),tn=document.getElementById('pTim'),tl=document.getElementById('pTimL');
-  const btn=document.getElementById('pBtn');
-
+  if(!St.ex)return;const x=St.ex;const m=St.cs>1;
+  const sn=document.getElementById('pSn'),st=document.getElementById('pSt'),sc=document.getElementById('pSc');
+  const tn=document.getElementById('pTim'),tl=document.getElementById('pTimL'),btn=document.getElementById('pBtn');
   if(St.st===-1){
-    sl.innerHTML='准备 · '+(m?`第${St.cy}/${St.cs}轮 `:'')+St.ss[0].t;
-    sn.textContent='准备';st.innerHTML='';sh.innerHTML=St.ss[0].h?'💡 '+St.ss[0].h:'';
-    br.innerHTML='🌬️';tn.textContent='';tl.textContent='';
+    sn.textContent='准备';st.innerHTML=''+(m?`第${St.cy}/${St.cs}轮 `:'')+St.ss[0].t;
+    sc.textContent=St.ss[0].h?'💡 '+St.ss[0].h:'';
+    tn.textContent='';tl.textContent='';
     btn.textContent='▶ 开始';btn.disabled=false;
-    dr(0.1);rD(1,0);return;
+    dr(0.15);rD(1,0);return;
   }
   const s=St.ss[St.st];
-  sl.innerHTML=(m?`第${St.cy}轮 · `:'')+'步骤'+(St.st+1)+'/'+St.ss.length+' <span class="st">'+s.t+'</span>';
-  sn.textContent=(m?`第${St.cy}轮·`:'')+'步'+(St.st+1)+'/'+St.ss.length;
+  sn.textContent=(m?`第${St.cy}轮·`:'')+'步'+St.st+1+'/'+St.ss.length;
   st.innerHTML=s.t;
-  sh.innerHTML=(s.h?'💡 '+s.h:'')+(x.no&&St.st===0?`<br><span class="tg2">📌 ${x.no}</span>`:'');
-  const txt=s.t;
-  if(txt.includes('吸气'))br.innerHTML='🌬️ <span class="i">吸气 ↑</span>';
-  else if(txt.includes('呼气'))br.innerHTML='🌬️ <span class="e">呼气 ↓</span>';
-  else br.innerHTML='🌬️';
+  sc.innerHTML=(s.h?'💡 '+s.h:'')+(x.no&&St.st===0?`<br><span class="tg2">📌 ${x.no}</span>`:'');
   if(s.d>0){tn.textContent=St.pl?St.rm:s.d;tl.textContent='秒';}else{tn.textContent='';tl.textContent='';}
   if(m)rD(St.cs,St.cy-1);else rD(St.ss.length,St.st);
   if(St.pl){btn.textContent='⏳ 进行中...';btn.disabled=true;}else{btn.textContent='▶ 下一步';btn.disabled=false;}
-  let r=0.1;if(St.st>=1&&St.st<=2)r=St.pl?0.3+0.7*(1-St.rm/s.d):1;
-  dr(Math.max(0.1,Math.min(1,r)));
+  let r=0.15;if(St.st>=1&&St.st<=2)r=St.pl?0.3+0.7*(1-St.rm/s.d):1;
+  dr(Math.max(0.15,Math.min(1,r)));
 }
 function rD(n,a){const c=document.getElementById('pDt');
   c.innerHTML=Array.from({length:n},(_,i)=>{let cl='';if(i<a)cl=' dn';else if(i===a)cl=' act';return`<div class="${cl}"></div>`;}).join('');}
-
 function dr(sp){
   const c=document.getElementById('pc'),ctx=c.getContext('2d');
   const w=c.width,h=c.height,cx=w/2,cy=h/2;ctx.clearRect(0,0,w,h);
   const aa=30+60*sp,la=15+40*sp;
-  ctx.beginPath();ctx.arc(cx,cy,95,0,Math.PI*2);ctx.fillStyle='rgba(79,195,247,0.04)';ctx.fill();
-  const hy=cy-46-9*(1-sp);ctx.save();
-  ctx.beginPath();ctx.ellipse(cx,hy+30,13,23,0,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,hy,16,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
-  ctx.fillStyle='#0f1923';ctx.beginPath();ctx.arc(cx-5,hy-2,2,0,Math.PI*2);ctx.arc(cx+5,hy-2,2,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(cx,hy+4,5,0.1*Math.PI,0.9*Math.PI);ctx.strokeStyle='#0f1923';ctx.lineWidth=1.5;ctx.stroke();
-  const sy=hy+17;ctx.strokeStyle='#4fc3f7';ctx.lineWidth=7;ctx.lineCap='round';
-  let lx=cx-12-65*Math.cos((90-aa)*Math.PI/180)*sp;let ly=sy-8+65*Math.sin((90-aa)*Math.PI/180)*sp;
-  ctx.beginPath();ctx.moveTo(cx-12,sy);ctx.lineTo(lx,ly);ctx.stroke();
-  let rx=cx+12+65*Math.cos((90-aa)*Math.PI/180)*sp;let ry=sy-8+65*Math.sin((90-aa)*Math.PI/180)*sp;
-  ctx.beginPath();ctx.moveTo(cx+12,sy);ctx.lineTo(rx,ry);ctx.stroke();
-  const hy2=hy+50;lx=cx-6-45*Math.cos((90-la)*Math.PI/180)*sp;ly=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
-  ctx.beginPath();ctx.moveTo(cx-6,hy2);ctx.lineTo(lx,ly);ctx.stroke();
-  rx=cx+6+45*Math.cos((90-la)*Math.PI/180)*sp;ry=hy2+45*Math.sin((90-la)*Math.PI/180)*sp;
-  ctx.beginPath();ctx.moveTo(cx+6,hy2);ctx.lineTo(rx,ry);ctx.stroke();ctx.restore();
+  ctx.beginPath();ctx.arc(cx,cy,72,0,Math.PI*2);ctx.fillStyle='rgba(79,195,247,0.04)';ctx.fill();
+  const hy=cy-42-8*(1-sp);ctx.save();
+  ctx.beginPath();ctx.ellipse(cx,hy+26,10,18,0,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,hy,13,0,Math.PI*2);ctx.fillStyle='#4fc3f7';ctx.fill();
+  ctx.fillStyle='#0f1923';ctx.beginPath();ctx.arc(cx-4,hy,1.8,0,Math.PI*2);ctx.arc(cx+4,hy,1.8,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,hy+4,4,0.1*Math.PI,0.9*Math.PI);ctx.strokeStyle='#0f1923';ctx.lineWidth=1.3;ctx.stroke();
+  const sy=hy+14;ctx.strokeStyle='#4fc3f7';ctx.lineWidth=6;ctx.lineCap='round';
+  let lx=cx-10-50*Math.cos((90-aa)*Math.PI/180)*sp;let ly=sy-6+50*Math.sin((90-aa)*Math.PI/180)*sp;
+  ctx.beginPath();ctx.moveTo(cx-10,sy);ctx.lineTo(lx,ly);ctx.stroke();
+  let rx=cx+10+50*Math.cos((90-aa)*Math.PI/180)*sp;let ry=sy-6+50*Math.sin((90-aa)*Math.PI/180)*sp;
+  ctx.beginPath();ctx.moveTo(cx+10,sy);ctx.lineTo(rx,ry);ctx.stroke();
+  const hy2=hy+44;lx=cx-5-36*Math.cos((90-la)*Math.PI/180)*sp;ly=hy2+36*Math.sin((90-la)*Math.PI/180)*sp;
+  ctx.beginPath();ctx.moveTo(cx-5,hy2);ctx.lineTo(lx,ly);ctx.stroke();
+  rx=cx+5+36*Math.cos((90-la)*Math.PI/180)*sp;ry=hy2+36*Math.sin((90-la)*Math.PI/180)*sp;
+  ctx.beginPath();ctx.moveTo(cx+5,hy2);ctx.lineTo(rx,ry);ctx.stroke();ctx.restore();
 }
-
 document.getElementById('pBtn').addEventListener('click',()=>{
   if(!St.ex)return;
   if(St.st===-1){St.st=0;St.cy=1;uP();if(St.ss[0]&&St.ss[0].d>0)sT();return;}
