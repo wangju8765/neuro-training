@@ -45,7 +45,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .ex .tm.done{color:#4fc3f7;}
 
 /* 标签按钮 */
-.tags{display:flex;gap:.375rem;margin-top:.875rem;overflow-x:auto;}
+.tags{display:flex;gap:.375rem;margin-bottom:.625rem;overflow-x:auto;}
 .tags::-webkit-scrollbar{display:none;}
 .tagb{flex-shrink:0;padding:.4375rem .875rem;border-radius:1.25rem;font-size:.8125rem;background:#1a2b3c;border:1px solid #1f3348;color:#8aa0b8;cursor:pointer;white-space:nowrap;}
 .tagb:active{background:#2d4c6e;}
@@ -135,16 +135,16 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
       <div class="sub" id="pgT">点击练习开始</div>
     </div>
 
-    <div class="plan-l" id="plT">☀️ 早晨套餐</div>
-
-    <div class="el" id="exL"></div>
-
     <div class="tags" id="tgS">
       <div class="tagb ac" data-i="0" onclick="swT(0)">☀️ 早晨</div>
       <div class="tagb" data-i="1" onclick="swT(1)">🌤️ 上午</div>
       <div class="tagb" data-i="2" onclick="swT(2)">🏃 下午</div>
       <div class="tagb" data-i="3" onclick="swT(3)">🌙 睡前</div>
     </div>
+
+    <div class="plan-l" id="plT">☀️ 早晨</div>
+
+    <div class="el" id="exL"></div>
 
     <div class="us">
       <div class="ut">💡 使用说明</div>
