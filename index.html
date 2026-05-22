@@ -15,8 +15,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .page.active{display:flex;}
 
 /* ===== 首页 ===== */
-.scroll{flex:1;overflow-y:auto;padding:10px 14px 20px;}
-.scroll{padding:16px 20px 32px;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px 32px;}
 .title{font-size:26px;font-weight:700;margin-bottom:4px;}
 .hello{font-size:15px;color:#7a94b0;margin-bottom:16px;}
 
@@ -61,17 +60,17 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .top .ri{color:#7a94b0;font-size:14px;min-width:40px;text-align:right;}
 
 /* ===== 跟练页 ===== */
-.p-inner{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px;gap:10px;overflow-y:auto;}
+.p-inner{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;overflow-x:hidden;}
 
 .ei{text-align:center;margin-bottom:4px;flex-shrink:0;}
 .ei .en{font-size:22px;font-weight:700;}
 .ei .inf{font-size:13px;color:#5a7a98;}
 
-.sn{font-size:13px;color:#5a7a98;flex-shrink:0;}
+.sn{font-size:13px;color:#5a7a98;flex-shrink:0;margin-bottom:12px;}
 .sn .st{color:#c8d6e5;margin-left:4px;}
 
 /* 画布 */
-.cv{width:200px;height:200px;background:#1a2b3c;border-radius:14px;position:relative;flex-shrink:0;}
+.cv{width:200px;height:200px;background:#1a2b3c;border-radius:14px;position:relative;flex-shrink:0;margin-bottom:8px;}
 #pc{width:100%;height:100%;display:block;}
 .cv .tm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
 .cv .tm .n{font-size:36px;font-weight:200;color:#4fc3f7;line-height:1;}
@@ -84,11 +83,14 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .dots .dn{background:#a5d6a7;}
 
 /* 步骤卡片 */
-.sc{width:100%;max-width:340px;margin-top:auto;background:#1a2b3c;border-radius:12px;padding:14px 16px;border:1px solid #1f3348;font-size:13px;color:#8aa0b8;flex-shrink:0;}
+.sc{width:100%;background:#1a2b3c;border-radius:12px;padding:14px 16px;border:1px solid #1f3348;font-size:13px;color:#8aa0b8;flex-shrink:0;}
 .sc .tg2{display:inline-block;background:#2d4c6e;padding:2px 8px;border-radius:4px;margin-top:4px;font-size:12px;color:#a0c4e8;}
 
+/* 底部区域（卡片+按钮，一起推到底部） */
+.bot{width:100%;max-width:340px;margin-top:auto;display:flex;flex-direction:column;gap:8px;flex-shrink:0;padding-bottom:8px;}
+
 /* 按钮 */
-.act{width:100%;max-width:340px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;padding-bottom:8px;}
+.act{width:100%;display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
 .act .r1{display:flex;gap:8px;}
 .act .r1 .b{flex:1;padding:15px;border:none;border-radius:12px;font-size:15px;font-weight:600;text-align:center;cursor:pointer;transition:.12s;}
 .act .r1 .b:active{transform:scale(.97);}
@@ -171,14 +173,15 @@ body{overflow:hidden;overscroll-behavior:none;}
 
     <div class="dots" id="pDt"></div>
 
-    <div class="sc" id="pSc"></div>
-
-    <div class="act">
-      <div class="r1">
-        <button class="b bs" onclick="resetP()">🔄 重来</button>
-        <button class="b bp" id="pBtn" disabled>▶ 开始</button>
+    <div class="bot">
+      <div class="sc" id="pSc"></div>
+      <div class="act">
+        <div class="r1">
+          <button class="b bs" onclick="resetP()">🔄 重来</button>
+          <button class="b bp" id="pBtn" disabled>▶ 开始</button>
+        </div>
+        <button class="bo" onclick="doneP()">✅ 我做完了（跳过跟练）</button>
       </div>
-      <button class="bo" onclick="doneP()">✅ 我做完了（跳过跟练）</button>
     </div>
 
   </div>
