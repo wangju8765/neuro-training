@@ -133,7 +133,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
     <div class="sec-title">
       <span id="planTitle">☀️ 早晨套餐</span>
-      <span class="more" onclick="switchPlan()">切换 ▸</span>
+      <span class="more" onclick="switchToPlan(0)">切换 ▸</span>
     </div>
     <div class="ex-list" id="exList"></div>
 
@@ -536,7 +536,7 @@ function finishEx() {
     : '继续加油，还有练习等着你 💪';
   const btns = document.getElementById('overBtns');
   btns.innerHTML = `<button class="btn btn-sec" onclick="closeOverlay(); goHome();">🏠 首页</button>
-    <button class="btn btn-pri" onclick="closeOverlay(); goHome();">▶ 继续</button>`;
+    <button class="btn btn-pri" onclick="closeOverlay(); goHome();">📋 继续任务</button>`;
 }
 
 function resetPractice() {
