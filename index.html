@@ -137,6 +137,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
       <div class="card-top"><span>今日完成</span><span class="n" id="pgN">0 / 3</span></div>
       <div class="pbar"><div class="f" id="pgB" style="width:0%"></div></div>
       <div class="card-sub" id="pgS">点击练习开始</div>
+      <div style="font-size:11px;color:#5a7a98;margin-top:6px;" id="pgDoneText"></div>
     </div>
 
     <div class="planh">
@@ -146,15 +147,16 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
     <div class="el" id="exL"></div>
 
+    <div class="us">
+      <div class="ut">💡 使用说明</div>
+      <div class="ud">每个练习可跟练（有步骤引导），也可自由做（做完点"我做完了"）。熟练后无需每次都跟练。</div>
+    </div>
+
     <div class="card" style="padding:10px;">
       <div class="card-top" style="margin-bottom:5px;"><span>本周</span></div>
       <div class="wl" id="wkL"></div>
     </div>
 
-    <div class="us" id="usBox">
-      <div class="ut">💡 使用说明</div>
-      <div class="ud">每个练习可跟练（有步骤引导），也可自由做（做完点"我做完了"）。熟练后无需每次都跟练。</div>
-    </div>
   </div>
 </div>
 
@@ -277,7 +279,7 @@ function rH() {
     return`<div class="ex ${dn?'done':''}" onclick="sX('${id}')">
       <div class="ck">${dn?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="in"><div class="nm">${x.n}</div><div class="sub">${x.no||x.c} · ${x.t}</div></div>
-      <div class="tm">${dn?'✅':x.t}</div></div>`;
+      <div class="tm">${dn?'✅ 已完成':(x.t)}</div></div>`;
   }).join('');
   upPr();upW();
 }
@@ -287,6 +289,8 @@ function upPr() {
   document.getElementById('pgN').textContent=`${d} / ${t}`;
   document.getElementById('pgB').style.width=`${t>0?d/t*100:0}%`;
   document.getElementById('pgS').textContent=d===t?'🎉 全部完成！':'点击练习开始';
+  const doneNames=p.ids.filter(id=>St.dn.includes(id)).map(id=>{const x=ex(id);return x?x.ic+x.n:'';}).filter(Boolean);
+  document.getElementById('pgDoneText').textContent=doneNames.length?'✅ '+doneNames.join(' · '):'';
 }
 
 function upW() {
@@ -304,6 +308,8 @@ function sX(id) {
   document.getElementById('pNote').textContent=(x.no?x.no+' · ':'')+x.c;
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pP').classList.add('active');
+  // 更新套餐进度
+  upPlanProgress();
   uP();
 }
 
@@ -358,12 +364,23 @@ function ad(){St.st++;St.pl=false;
 // ===== 完成 =====
 function doneP(){fEx();}
 
+function upPlanProgress(){
+  const p=PL[St.pi];const d=p.ids.filter(id=>St.dn.includes(id)).length;
+  const doneIdx = p.ids.indexOf(St.ex.i);
+  document.getElementById('pRnd').textContent = `${d}/${p.ids.length}`;
+}
+
 function fEx(){
   const id=St.ex.i;if(!St.dn.includes(id))St.dn.push(id);
   svD();const p=PL[St.pi];const ad=p.ids.every(xid=>St.dn.includes(xid));
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent=`${St.ex.ic} ${St.ex.n} 完成！`;
   document.getElementById('olS').textContent=ad?'🎉 今日全部完成！茂懿真棒！':'继续加油，还有练习等着你 💪';
+  // 完成弹窗详情
+  const p=PL[St.pi];
+  const det=p.ids.map(id=>{const x=ex(id);const dn=St.dn.includes(id);return (dn?'✅':'⬜')+' '+(x?x.ic+x.n:'')}).join('<br>');
+  const d=p.ids.filter(id=>St.dn.includes(id)).length;
+  document.getElementById('olDetail').innerHTML='今日进度：'+d+'/'+p.ids.length+'<br>'+det;
 }
 
 function resetP(){clOl();if(St.ti){clearInterval(St.ti);St.ti=null;}if(St.ex){St.st=-1;St.cy=1;St.pl=false;St.rm=0;uP();}}
