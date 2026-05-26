@@ -145,11 +145,25 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .dc .bx .cr{display:flex;gap:.625rem;}
 .dc .bx .cr .b{flex:1;padding:.75rem;border:none;border-radius:.625rem;font-size:.9375rem;font-weight:600;cursor:pointer;}
 
+/* ===== 时段安排编辑弹窗 ===== */
+.se{display:none;position:fixed;inset:0;z-index:115;align-items:center;justify-content:center;background:rgba(245,247,250,.92);}
+.se.show{display:flex;}
+.se .bx{background:#ffffff;border-radius:1rem;padding:1.5rem;border:1px solid #e0e6ed;max-width:20rem;width:90%;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:85dvh;display:flex;flex-direction:column;}
+.se .bx .st{font-size:1.125rem;font-weight:600;margin-bottom:.5rem;text-align:center;flex-shrink:0;}
+.se .bx .ss{font-size:.8125rem;color:#6a7a90;margin-bottom:.75rem;text-align:center;flex-shrink:0;}
+.se .bx .sl{flex:1;overflow-y:auto;margin-bottom:.75rem;}
+.se .bx .sl .si{display:flex;align-items:center;gap:.625rem;padding:.5rem .625rem;border-radius:.5rem;margin-bottom:.25rem;cursor:pointer;transition:.12s;}
+.se .bx .sl .si:active{background:#f0f4f8;}
+.se .bx .sl .si .cb{width:1.25rem;height:1.25rem;border-radius:50%;border:2px solid #c8d6e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.625rem;color:#4fc3f7;transition:.12s;}
+.se .bx .sl .si.chk .cb{border-color:#4fc3f7;background:rgba(79,195,247,.1);}
+.se .bx .sl .si .ic{font-size:1rem;width:1.375rem;text-align:center;flex-shrink:0;}
+.se .bx .sl .si .nn{font-size:.875rem;flex:1;}
+.se .bx .sl .si .tp{font-size:.6875rem;background:#e8f0fe;color:#4a7a9a;padding:.0625rem .375rem;border-radius:.25rem;flex-shrink:0;}
+.se .bx .cr{display:flex;gap:.625rem;flex-shrink:0;}
+.se .bx .cr .b{flex:1;padding:.75rem;border:none;border-radius:.625rem;font-size:.9375rem;font-weight:600;cursor:pointer;}
+
 /* ===== 管理页 ===== */
-.mg-tabs{display:flex;gap:.375rem;margin-bottom:.875rem;}
-.mg-tab{flex:1;padding:.625rem;border-radius:.5rem;text-align:center;background:#ffffff;border:1px solid #e0e6ed;color:#5a7a98;font-size:.8125rem;cursor:pointer;transition:.12s;}
-.mg-tab:active{background:#f0f4f8;}
-.mg-tab.ac{background:#e3f2fd;border-color:#4fc3f7;color:#4fc3f7;}
+.mg-section-title{font-size:.9375rem;font-weight:600;color:#5a7a98;margin-bottom:.625rem;margin-top:1rem;}
 
 /* 管理页 - 项目列表 */
 .mg-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.875rem;}
@@ -162,20 +176,17 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .mg-item .mg-acts span{font-size:.8125rem;padding:.25rem .375rem;border-radius:.25rem;cursor:pointer;opacity:.6;transition:.12s;}
 .mg-item .mg-acts span:active{opacity:1;background:#f0f4f8;}
 
-/* 管理页 - 分类管理 */
-.mg-cat{display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border-radius:.5rem;background:#ffffff;border:1px solid #e0e6ed;margin-bottom:.375rem;}
-.mg-cat .ic{font-size:1rem;width:1.25rem;text-align:center;}
-.mg-cat .n{flex:1;font-size:.875rem;}
-.mg-cat .del{font-size:.75rem;padding:.25rem .375rem;border-radius:.25rem;cursor:pointer;opacity:.5;transition:.12s;color:#ef5350;}
-.mg-cat .del:active{opacity:1;background:#fde8e8;}
-
-.mg-add-cat{display:flex;gap:.5rem;margin-top:.625rem;}
-.mg-add-cat .mg-input{flex:1;padding:.625rem .75rem;border-radius:.5rem;border:1px solid #c8d6e0;background:#f5f7fa;color:#2c3e50;font-size:.875rem;outline:none;}
-.mg-add-cat .mg-input:focus{border-color:#4fc3f7;box-shadow:0 0 0 2px rgba(79,195,247,.15);}
-.mg-add-cat .mg-input::placeholder{color:#9aabba;}
-.mg-add-cat .ic-t{max-width:3rem;text-align:center;}
-.mg-add-cat .add-btn{padding:.625rem 1rem;border:none;border-radius:.5rem;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;font-size:.875rem;font-weight:600;cursor:pointer;flex-shrink:0;}
-.mg-add-cat .add-btn:active{transform:scale(.97);}
+/* 管理页 - 时段安排 */
+.slots-overview{display:flex;flex-direction:column;gap:.625rem;margin-bottom:.875rem;}
+.slot-card{border-radius:.625rem;background:#ffffff;border:1px solid #e0e6ed;padding:.75rem .875rem;}
+.slot-card .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.375rem;}
+.slot-card .hdr .icn{font-size:1rem;width:1.5rem;text-align:center;flex-shrink:0;}
+.slot-card .hdr .nm{font-size:.9375rem;font-weight:600;flex:1;margin-left:.375rem;}
+.slot-card .hdr .edit-btn{font-size:.75rem;padding:.25rem .5rem;border-radius:.375rem;border:none;background:#e3f2fd;color:#4fc3f7;cursor:pointer;font-weight:600;transition:.12s;}
+.slot-card .hdr .edit-btn:active{background:#bbdefb;}
+.slot-card .items{display:flex;flex-wrap:wrap;gap:.375rem;}
+.slot-card .items .tag{font-size:.75rem;background:#f0f4f8;color:#5a7a98;padding:.1875rem .5rem;border-radius:.3125rem;white-space:nowrap;}
+.slot-card .empty{font-size:.75rem;color:#9aabba;padding:.125rem 0;}
 
 /* 空状态 */
 .empty-state{text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;line-height:1.6;}
@@ -240,7 +251,7 @@ select.me-input{appearance:auto;}
 
     <div class="us">
       <div class="ut">💡 使用说明</div>
-      每个打卡项目可设为"跟练型"（有步骤引导）或"纯打卡"（一键完成）。你可以在管理页创建自己的打卡项目。
+      每个打卡项目可设为"跟练型"（有步骤引导）或"纯打卡"（一键完成）。你可以在管理页创建自己的打卡项目，并在时段安排中分配到不同时段。
     </div>
   </div>
 </div>
@@ -288,26 +299,14 @@ select.me-input{appearance:auto;}
     <span class="ri"></span>
   </div>
   <div class="scroll">
-    <div class="mg-tabs">
-      <span class="mg-tab ac" data-tab="items" onclick="swMg('items')">📋 打卡项目</span>
-      <span class="mg-tab" data-tab="cats" onclick="swMg('cats')">🏷️ 分类管理</span>
-    </div>
-
     <!-- 项目列表 -->
-    <div id="mgItems">
-      <div class="mg-list" id="mgItemList"></div>
-      <button class="bo" onclick="openEditor()">➕ 新建打卡项目</button>
-    </div>
+    <div class="mg-section-title">📋 打卡项目</div>
+    <div class="mg-list" id="mgItemList"></div>
+    <button class="bo" onclick="openEditor()">➕ 新建打卡项目</button>
 
-    <!-- 分类管理 -->
-    <div id="mgCats" style="display:none">
-      <div id="mgCatList"></div>
-      <div class="mg-add-cat">
-        <input class="mg-input ic-t" id="catIc" placeholder="📌" maxlength="2">
-        <input class="mg-input" id="catN" placeholder="分类名称">
-        <button class="add-btn" onclick="addCat()">添加</button>
-      </div>
-    </div>
+    <!-- 时段安排概览 -->
+    <div class="mg-section-title">📅 时段安排</div>
+    <div class="slots-overview" id="slotOverview"></div>
   </div>
 </div>
 
@@ -327,10 +326,6 @@ select.me-input{appearance:auto;}
       <div class="me-row">
         <label>名称</label>
         <input class="me-input" id="meN" placeholder="打卡项目名称">
-      </div>
-      <div class="me-row">
-        <label>分类</label>
-        <select class="me-input" id="meC"></select>
       </div>
       <div class="me-row">
         <label>类型</label>
@@ -411,79 +406,103 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
+<!-- ========== 时段安排弹窗 ========== -->
+<div class="se" id="se">
+  <div class="bx">
+    <div class="st" id="seT">☀️ 上午 · 安排项目</div>
+    <div class="ss">勾选要安排到此时段的项目</div>
+    <div class="sl" id="seL"></div>
+    <div class="cr">
+      <button class="b bs" onclick="clSE()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
+      <button class="b bp" onclick="svSE()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== 默认数据 =====
 const DEF_ITEMS = [
-  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   c:'morning', no:'洗漱时做', type:'routine',
+  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   no:'洗漱时做', type:'routine',
     s:[{t:'冷水拍脸颊眼周',   h:'',   d:8},{t:'冷水拍脖子前侧',   h:'',   d:6},{t:'深吸气缓慢呼出',  h:'',   d:8},{t:'深呼吸第二次',    h:'',   d:8},{t:'深呼吸第三次',    h:'',   d:8}]},
-  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  dur:2,   c:'morning', type:'routine',
+  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'坐直闭眼',         h:'',   d:0},{t:'深吸一口气',        h:'',   d:4},{t:'呼气时嗡嗡嗡——',   h:'感受震动', d:8},{t:'深呼吸再来一次',   h:'',   d:4},{t:'呼气嗡——',  h:'',   d:8},{t:'最后一次深呼吸',   h:'',   d:4},{t:'呼气嗡——睁眼',     h:'',   d:10}]},
-  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  dur:2,   c:'morning', type:'routine',
+  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'抬右手时抬左膝',   h:'慢慢来',d:15},{t:'抬左手时抬右膝',   h:'',   d:15},{t:'加快速度交替',    h:'',   d:15},{t:'放慢最后5次',    h:'',   d:10}]},
-  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  dur:2,   c:'am',      type:'routine', cy:5,
+  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  dur:2,   type:'routine', cy:5,
     s:[{t:'仰卧躺平手脚展开',  h:'',   d:0},{t:'慢慢吸气手脚向外展开',h:'像海星张开', d:4},{t:'屏住呼吸保持展开',  h:'',   d:2},{t:'慢慢呼气手脚收回胸前',h:'抱胸弯腿', d:6},{t:'放松休息一下',     h:'',   d:3}]},
-  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  dur:2,   c:'pm',      type:'routine',
+  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'仰卧手臂放两侧',   h:'脊椎贴地',d:0},{t:'呼气手臂滑向头顶',  h:'',   d:6},{t:'吸气手臂滑回',     h:'',   d:6},{t:'重复：呼上吸下',   h:'',   d:24},{t:'最后一次放松',    h:'',   d:6}]},
-  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  dur:2,   c:'pm',      type:'routine', no:'需瑜伽球',
+  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  dur:2,   type:'routine', no:'需瑜伽球',
     s:[{t:'趴在球上手脚撑地', h:'',   d:0},{t:'轻轻前后滚',        h:'',   d:20},{t:'试着举手平衡',     h:'',   d:16},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  dur:2,   c:'pm',      type:'routine',
+  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'闭眼原地转3圈',   h:'',   d:12},{t:'停下来看固定点',     h:'',   d:8},{t:'再闭眼转3圈',    h:'',   d:10},{t:'看固定点',         h:'',   d:8},{t:'深呼吸2次',        h:'',   d:6}]},
-  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  dur:2,   c:'am',      type:'routine',
+  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'叉腰左脚抬起',     h:'',   d:15},{t:'换右脚',            h:'',   d:15},{t:'左脚闭眼试试',     h:'',   d:10},{t:'右脚闭眼',         h:'',   d:10},{t:'放松抖抖腿',       h:'',   d:6}]},
-  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  dur:2,   c:'pm',      type:'routine', no:'有蹦床更佳',
+  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  dur:2,   type:'routine', no:'有蹦床更佳',
     s:[{t:'原地自由弹跳',     h:'',   d:20},{t:'跳高摸墙',          h:'',   d:20},{t:'边跳边拍手',       h:'',   d:15},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   dur:0.5, c:'night',   type:'routine',
+  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   dur:0.5, type:'routine',
     s:[{t:'用力打一个真正的哈欠',h:'假打也能变成真打',d:0},{t:'捏住鼻子闭嘴呼气',h:'不出气', d:8},{t:'松开深呼吸一次',   h:'',   d:6},{t:'最后一次深呼吸',   h:'',   d:6}]},
-  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   dur:0.5, c:'night',   type:'routine',
+  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   dur:0.5, type:'routine',
     s:[{t:'从耳朵上端向下轻拉',h:'',   d:8},{t:'换另一只耳朵',      h:'',   d:8},{t:'两只耳朵同时拉',   h:'',   d:6},{t:'揉一揉放松',       h:'',   d:4}]},
-  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  dur:1,   c:'night',   type:'routine',
+  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  dur:1,   type:'routine',
     s:[{t:'站起来从手开始甩', h:'',   d:8},{t:'手臂一起甩',        h:'',   d:8},{t:'全身都抖起来',     h:'',   d:12},{t:'慢慢停下深呼吸',   h:'',   d:6}]},
-  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  dur:1,   c:'night',   type:'routine',
+  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  dur:1,   type:'routine',
     s:[{t:'张嘴打一个大哈欠', h:'',   d:6},{t:'用力吞咽口水',       h:'',   d:4},{t:'伸个懒腰',         h:'',   d:6},{t:'再打哈欠再吞咽',   h:'',   d:6},{t:'深呼吸放松',       h:'',   d:6}]},
-  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  dur:2,   c:'am',      type:'routine',
+  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  dur:2,   type:'routine',
     s:[{t:'拇指依次碰食中无名小指',h:'右手先做', d:12},{t:'换左手',            h:'',   d:12},{t:'左右手同时',       h:'',   d:12},{t:'闭眼再做',         h:'',   d:12},{t:'抖抖手放松',       h:'',   d:4}]},
-  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  dur:2,   c:'am',      type:'routine', no:'需橡皮筋',
+  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  dur:2,   type:'routine', no:'需橡皮筋',
     s:[{t:'指尖套橡皮筋',     h:'',   d:0},{t:'拇指食指撑开',       h:'',   d:12},{t:'拇指中指撑开',     h:'',   d:12},{t:'拇指无名指撑开',   h:'',   d:12},{t:'拇指小指撑开',     h:'',   d:12},{t:'换左手重复',       h:'',   d:20}]},
 ];
 
-const DEF_CATS = [
-  {i:'morning',ic:'☀️', n:'早晨'},
-  {i:'am',     ic:'🌤️', n:'上午'},
-  {i:'pm',     ic:'🏃',  n:'下午'},
-  {i:'night',  ic:'🌙', n:'睡前'},
+const DEF_SLOTS = [
+  { i:'morning', ic:'☀️', n:'上午', ids:['cold','bee','crawl','starfish','oneLeg','finger'] },
+  { i:'afternoon', ic:'🌤️', n:'下午', ids:['snow','ball','spin','bounce'] },
+  { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish'] }
 ];
 
 // ===== 数据管理 =====
-let DC = {}; // { cats: [], items: [], settings: {userName: ''} }
+let DC = {}; // { slots: [], items: [], settings: {userName: ''} }
 
 function initDC(){
-  const catsRaw = localStorage.getItem('dc_categories');
-  if(!catsRaw){
+  const itemsRaw = localStorage.getItem('dc_items');
+  if(!itemsRaw){
     // First visit: import defaults
-    DC.cats = JSON.parse(JSON.stringify(DEF_CATS));
+    DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
     DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
     DC.settings = {userName: '小伙伴'};
     flushDC();
     return;
   }
-  DC.cats = JSON.parse(catsRaw);
-  DC.items = JSON.parse(localStorage.getItem('dc_items') || '[]');
+  DC.items = JSON.parse(itemsRaw);
   try{ DC.settings = JSON.parse(localStorage.getItem('dc_settings') || '{}'); }catch(e){ DC.settings = {}; }
   if(!DC.settings.userName) DC.settings.userName = '小伙伴';
+  // Load slots
+  const slotsRaw = localStorage.getItem('dc_slots');
+  if(slotsRaw){
+    try{ DC.slots = JSON.parse(slotsRaw); }catch(e){ DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS)); }
+  } else {
+    DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
+  }
 }
 
 function flushDC(){
-  localStorage.setItem('dc_categories', JSON.stringify(DC.cats));
   localStorage.setItem('dc_items', JSON.stringify(DC.items));
+  localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
   localStorage.setItem('dc_settings', JSON.stringify(DC.settings));
 }
 
-function getItemsByCat(catId){
-  return DC.items.filter(x => x.c === catId);
+function svSlots(){
+  localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
 }
 
-function getCat(id){
-  return DC.cats.find(c => c.i === id);
+function getSlot(id){
+  return DC.slots.find(s => s.i === id);
+}
+
+function getSlotItems(slotId){
+  const slot = getSlot(slotId);
+  if(!slot) return [];
+  return slot.ids.map(id => DC.items.find(x => x.i === id)).filter(Boolean);
 }
 
 function getItem(id){
@@ -524,41 +543,39 @@ function rH(){
   const grTxt = document.getElementById('grTxt');
   grTxt.textContent = '🌅 早上好，' + (DC.settings.userName || '小伙伴');
 
-  // Render tags
+  // Render tags (fixed three slots)
   const tgS = document.getElementById('tgS');
-  tgS.innerHTML = DC.cats.map(c =>
-    `<div class="tagb ${c.i===St.pi?'ac':''}" data-i="${c.i}" onclick="swT('${c.i}')">${c.ic} ${c.n}</div>`
+  tgS.innerHTML = DC.slots.map(s =>
+    `<div class="tagb ${s.i===St.pi?'ac':''}" data-i="${s.i}" onclick="swT('${s.i}')">${s.ic} ${s.n}</div>`
   ).join('');
-  if(DC.cats.length===0){
-    tgS.innerHTML = '<div style="color:#6a7a90;font-size:.8125rem;padding:.25rem 0;">暂无分类，请前往管理页创建</div>';
-  }
 
-  // Render items
-  const items = getItemsByCat(St.pi);
+  // Render items for current slot
+  const items = getSlotItems(St.pi);
   const l = document.getElementById('exL');
   l.innerHTML = items.map(x => {
+    if(!x) return '';
     const done = Dn.includes(x.i);
     const tpLabel = x.type==='simple' ? '纯打卡' : '跟练型';
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
-      <div class="inf">${x.n} <span class="s">${x.no||(getCat(x.c)||{}).n||''} · ${x.dur!=null?x.dur+'分钟':x.t||''}</span></div>
+      <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
       <span class="tp">${tpLabel}</span>
       <div class="tm ${done?'done':''}">${done?'✅ 已完成':(x.dur!=null?x.dur+'分钟':x.t||'')}</div></div>`;
   }).join('');
   if(items.length===0){
-    l.innerHTML = '<div class="empty-state">这个分类下还没有打卡项目<br><span style="font-size:.75rem;">去管理页创建或切换到其他分类</span></div>';
+    l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去管理页的「时段安排」添加</span></div>';
   }
 
   upPr();
 }
 
 function upPr(){
-  const items = getItemsByCat(St.pi);
+  const items = getSlotItems(St.pi);
   const t = items.length;
-  const d = items.filter(x => Dn.includes(x.i)).length;
+  const d = items.filter(x => x && Dn.includes(x.i)).length;
   document.getElementById('pgN').textContent = `${d} / ${t}`;
   document.getElementById('pgB').style.width = `${t>0 ? d/t*100 : 0}%`;
-  const doneItems = items.filter(x => Dn.includes(x.i)).map(x => x.ic + x.n).join(' · ');
+  const doneItems = items.filter(x => x && Dn.includes(x.i)).map(x => x.ic + x.n).join(' · ');
   document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
 }
 
@@ -573,12 +590,12 @@ function sX(id){
     svDn();
     rH();
     // Show completion popup
-    const allDone = getItemsByCat(St.pi).every(it => Dn.includes(it.i));
+    const allDone = getSlotItems(St.pi).every(it => it && Dn.includes(it.i));
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
     document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
-    const det = getItemsByCat(St.pi).map(it => (Dn.includes(it.i)?'✅':'⬜')+' '+it.ic+it.n).join('<br>');
-    document.getElementById('olD').innerHTML = '今日进度：' + getItemsByCat(St.pi).filter(it=>Dn.includes(it.i)).length + '/' + getItemsByCat(St.pi).length + '<br>' + det;
+    const det = getSlotItems(St.pi).map(it => (Dn.includes(it.i)?'✅':'⬜')+' '+it.ic+it.n).join('<br>');
+    document.getElementById('olD').innerHTML = '今日进度：' + getSlotItems(St.pi).filter(it=>it && Dn.includes(it.i)).length + '/' + getSlotItems(St.pi).length + '<br>' + det;
     return;
   }
 
@@ -598,7 +615,7 @@ function sX(id){
   document.getElementById('pBtn').style.cursor = 'pointer';
 
   document.getElementById('pEn').textContent = x.ic + ' ' + x.n;
-  document.getElementById('pIf').textContent = (getCat(x.c)||{}).n||'' + ' · 约' + (x.dur!=null?x.dur+'分钟':x.t||'');
+  document.getElementById('pIf').textContent = '约' + (x.dur!=null?x.dur+'分钟':x.t||'');
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pP').classList.add('active');
   uPpd();
@@ -606,8 +623,8 @@ function sX(id){
 }
 
 function uPpd(){
-  const items = getItemsByCat(St.pi);
-  const d = items.filter(it => Dn.includes(it.i)).length;
+  const items = getSlotItems(St.pi);
+  const d = items.filter(it => it && Dn.includes(it.i)).length;
   document.getElementById('pPd').textContent = d+'/'+items.length;
 }
 
@@ -680,13 +697,13 @@ function fEx(){
   const id = St.ex.i;
   if(!Dn.includes(id)) Dn.push(id);
   svDn();
-  const items = getItemsByCat(St.pi);
-  const allDone = items.every(x => Dn.includes(x.i));
+  const items = getSlotItems(St.pi);
+  const allDone = items.every(x => x && Dn.includes(x.i));
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent = `${St.ex.ic} ${St.ex.n} 完成！`;
   document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
   const det = items.map(x => (Dn.includes(x.i)?'✅':'⬜')+' '+x.ic+x.n).join('<br>');
-  document.getElementById('olD').innerHTML = '今日进度：'+items.filter(x=>Dn.includes(x.i)).length+'/'+items.length+'<br>'+det;
+  document.getElementById('olD').innerHTML = '今日进度：'+items.filter(x=>x && Dn.includes(x.i)).length+'/'+items.length+'<br>'+det;
   // Reset button state for next time
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
@@ -776,28 +793,20 @@ function openMg(){
   rMg();
 }
 
-function swMg(tab){
-  document.querySelectorAll('.mg-tab').forEach(t => t.classList.toggle('ac', t.dataset.tab===tab));
-  document.getElementById('mgItems').style.display = tab==='items' ? 'block' : 'none';
-  document.getElementById('mgCats').style.display = tab==='cats' ? 'block' : 'none';
-  if(tab==='items') rMgItems();
-  else rMgCats();
-}
-
 function rMg(){
-  swMg('items');
+  rMgItems();
+  rSlotOverview();
 }
 
 function rMgItems(){
   const l = document.getElementById('mgItemList');
   l.innerHTML = DC.items.map(x => {
-    const cn = (getCat(x.c)||{}).n || '(无分类)';
     const tp = x.type==='simple' ? '纯打卡' : '跟练型';
     return `<div class="mg-item">
       <div class="ic">${x.ic}</div>
       <div class="inf">
         <div class="n">${x.n}</div>
-        <div class="det">${tp} · ${cn} · ${x.dur!=null?x.dur+'分钟':x.t||''}</div>
+        <div class="det">${tp} · ${x.dur!=null?x.dur+'分钟':x.t||''}</div>
       </div>
       <div class="mg-acts">
         <span onclick="openEditor('${x.i}')">✏️</span>
@@ -810,48 +819,20 @@ function rMgItems(){
   }
 }
 
-function rMgCats(){
-  const l = document.getElementById('mgCatList');
-  l.innerHTML = DC.cats.map(c => {
-    const cnt = DC.items.filter(x => x.c === c.i).length;
-    return `<div class="mg-cat">
-      <div class="ic">${c.ic}</div>
-      <div class="n">${c.n} <span style="font-size:.75rem;color:#7a8a9a;">(${cnt}项)</span></div>
-      <span class="del" onclick="delCat('${c.i}')">🗑️</span>
+function rSlotOverview(){
+  const l = document.getElementById('slotOverview');
+  l.innerHTML = DC.slots.map(s => {
+    const slotItems = getSlotItems(s.i);
+    const itemTags = slotItems.map(x => `<span class="tag">${x.ic} ${x.n}</span>`).join('');
+    return `<div class="slot-card">
+      <div class="hdr">
+        <span class="icn">${s.ic}</span>
+        <span class="nm">${s.n}</span>
+        <button class="edit-btn" onclick="openSE('${s.i}')">编辑安排</button>
+      </div>
+      <div class="items">${itemTags || '<span class="empty">暂未安排项目</span>'}</div>
     </div>`;
   }).join('');
-  if(DC.cats.length===0){
-    l.innerHTML = '<div class="empty-state">还没有分类，请添加</div>';
-  }
-}
-
-function addCat(){
-  const ic = document.getElementById('catIc').value.trim() || '📌';
-  const n = document.getElementById('catN').value.trim();
-  if(!n){ alert('请输入分类名称'); return; }
-  const id = 'cat_'+Date.now();
-  DC.cats.push({i:id, ic:ic, n:n});
-  flushDC();
-  document.getElementById('catIc').value = '';
-  document.getElementById('catN').value = '';
-  rMgCats();
-  rH();
-}
-
-function delCat(id){
-  const c = getCat(id);
-  if(!c) return;
-  const cnt = DC.items.filter(x => x.c === id).length;
-  const msg = cnt > 0 ? `删除分类「${c.n}」将同时删除其下 ${cnt} 个打卡项目` : `删除分类「${c.n}」`;
-  showDC('确认删除？', msg, ()=>{
-    DC.items = DC.items.filter(x => x.c !== id);
-    DC.cats = DC.cats.filter(x => x.i !== id);
-    flushDC();
-    if(St.pi === id) St.pi = DC.cats.length > 0 ? DC.cats[0].i : '';
-    rMgCats();
-    rMgItems();
-    rH();
-  });
 }
 
 function delItem(id){
@@ -859,10 +840,69 @@ function delItem(id){
   if(!x) return;
   showDC(`删除「${x.n}」？`, '此操作不可恢复', ()=>{
     DC.items = DC.items.filter(it => it.i !== id);
+    // Also remove from all slots
+    DC.slots.forEach(s => {
+      s.ids = s.ids.filter(i => i !== id);
+    });
     flushDC();
-    rMgItems();
+    rMg();
     rH();
   });
+}
+
+// ===== 时段安排弹窗 =====
+let seSlotId = null;
+
+function openSE(slotId){
+  seSlotId = slotId;
+  const slot = getSlot(slotId);
+  if(!slot) return;
+  document.getElementById('seT').textContent = slot.ic + ' ' + slot.n + ' · 安排项目';
+  renderSE();
+  document.getElementById('se').classList.add('show');
+}
+
+function clSE(){
+  document.getElementById('se').classList.remove('show');
+  seSlotId = null;
+}
+
+function renderSE(){
+  const l = document.getElementById('seL');
+  const slot = getSlot(seSlotId);
+  if(!slot) return;
+  l.innerHTML = DC.items.map(x => {
+    const chk = slot.ids.includes(x.i);
+    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
+    return `<div class="si ${chk?'chk':''}" onclick="tgSE('${x.i}')">
+      <div class="cb">${chk?'✓':''}</div>
+      <div class="ic">${x.ic}</div>
+      <div class="nn">${x.n}</div>
+      <span class="tp">${tp}</span>
+    </div>`;
+  }).join('');
+  if(DC.items.length===0){
+    l.innerHTML = '<div class="empty-state">还没有打卡项目<br><span style="font-size:.75rem;">先创建项目再来安排</span></div>';
+  }
+}
+
+function tgSE(id){
+  const slot = getSlot(seSlotId);
+  if(!slot) return;
+  const idx = slot.ids.indexOf(id);
+  if(idx > -1){
+    slot.ids.splice(idx, 1);
+  } else {
+    slot.ids.push(id);
+  }
+  renderSE();
+}
+
+function svSE(){
+  svSlots();
+  clSE();
+  rMg();
+  rH();
 }
 
 // ===== 项目编辑器 =====
@@ -873,16 +913,11 @@ function openEditor(id){
   const el = document.getElementById('meTitle');
   el.textContent = id ? '编辑打卡项目' : '新建打卡项目';
 
-  // Populate category dropdown
-  const sel = document.getElementById('meC');
-  sel.innerHTML = DC.cats.map(c => `<option value="${c.i}">${c.ic} ${c.n}</option>`).join('');
-
   if(id){
     const x = getItem(id);
     if(x){
       document.getElementById('meIc').value = x.ic || '';
       document.getElementById('meN').value = x.n || '';
-      document.getElementById('meC').value = x.c || (DC.cats[0]||{}).i || '';
       swType(x.type || 'simple');
       document.getElementById('meT').value = x.dur != null ? x.dur : '';
       document.getElementById('meNo').value = x.no || '';
@@ -892,7 +927,6 @@ function openEditor(id){
   } else {
     document.getElementById('meIc').value = '';
     document.getElementById('meN').value = '';
-    document.getElementById('meC').value = (DC.cats[0]||{}).i || '';
     swType('simple');
     document.getElementById('meT').value = '';
     document.getElementById('meNo').value = '';
@@ -907,7 +941,7 @@ function openEditor(id){
 function closeEditor(){
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pM').classList.add('active');
-  rMgItems();
+  rMg();
 }
 
 function swType(type){
@@ -966,7 +1000,6 @@ function rmStep(i){
 function saveItem(){
   const ic = document.getElementById('meIc').value.trim();
   const n = document.getElementById('meN').value.trim();
-  const c = document.getElementById('meC').value;
   const dur = parseFloat(document.getElementById('meT').value) || 1;
   const t = dur + '分钟';
   const no = document.getElementById('meNo').value.trim();
@@ -974,14 +1007,12 @@ function saveItem(){
   const type = document.querySelector('.me-type-btn.ac').dataset.t;
 
   if(!n){ alert('请输入名称'); return; }
-  if(!c){ alert('请选择分类'); return; }
 
   if(editingId){
     const x = getItem(editingId);
     if(x){
       x.ic = ic || '✅';
       x.n = n;
-      x.c = c;
       x.t = t;
       x.dur = dur;
       x.no = no;
@@ -1000,7 +1031,6 @@ function saveItem(){
       i: id,
       ic: ic || '✅',
       n: n,
-      c: c,
       t: t,
       dur: dur,
       no: no,
@@ -1023,8 +1053,8 @@ function saveItem(){
 // ===== 启动 =====
 initDC();
 loadDn();
-// Use first category as default if current pi is not valid
-if(!getCat(St.pi) && DC.cats.length>0) St.pi = DC.cats[0].i;
+// Ensure pi is valid
+if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
 rH();
 </script>
 </body>
