@@ -322,7 +322,7 @@ select.me-input{appearance:auto;}
     <div class="me-form">
       <div class="me-row">
         <label>图标</label>
-        <input class="me-input" id="meIc" placeholder="如：✅" maxlength="2">
+        <input class="me-input" id="meIc" placeholder="默认✅" maxlength="2">
       </div>
       <div class="me-row">
         <label>名称</label>
@@ -341,7 +341,10 @@ select.me-input{appearance:auto;}
       </div>
       <div class="me-row">
         <label>时长</label>
-        <input class="me-input" id="meT" placeholder="如：2min">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input class="me-input" id="meT" type="number" min="0.5" step="0.5" placeholder="如：2" style="flex:1;">
+          <span style="font-size:.875rem;color:#6a7a90;flex-shrink:0;">分钟</span>
+        </div>
       </div>
       <div class="me-row">
         <label>备注（可选）</label>
@@ -411,35 +414,35 @@ select.me-input{appearance:auto;}
 <script>
 // ===== 默认数据 =====
 const DEF_ITEMS = [
-  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  c:'morning', no:'洗漱时做', type:'routine',
+  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   c:'morning', no:'洗漱时做', type:'routine',
     s:[{t:'冷水拍脸颊眼周',   h:'',   d:8},{t:'冷水拍脖子前侧',   h:'',   d:6},{t:'深吸气缓慢呼出',  h:'',   d:8},{t:'深呼吸第二次',    h:'',   d:8},{t:'深呼吸第三次',    h:'',   d:8}]},
-  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  c:'morning', type:'routine',
+  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  dur:2,   c:'morning', type:'routine',
     s:[{t:'坐直闭眼',         h:'',   d:0},{t:'深吸一口气',        h:'',   d:4},{t:'呼气时嗡嗡嗡——',   h:'感受震动', d:8},{t:'深呼吸再来一次',   h:'',   d:4},{t:'呼气嗡——',  h:'',   d:8},{t:'最后一次深呼吸',   h:'',   d:4},{t:'呼气嗡——睁眼',     h:'',   d:10}]},
-  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  c:'morning', type:'routine',
+  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  dur:2,   c:'morning', type:'routine',
     s:[{t:'抬右手时抬左膝',   h:'慢慢来',d:15},{t:'抬左手时抬右膝',   h:'',   d:15},{t:'加快速度交替',    h:'',   d:15},{t:'放慢最后5次',    h:'',   d:10}]},
-  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  c:'am',      type:'routine', cy:5,
+  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  dur:2,   c:'am',      type:'routine', cy:5,
     s:[{t:'仰卧躺平手脚展开',  h:'',   d:0},{t:'慢慢吸气手脚向外展开',h:'像海星张开', d:4},{t:'屏住呼吸保持展开',  h:'',   d:2},{t:'慢慢呼气手脚收回胸前',h:'抱胸弯腿', d:6},{t:'放松休息一下',     h:'',   d:3}]},
-  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  c:'pm',      type:'routine',
+  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  dur:2,   c:'pm',      type:'routine',
     s:[{t:'仰卧手臂放两侧',   h:'脊椎贴地',d:0},{t:'呼气手臂滑向头顶',  h:'',   d:6},{t:'吸气手臂滑回',     h:'',   d:6},{t:'重复：呼上吸下',   h:'',   d:24},{t:'最后一次放松',    h:'',   d:6}]},
-  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  c:'pm',      type:'routine', no:'需瑜伽球',
+  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  dur:2,   c:'pm',      type:'routine', no:'需瑜伽球',
     s:[{t:'趴在球上手脚撑地', h:'',   d:0},{t:'轻轻前后滚',        h:'',   d:20},{t:'试着举手平衡',     h:'',   d:16},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  c:'pm',      type:'routine',
+  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  dur:2,   c:'pm',      type:'routine',
     s:[{t:'闭眼原地转3圈',   h:'',   d:12},{t:'停下来看固定点',     h:'',   d:8},{t:'再闭眼转3圈',    h:'',   d:10},{t:'看固定点',         h:'',   d:8},{t:'深呼吸2次',        h:'',   d:6}]},
-  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  c:'am',      type:'routine',
+  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  dur:2,   c:'am',      type:'routine',
     s:[{t:'叉腰左脚抬起',     h:'',   d:15},{t:'换右脚',            h:'',   d:15},{t:'左脚闭眼试试',     h:'',   d:10},{t:'右脚闭眼',         h:'',   d:10},{t:'放松抖抖腿',       h:'',   d:6}]},
-  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  c:'pm',      type:'routine', no:'有蹦床更佳',
+  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  dur:2,   c:'pm',      type:'routine', no:'有蹦床更佳',
     s:[{t:'原地自由弹跳',     h:'',   d:20},{t:'跳高摸墙',          h:'',   d:20},{t:'边跳边拍手',       h:'',   d:15},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   c:'night',   type:'routine',
+  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   dur:0.5, c:'night',   type:'routine',
     s:[{t:'用力打一个真正的哈欠',h:'假打也能变成真打',d:0},{t:'捏住鼻子闭嘴呼气',h:'不出气', d:8},{t:'松开深呼吸一次',   h:'',   d:6},{t:'最后一次深呼吸',   h:'',   d:6}]},
-  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   c:'night',   type:'routine',
+  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   dur:0.5, c:'night',   type:'routine',
     s:[{t:'从耳朵上端向下轻拉',h:'',   d:8},{t:'换另一只耳朵',      h:'',   d:8},{t:'两只耳朵同时拉',   h:'',   d:6},{t:'揉一揉放松',       h:'',   d:4}]},
-  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  c:'night',   type:'routine',
+  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  dur:1,   c:'night',   type:'routine',
     s:[{t:'站起来从手开始甩', h:'',   d:8},{t:'手臂一起甩',        h:'',   d:8},{t:'全身都抖起来',     h:'',   d:12},{t:'慢慢停下深呼吸',   h:'',   d:6}]},
-  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  c:'night',   type:'routine',
+  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  dur:1,   c:'night',   type:'routine',
     s:[{t:'张嘴打一个大哈欠', h:'',   d:6},{t:'用力吞咽口水',       h:'',   d:4},{t:'伸个懒腰',         h:'',   d:6},{t:'再打哈欠再吞咽',   h:'',   d:6},{t:'深呼吸放松',       h:'',   d:6}]},
-  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  c:'am',      type:'routine',
+  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  dur:2,   c:'am',      type:'routine',
     s:[{t:'拇指依次碰食中无名小指',h:'右手先做', d:12},{t:'换左手',            h:'',   d:12},{t:'左右手同时',       h:'',   d:12},{t:'闭眼再做',         h:'',   d:12},{t:'抖抖手放松',       h:'',   d:4}]},
-  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  c:'am',      type:'routine', no:'需橡皮筋',
+  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  dur:2,   c:'am',      type:'routine', no:'需橡皮筋',
     s:[{t:'指尖套橡皮筋',     h:'',   d:0},{t:'拇指食指撑开',       h:'',   d:12},{t:'拇指中指撑开',     h:'',   d:12},{t:'拇指无名指撑开',   h:'',   d:12},{t:'拇指小指撑开',     h:'',   d:12},{t:'换左手重复',       h:'',   d:20}]},
 ];
 
@@ -538,9 +541,9 @@ function rH(){
     const tpLabel = x.type==='simple' ? '纯打卡' : '跟练型';
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
-      <div class="inf">${x.n} <span class="s">${x.no||(getCat(x.c)||{}).n||''} · ${x.t||''}</span></div>
+      <div class="inf">${x.n} <span class="s">${x.no||(getCat(x.c)||{}).n||''} · ${x.dur!=null?x.dur+'分钟':x.t||''}</span></div>
       <span class="tp">${tpLabel}</span>
-      <div class="tm ${done?'done':''}">${done?'✅ 已完成':(x.t||'')}</div></div>`;
+      <div class="tm ${done?'done':''}">${done?'✅ 已完成':(x.dur!=null?x.dur+'分钟':x.t||'')}</div></div>`;
   }).join('');
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">这个分类下还没有打卡项目<br><span style="font-size:.75rem;">去管理页创建或切换到其他分类</span></div>';
@@ -595,7 +598,7 @@ function sX(id){
   document.getElementById('pBtn').style.cursor = 'pointer';
 
   document.getElementById('pEn').textContent = x.ic + ' ' + x.n;
-  document.getElementById('pIf').textContent = (getCat(x.c)||{}).n||'' + ' · 约' + (x.t||'');
+  document.getElementById('pIf').textContent = (getCat(x.c)||{}).n||'' + ' · 约' + (x.dur!=null?x.dur+'分钟':x.t||'');
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pP').classList.add('active');
   uPpd();
@@ -794,7 +797,7 @@ function rMgItems(){
       <div class="ic">${x.ic}</div>
       <div class="inf">
         <div class="n">${x.n}</div>
-        <div class="det">${tp} · ${cn} · ${x.t||''}</div>
+        <div class="det">${tp} · ${cn} · ${x.dur!=null?x.dur+'分钟':x.t||''}</div>
       </div>
       <div class="mg-acts">
         <span onclick="openEditor('${x.i}')">✏️</span>
@@ -881,7 +884,7 @@ function openEditor(id){
       document.getElementById('meN').value = x.n || '';
       document.getElementById('meC').value = x.c || (DC.cats[0]||{}).i || '';
       swType(x.type || 'simple');
-      document.getElementById('meT').value = x.t || '';
+      document.getElementById('meT').value = x.dur != null ? x.dur : '';
       document.getElementById('meNo').value = x.no || '';
       document.getElementById('meCy').value = x.cy || 1;
       renderSteps(x.s || []);
@@ -964,7 +967,8 @@ function saveItem(){
   const ic = document.getElementById('meIc').value.trim();
   const n = document.getElementById('meN').value.trim();
   const c = document.getElementById('meC').value;
-  const t = document.getElementById('meT').value.trim();
+  const dur = parseFloat(document.getElementById('meT').value) || 1;
+  const t = dur + '分钟';
   const no = document.getElementById('meNo').value.trim();
   const cy = parseInt(document.getElementById('meCy').value) || 1;
   const type = document.querySelector('.me-type-btn.ac').dataset.t;
@@ -979,6 +983,7 @@ function saveItem(){
       x.n = n;
       x.c = c;
       x.t = t;
+      x.dur = dur;
       x.no = no;
       x.cy = type==='routine' ? cy : undefined;
       x.type = type;
@@ -997,6 +1002,7 @@ function saveItem(){
       n: n,
       c: c,
       t: t,
+      dur: dur,
       no: no,
       type: type
     };
