@@ -74,7 +74,6 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .pt-reward .rb:active{transform:scale(.97);}
 .pt-reward .rb.ok{background:linear-gradient(135deg,#f5a623,#ffb74d);color:#fff;}
 .pt-reward .rb.no{background:#e8f0fe;color:#9aabba;cursor:not-allowed;}
-.pt-reward .rb.use{background:linear-gradient(135deg,#66bb6a,#81c784);color:#fff;}
 .pt-log{background:#ffffff;border-radius:.75rem;border:1px solid #e0e6ed;}
 .pt-log .lt{font-size:.8125rem;font-weight:600;color:#5a7a98;padding:.75rem .875rem;border-bottom:1px solid #f0f4f8;}
 .pt-log .li{display:flex;justify-content:space-between;align-items:center;padding:.5rem .875rem;border-bottom:1px solid #f0f4f8;font-size:.8125rem;}
@@ -312,8 +311,6 @@ select.me-input{appearance:auto;}
       <span class="hi" id="hdrHi"></span>
     </div>
     <div class="rt">
-      <button class="icon-btn" id="hdrGold" onclick="openPt()" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
-      <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
   </div>
@@ -322,7 +319,7 @@ select.me-input{appearance:auto;}
       <div class="r"><span>今日完成</span><span class="n" id="pgN">0 / 0</span></div>
       <div class="pb"><div class="f" id="pgB" style="width:0%"></div></div>
       <div class="sub" id="pgT">点击打卡项开始</div>
-      <div class="pc-pts" id="pgPts">💰 今日 +0 · 总计 0</div>
+      <div class="pc-pts" id="pgPts">🪙 今日 +0 · 总计 0</div>
     </div>
 
     <div class="tags" id="tgS"></div>
@@ -430,7 +427,7 @@ select.me-input{appearance:auto;}
       <div class="set-sec-title">🎮 金币商店</div>
       <div class="set-card">
         <div class="set-row" onclick="openPt()">
-          <span class="ic">💰</span>
+          <span class="ic">🪙</span>
           <div class="inf">
             <div class="n">金币商店</div>
             <div class="d">查看金币余额、兑换奖励卡片</div>
@@ -540,7 +537,7 @@ select.me-input{appearance:auto;}
   <div class="scroll">
     <div class="pt-card">
       <div class="pts" id="ptBalance">0</div>
-      <div class="pl">💰 总金币</div>
+      <div class="pl">🪙 总金币</div>
     </div>
     <div class="pt-today" id="ptToday">今日已获得 0 金币</div>
     <div class="pt-grid" id="ptRewards"></div>
@@ -568,18 +565,6 @@ select.me-input{appearance:auto;}
         <button class="rf-add" onclick="addReward()">添加</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ========== 背包页 ========== -->
-<div class="page" id="pBag">
-  <div class="top">
-    <span class="bk" onclick="closeBag()">✕</span>
-    <span class="mi">🎒 我的背包</span>
-    <span class="ri"></span>
-  </div>
-  <div class="scroll">
-    <div class="pt-grid" id="bagGrid"></div>
   </div>
 </div>
 
@@ -636,7 +621,7 @@ select.me-input{appearance:auto;}
 <div class="rc" id="rc">
   <div class="bx">
     <div class="ct" id="rcT">确认兑换？</div>
-    <div class="cs" id="rcS">兑换后放入背包</div>
+    <div class="cs" id="rcS">兑换后奖励将从列表中移除</div>
     <div class="cr">
       <button class="b bs" onclick="clRc()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
       <button class="b bp" id="rcBtn" onclick="doRedeem()" style="background:linear-gradient(135deg,#f5a623,#ffb74d);color:#fff;">确认兑换</button>
@@ -796,18 +781,17 @@ function initPS(){
       if(!PS.dailyPoints) PS.dailyPoints = {};
       if(!PS.pointLog) PS.pointLog = [];
       if(!PS.rewards) PS.rewards = [];
-      if(!PS.redeemed) PS.redeemed = [];
       if(PS.points == null) PS.points = 0;
       // Ensure today's entry
       const key = getDailyKey();
       if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
     } else {
-      PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [], redeemed: [] };
+      PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [] };
       const key = getDailyKey();
       PS.dailyPoints[key] = { earned: 0 };
     }
   }catch(e){
-    PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [], redeemed: [] };
+    PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [] };
     const key = getDailyKey();
     PS.dailyPoints[key] = { earned: 0 };
   }
@@ -833,17 +817,21 @@ function addPoints(amount, itemName){
   const key = getDailyKey();
   if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
 
-  PS.dailyPoints[key].earned += amount;
-  PS.points += amount;
+  const dailyEarned = getTodayEarned();
+  const canEarn = Math.min(amount, 100 - dailyEarned);
+  if(canEarn <= 0) return 0;
+
+  PS.dailyPoints[key].earned += canEarn;
+  PS.points += canEarn;
   PS.pointLog.unshift({
     type: 'earn',
-    amount: amount,
+    amount: canEarn,
     itemName: itemName,
     balance: PS.points,
     timestamp: Date.now()
   });
   flushPS();
-  return amount;
+  return canEarn;
 }
 
 function spendPoints(amount, rewardName){
@@ -890,8 +878,8 @@ function rH(){
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
-      <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
-      <div class="tm ${done?'done':''}"></div></div>`;
+      <span class="tp">${timeStr?timeStr + ' · ':''}🪙${pt}</span>
+      <div class="tm ${done?'done':''}">${done?'✅ 已完成':''}</div></div>`;
   }).join('');
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
@@ -934,15 +922,12 @@ function upPr(){
   document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
   // Update points display
   if(PS){
-    document.getElementById('pgPts').textContent = `💰 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
-    const hg = document.getElementById('hdrGold');
-    if(hg) hg.textContent = `💰${PS.points}`;
+    document.getElementById('pgPts').textContent = `🪙 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
   }
 }
 
 // ===== 进入练习 =====
 function sX(id){
-  if(Dn.includes(id)) return;
   const x = getItem(id);
   if(!x) return;
 
@@ -961,7 +946,7 @@ function sX(id){
     document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
     // Points info
     if(PS){
-      document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+      document.getElementById('olPt').textContent = `🪙 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
     } else {
       document.getElementById('olPt').textContent = '';
     }
@@ -1066,12 +1051,11 @@ function doneP(){fEx();}
 // ===== 完成 =====
 function fEx(){
   const id = St.ex.i;
-  const wasDone = Dn.includes(id);
-  if(!wasDone) Dn.push(id);
+  if(!Dn.includes(id)) Dn.push(id);
   svDn();
-  // Add points (only if not already completed)
+  // Add points
   const pt = St.ex.pt || 5;
-  if(PS && !wasDone) addPoints(pt, St.ex.n);
+  if(PS) addPoints(pt, St.ex.n);
   const items = getSlotItems(St.pi);
   const allDone = items.every(x => x && Dn.includes(x.i));
   document.getElementById('ol').classList.add('show');
@@ -1079,7 +1063,7 @@ function fEx(){
   document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
   // Points info
   if(PS){
-    document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+    document.getElementById('olPt').textContent = `🪙 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
   } else {
     document.getElementById('olPt').textContent = '';
   }
@@ -1118,7 +1102,6 @@ function goH(){
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pPt').classList.remove('active');
   document.getElementById('pRm').classList.remove('active');
-  document.getElementById('pBag').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
   // Reset button state
@@ -1499,8 +1482,8 @@ function closePt(){
 function rPt(){
   // Balance
   document.getElementById('ptBalance').textContent = PS.points;
-  document.getElementById('ptTopBalance').textContent = '💰 '+PS.points;
-  document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 金币';
+  document.getElementById('ptTopBalance').textContent = '🪙 '+PS.points;
+  document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 金币（上限 100）';
 
   // Rewards grid
   const g = document.getElementById('ptRewards');
@@ -1512,8 +1495,8 @@ function rPt(){
       return `<div class="pt-reward">
         <div class="ri">${r.icon || '🎁'}</div>
         <div class="rn">${r.name}</div>
-        <div class="rc">💰 ${r.cost}</div>
-        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换':'💰'+r.cost}</button>
+        <div class="rc">🪙 ${r.cost}</div>
+        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换':'🪙'+r.cost}</button>
       </div>`;
     }).join('');
   }
@@ -1533,56 +1516,6 @@ function rPt(){
       </div>`;
     }).join('');
   }
-}
-
-// ===== 背包 =====
-function openBag(){
-  document.getElementById('pS').classList.remove('active');
-  document.getElementById('pH').classList.remove('active');
-  document.getElementById('pBag').classList.add('active');
-  rBag();
-}
-function closeBag(){
-  document.getElementById('pBag').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
-}
-function rBag(){
-  const g = document.getElementById('bagGrid');
-  if(PS.redeemed.length === 0){
-    g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;">背包空空如也…</div>';
-    return;
-  }
-  g.innerHTML = PS.redeemed.map((r, idx) => {
-    return `<div class="pt-reward">
-      <div class="ri">${r.icon || '🎁'}</div>
-      <div class="rn">${r.name}</div>
-      <div class="rc">💰 ${r.cost}</div>
-      <button class="rb use" onclick="showUseConfirm(${idx})">使用</button>
-    </div>`;
-  }).join('');
-}
-
-// ===== 背包使用确认 =====
-let useIdx = -1;
-function showUseConfirm(idx){
-  useIdx = idx;
-  const r = PS.redeemed[idx];
-  if(!r) return;
-  document.getElementById('rcT').textContent = '确认要使用 ' + (r.icon||'🎁') + ' ' + r.name + ' 吗？';
-  document.getElementById('rcS').textContent = '使用后卡片将消失';
-  document.getElementById('rc').classList.add('show');
-  // Override the confirm button to use the backpack confirm handler
-  document.getElementById('rcBtn').onclick = doUseItem;
-}
-function doUseItem(){
-  if(useIdx < 0) return;
-  PS.redeemed.splice(useIdx, 1);
-  flushPS();
-  clRc();
-  rBag();
-  // Restore redeem button handler
-  document.getElementById('rcBtn').onclick = doRedeem;
-  useIdx = -1;
 }
 
 // ===== 奖励管理 =====
@@ -1606,7 +1539,7 @@ function rRm(){
         <div class="ri">${r.icon || '🎁'}</div>
         <div class="inf">
           <div class="n">${r.name}</div>
-          <div class="d">💰 ${r.cost} 分</div>
+          <div class="d">🪙 ${r.cost} 分</div>
         </div>
         <span class="rm-del" onclick="delReward(${idx})">🗑️</span>
       </div>`;
@@ -1641,15 +1574,13 @@ function showRc(idx){
   const r = PS.rewards[idx];
   if(!r) return;
   document.getElementById('rcT').textContent = `兑换 ${r.icon} ${r.name}？`;
-  document.getElementById('rcS').textContent = `消耗 💰 ${r.cost} 金币`;
+  document.getElementById('rcS').textContent = `消耗 🪙 ${r.cost} 金币`;
   document.getElementById('rc').classList.add('show');
 }
 
 function clRc(){
   document.getElementById('rc').classList.remove('show');
   redeemIdx = -1;
-  useIdx = -1;
-  document.getElementById('rcBtn').onclick = doRedeem;
 }
 
 function doRedeem(){
@@ -1658,14 +1589,7 @@ function doRedeem(){
   if(!r) return;
   const ok = spendPoints(r.cost, r.name);
   if(!ok) { clRc(); return; }
-  // Copy to backpack (redeemed) instead of removing
-  PS.redeemed.push({
-    id: 'rd_' + Date.now(),
-    icon: r.icon || '🎁',
-    name: r.name,
-    cost: r.cost,
-    purchasedAt: Date.now()
-  });
+  PS.rewards.splice(redeemIdx, 1);
   flushPS();
   clRc();
   rPt();
