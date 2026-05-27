@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>✅ 每日打卡</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase REST API via fetch (零依赖) -->
 <style>
 /* ===== 根字体随屏幕宽度缩放 ===== */
 html{font-size:calc(100vw / 375 * 16);}
@@ -728,17 +728,69 @@ select.me-input{appearance:auto;}
 </div>
 
 <script>
-// ===== Supabase 初始化 =====
+// ===== Supabase REST API (零依赖) =====
 const SUPABASE_URL = 'https://pkxmsfyzcphzvuangrzs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreG1zZnl6Y3BoenZ1YW5ncnpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDkxNzcsImV4cCI6MjA5NDYyNTE3N30.K1_niR4ZylqzbDPFnmTs5HRo2aEbObkGw3V9clM1czo';
-let supabase = null;
-try {
-  if(typeof supabaseClient !== 'undefined'){
-    supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Supabase REST API 工具函数（零依赖）
+const SB = {
+  url: SUPABASE_URL + '/rest/v1',
+  headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+
+  async get(table, query = {}) {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([k, v]) => params.set(k, v));
+    const res = await fetch(`${this.url}/${table}?${params}`, {
+      headers: { ...this.headers, Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error(`Supabase GET ${table} failed: ${res.status}`);
+    return res.json();
+  },
+
+  async post(table, body) {
+    const res = await fetch(`${this.url}/${table}`, {
+      method: 'POST',
+      headers: { ...this.headers, Prefer: 'return=representation' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Supabase POST ${table} failed: ${res.status}`);
+    return res.json();
+  },
+
+  async upsert(table, body, conflictCol) {
+    const params = conflictCol ? `?on_conflict=${conflictCol}` : '';
+    const res = await fetch(`${this.url}/${table}${params}`, {
+      method: 'POST',
+      headers: { ...this.headers, Prefer: 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Supabase UPSERT ${table} failed: ${res.status}`);
+    return res.json();
+  },
+
+  async patch(table, body, query = {}) {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([k, v]) => params.set(k, v));
+    const res = await fetch(`${this.url}/${table}?${params}`, {
+      method: 'PATCH',
+      headers: this.headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Supabase PATCH ${table} failed: ${res.status}`);
+    return res.json();
+  },
+
+  async del(table, query = {}) {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([k, v]) => params.set(k, v));
+    const res = await fetch(`${this.url}/${table}?${params}`, {
+      method: 'DELETE',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Supabase DELETE ${table} failed: ${res.status}`);
+    return res.json();
   }
-} catch(e){
-  console.warn('Supabase 初始化失败，以降级模式运行:', e);
-}
+};
 
 // ===== 默认数据 =====
 const DEF_ITEMS = [
@@ -874,123 +926,131 @@ async function processSyncQueue(){
 
 async function syncItems(){
   if(!currentUser) return;
-  const { error } = await supabase.from('items').upsert(
-    DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
-      user_id: currentUser.id,
-      item_id: x.i,
-      name: x.n,
-      icon: x.ic || '✅',
-      type: x.type || 'simple',
-      duration: x.dur || 1,
-      time_label: x.t || '1分钟',
-      points: x.pt || 5,
-      cycle_count: x.cy || null,
-      note: x.no || '',
-      steps: x.s || [],
-      deleted: false
-    })), { onConflict: 'user_id,item_id' }
-  );
-  if(error) console.warn('syncItems error:', error);
+  try {
+    await SB.upsert('items',
+      DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
+        user_id: currentUser.id,
+        item_id: x.i,
+        name: x.n,
+        icon: x.ic || '✅',
+        type: x.type || 'simple',
+        duration: x.dur || 1,
+        time_label: x.t || '1分钟',
+        points: x.pt || 5,
+        cycle_count: x.cy || null,
+        note: x.no || '',
+        steps: x.s || [],
+        deleted: false
+      })), 'user_id,item_id'
+    );
+  } catch(e){ console.warn('syncItems error:', e); }
 }
 
 async function syncSlots(){
   if(!currentUser) return;
-  const { error } = await supabase.from('slots').upsert(
-    DC.slots.map(s => ({
-      user_id: currentUser.id,
-      slot_id: s.i,
-      icon: s.ic || '☀️',
-      name: s.n,
-      item_ids: s.ids
-    })), { onConflict: 'user_id,slot_id' }
-  );
-  if(error) console.warn('syncSlots error:', error);
+  try {
+    await SB.upsert('slots',
+      DC.slots.map(s => ({
+        user_id: currentUser.id,
+        slot_id: s.i,
+        icon: s.ic || '☀️',
+        name: s.n,
+        item_ids: s.ids
+      })), 'user_id,slot_id'
+    );
+  } catch(e){ console.warn('syncSlots error:', e); }
 }
 
 async function syncSettings(){
   if(!currentUser) return;
-  const { error } = await supabase.from('users').update({
-    settings: DC.settings,
-    name: DC.settings.userName || '小伙伴'
-  }).eq('id', currentUser.id);
-  if(error) console.warn('syncSettings error:', error);
+  try {
+    await SB.patch('users', {
+      settings: DC.settings,
+      name: DC.settings.userName || '小伙伴'
+    }, { 'id': `eq.${currentUser.id}` });
+  } catch(e){ console.warn('syncSettings error:', e); }
 }
 
 async function syncDailyLog(){
   if(!currentUser) return;
   const key = dk();
-  const { error } = await supabase.from('daily_logs').upsert({
-    user_id: currentUser.id,
-    date_key: key,
-    completed_items: Dn,
-    earned_points: PS ? getTodayEarned() : 0
-  }, { onConflict: 'user_id,date_key' });
-  if(error) console.warn('syncDailyLog error:', error);
+  try {
+    await SB.upsert('daily_logs', {
+      user_id: currentUser.id,
+      date_key: key,
+      completed_items: Dn,
+      earned_points: PS ? getTodayEarned() : 0
+    }, 'user_id,date_key');
+  } catch(e){ console.warn('syncDailyLog error:', e); }
 }
 
 async function syncPointsState(){
   if(!currentUser || !PS) return;
-  const { error } = await supabase.from('points_state').upsert({
-    user_id: currentUser.id,
-    points: PS.points,
-    daily_points: PS.dailyPoints
-  }, { onConflict: 'user_id' });
-  if(error) console.warn('syncPointsState error:', error);
+  try {
+    await SB.upsert('points_state', {
+      user_id: currentUser.id,
+      points: PS.points,
+      daily_points: PS.dailyPoints
+    }, 'user_id');
+  } catch(e){ console.warn('syncPointsState error:', e); }
 }
 
 async function syncRewards(){
   if(!currentUser) return;
   // Delete all and re-insert
-  await supabase.from('rewards').delete().eq('user_id', currentUser.id);
-  if(PS && PS.rewards && PS.rewards.length > 0){
-    const { error } = await supabase.from('rewards').insert(
-      PS.rewards.map((r, i) => ({
-        user_id: currentUser.id,
-        icon: r.icon || '🎁',
-        name: r.name,
-        cost: r.cost,
-        sort_order: i
-      }))
-    );
-    if(error) console.warn('syncRewards error:', error);
-  }
+  try {
+    await SB.del('rewards', { 'user_id': `eq.${currentUser.id}` });
+    if(PS && PS.rewards && PS.rewards.length > 0){
+      await SB.post('rewards',
+        PS.rewards.map((r, i) => ({
+          user_id: currentUser.id,
+          icon: r.icon || '🎁',
+          name: r.name,
+          cost: r.cost,
+          sort_order: i
+        }))
+      );
+    }
+  } catch(e){ console.warn('syncRewards error:', e); }
 }
 
 async function syncRedeemed(){
   if(!currentUser) return;
-  await supabase.from('redeemed').delete().eq('user_id', currentUser.id);
-  if(PS && PS.redeemed && PS.redeemed.length > 0){
-    const { error } = await supabase.from('redeemed').insert(
-      PS.redeemed.map(r => ({
-        user_id: currentUser.id,
-        redeem_id: r.id,
-        icon: r.icon || '🎁',
-        name: r.name,
-        cost: r.cost,
-        purchased_at: r.purchasedAt
-      }))
-    );
-    if(error) console.warn('syncRedeemed error:', error);
-  }
+  try {
+    await SB.del('redeemed', { 'user_id': `eq.${currentUser.id}` });
+    if(PS && PS.redeemed && PS.redeemed.length > 0){
+      await SB.post('redeemed',
+        PS.redeemed.map(r => ({
+          user_id: currentUser.id,
+          redeem_id: r.id,
+          icon: r.icon || '🎁',
+          name: r.name,
+          cost: r.cost,
+          purchased_at: r.purchasedAt
+        }))
+      );
+    }
+  } catch(e){ console.warn('syncRedeemed error:', e); }
 }
 
 async function syncPointLogs(){
   if(!currentUser) return;
   // Delete all and re-insert for simplicity
-  await supabase.from('point_logs').delete().eq('user_id', currentUser.id);
-  if(PS && PS.pointLog && PS.pointLog.length > 0){
-    const { error } = await supabase.from('point_logs').insert(
-      PS.pointLog.map(l => ({
-        user_id: currentUser.id,
-        type: l.type,
-        amount: l.amount,
-        item_name: l.itemName || '',
-        balance_after: l.balance,
-        timestamp_ms: l.timestamp
-      }))
-    );
-    if(error) console.warn('syncPointLogs error:', error);
-  }
+  try {
+    await SB.del('point_logs', { 'user_id': `eq.${currentUser.id}` });
+    if(PS && PS.pointLog && PS.pointLog.length > 0){
+      await SB.post('point_logs',
+        PS.pointLog.map(l => ({
+          user_id: currentUser.id,
+          type: l.type,
+          amount: l.amount,
+          item_name: l.itemName || '',
+          balance_after: l.balance,
+          timestamp_ms: l.timestamp
+        }))
+      );
+    }
+  } catch(e){ console.warn('syncPointLogs error:', e); }
 }
 
 async function syncDeletedItems(){
@@ -998,11 +1058,16 @@ async function syncDeletedItems(){
   // Mark items in trash as deleted in Supabase
   const deletedIds = DC.trash.filter(t => t.item).map(t => t.item.i).filter(Boolean);
   if(deletedIds.length > 0){
-    const { error } = await supabase.from('items').update({
-      deleted: true,
-      deleted_at: new Date().toISOString()
-    }).eq('user_id', currentUser.id).in('item_id', deletedIds);
-    if(error) console.warn('syncDeletedItems error:', error);
+    try {
+      // Supabase REST: PATCH with individual updates since `in` filter isn't directly supported
+      // Batch update via multiple patches or use a single request with or clause
+      for(const id of deletedIds) {
+        await SB.patch('items', {
+          deleted: true,
+          deleted_at: new Date().toISOString()
+        }, { 'user_id': `eq.${currentUser.id}`, 'item_id': `eq.${id}` });
+      }
+    } catch(e){ console.warn('syncDeletedItems error:', e); }
   }
 }
 
@@ -1025,19 +1090,19 @@ async function syncAllToSupabase(){
 async function loadUserDataFromSupabase(user){
   try{
     // Parallel load all data
-    const [itemsRes, slotsRes, dailyRes, pointsRes, rewardsRes, redeemedRes, logsRes] = await Promise.all([
-      supabase.from('items').select('*').eq('user_id', user.id).eq('deleted', false),
-      supabase.from('slots').select('*').eq('user_id', user.id),
-      supabase.from('daily_logs').select('*').eq('user_id', user.id).eq('date_key', dk()).single(),
-      supabase.from('points_state').select('*').eq('user_id', user.id).single(),
-      supabase.from('rewards').select('*').eq('user_id', user.id).order('sort_order'),
-      supabase.from('redeemed').select('*').eq('user_id', user.id),
-      supabase.from('point_logs').select('*').eq('user_id', user.id).order('timestamp_ms', { ascending: false }).limit(100)
+    const [itemsData, slotsData, dailyData, pointsData, rewardsData, redeemedData, logsData] = await Promise.all([
+      SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.false' }).catch(() => null),
+      SB.get('slots', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
+      SB.get('daily_logs', { select: '*', 'user_id': `eq.${user.id}`, 'date_key': `eq.${dk()}` }).catch(() => null),
+      SB.get('points_state', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
+      SB.get('rewards', { select: '*', 'user_id': `eq.${user.id}`, order: 'sort_order.asc' }).catch(() => null),
+      SB.get('redeemed', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
+      SB.get('point_logs', { select: '*', 'user_id': `eq.${user.id}`, order: 'timestamp_ms.desc', limit: '100' }).catch(() => null)
     ]);
 
     // Transform items
-    if(!itemsRes.error && itemsRes.data && itemsRes.data.length > 0){
-      DC.items = itemsRes.data.map(r => ({
+    if(itemsData && itemsData.length > 0){
+      DC.items = itemsData.map(r => ({
         i: r.item_id,
         n: r.name,
         ic: r.icon || '✅',
@@ -1054,8 +1119,8 @@ async function loadUserDataFromSupabase(user){
     }
 
     // Transform slots
-    if(!slotsRes.error && slotsRes.data && slotsRes.data.length > 0){
-      DC.slots = slotsRes.data.map(r => ({
+    if(slotsData && slotsData.length > 0){
+      DC.slots = slotsData.map(r => ({
         i: r.slot_id,
         ic: r.icon || '☀️',
         n: r.name,
@@ -1070,10 +1135,10 @@ async function loadUserDataFromSupabase(user){
     if(!DC.settings.userName) DC.settings.userName = user.name || '小伙伴';
 
     // Trash: load from Supabase deleted items
-    const trashRes = await supabase.from('items').select('*').eq('user_id', user.id).eq('deleted', true);
+    const trashData = await SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.true' }).catch(() => null);
     DC.trash = [];
-    if(!trashRes.error && trashRes.data){
-      DC.trash = trashRes.data.map(r => ({
+    if(trashData && trashData.length > 0){
+      DC.trash = trashData.map(r => ({
         item: {
           i: r.item_id,
           n: r.name,
@@ -1094,18 +1159,18 @@ async function loadUserDataFromSupabase(user){
     flushDC();
 
     // Load daily log
-    if(!dailyRes.error && dailyRes.data){
-      Dn = dailyRes.data.completed_items || [];
+    if(dailyData && dailyData.length > 0 && dailyData[0]){
+      Dn = dailyData[0].completed_items || [];
     } else {
       Dn = [];
     }
     localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
 
     // Load points state
-    if(!pointsRes.error && pointsRes.data){
+    if(pointsData && pointsData.length > 0 && pointsData[0]){
       PS = {
-        points: pointsRes.data.points || 0,
-        dailyPoints: pointsRes.data.daily_points || {},
+        points: pointsData[0].points || 0,
+        dailyPoints: pointsData[0].daily_points || {},
         pointLog: [],
         rewards: [],
         redeemed: []
@@ -1119,8 +1184,8 @@ async function loadUserDataFromSupabase(user){
     }
 
     // Load rewards
-    if(!rewardsRes.error && rewardsRes.data){
-      PS.rewards = rewardsRes.data.map(r => ({
+    if(rewardsData && rewardsData.length > 0){
+      PS.rewards = rewardsData.map(r => ({
         icon: r.icon || '🎁',
         name: r.name,
         cost: r.cost
@@ -1128,8 +1193,8 @@ async function loadUserDataFromSupabase(user){
     }
 
     // Load redeemed
-    if(!redeemedRes.error && redeemedRes.data){
-      PS.redeemed = redeemedRes.data.map(r => ({
+    if(redeemedData && redeemedData.length > 0){
+      PS.redeemed = redeemedData.map(r => ({
         id: r.redeem_id,
         icon: r.icon || '🎁',
         name: r.name,
@@ -1139,8 +1204,8 @@ async function loadUserDataFromSupabase(user){
     }
 
     // Load point logs
-    if(!logsRes.error && logsRes.data){
-      PS.pointLog = logsRes.data.map(l => ({
+    if(logsData && logsData.length > 0){
+      PS.pointLog = logsData.map(l => ({
         type: l.type,
         amount: l.amount,
         itemName: l.item_name,
@@ -1173,11 +1238,7 @@ async function loadLoginUsers(){
   l.innerHTML = '';
 
   try{
-    const { data, error } = await supabase.from('users').select('*').order('id');
-    if(error){
-      l.innerHTML = '<div class="empty-state">⚠️ 加载失败，请检查网络连接</div>';
-      return;
-    }
+    const data = await SB.get('users', { select: '*', order: 'id.asc' });
 
     if(!data || data.length === 0){
       l.innerHTML = '<div class="empty-state">还没有成员<br><span style="font-size:.75rem;">点击下方按钮添加第一个成员</span></div>';
@@ -1219,8 +1280,9 @@ async function verifyPin(){
   }
 
   try{
-    const { data, error } = await supabase.from('users').select('*').eq('id', pendingLoginUserId).single();
-    if(error || !data){
+    const users = await SB.get('users', { select: '*', 'id': `eq.${pendingLoginUserId}` });
+    const data = users && users.length > 0 ? users[0] : null;
+    if(!data){
       errEl.textContent = '用户不存在';
       return;
     }
@@ -1263,15 +1325,16 @@ async function createUser(){
   if(!pin || pin.length !== 4){ errEl.textContent = '请设置4位PIN码'; return; }
 
   try{
-    const { data, error } = await supabase.from('users').insert({
+    const users = await SB.post('users', {
       name: name,
       pin: pin,
       avatar: '😊',
       settings: { userName: name }
-    }).select().single();
+    });
+    const data = users && users.length > 0 ? users[0] : null;
 
-    if(error){
-      errEl.textContent = '创建失败：' + error.message;
+    if(!data){
+      errEl.textContent = '创建失败';
       return;
     }
 
@@ -1295,7 +1358,7 @@ async function createUser(){
       note: x.no || '',
       steps: x.s || []
     }));
-    await supabase.from('items').insert(itemInserts);
+    await SB.post('items', itemInserts);
 
     // Insert default slots
     const slotInserts = defaultSlots.map(s => ({
@@ -1305,10 +1368,10 @@ async function createUser(){
       name: s.n,
       item_ids: s.ids
     }));
-    await supabase.from('slots').insert(slotInserts);
+    await SB.post('slots', slotInserts);
 
     // Init points
-    await supabase.from('points_state').insert({
+    await SB.post('points_state', {
       user_id: user.id,
       points: 0,
       daily_points: {}
@@ -2253,8 +2316,9 @@ async function startup(){
   if(savedUser){
     // Try to load from Supabase
     try{
-      const { data, error } = await supabase.from('users').select('*').eq('id', savedUser.id).single();
-      if(!error && data){
+      const users = await SB.get('users', { select: '*', 'id': `eq.${savedUser.id}` });
+      const data = users && users.length > 0 ? users[0] : null;
+      if(data){
         currentUser = data;
         await loadUserDataFromSupabase(data);
         enterHome();
