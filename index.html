@@ -2324,11 +2324,11 @@ initPS();
 startup();
 
 // ===== 音效系统 (Web Audio API) =====
-// 所有音效使用多振荡器 + 谐波 + ADSR 包络，追求精致品质
+// 所有音效使用多振荡器 + 谐波 + 指数衰减（setTargetAtTime），追求精致品质
 const SFX = {
   _ctx: null,
   muted: false,
-  _vol: 0.5,          // 默认音量（之前 0.3 偏小）
+  _vol: 0.6,          // 默认音量
 
   _getCtx(){
     if(!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2361,22 +2361,21 @@ const SFX = {
   },
 
   // ------ 点击音 🔘 ------
-  // "tick"：1600Hz 正弦脉冲 + 带通滤波白噪声纹理，短促清脆
+  // "tick"：1600Hz 正弦脉冲 + 带通噪声纹理，短促清脆
   _click(ctx, vol){
     const t = ctx.currentTime;
-    // 主音：1600Hz 正弦，2ms 起音 → 快速指数衰减
+    // 主音：1600Hz 正弦，瞬间起音 → 指数衰减（setTargetAtTime 更鲁棒）
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(1600, t);
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.35, t + 0.002);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    g.gain.setValueAtTime(vol * 0.5, t);                     // 瞬间峰值
+    g.gain.setTargetAtTime(0, t + 0.001, 0.008);             // 自然指数衰减
     osc.connect(g).connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.05);
-    // 纹理层：带通滤波白噪声（触摸质感）
-    const bufSize = Math.floor(ctx.sampleRate * 0.025);
+    osc.stop(t + 0.06);
+    // 纹理层：带通滤波白噪声
+    const bufSize = Math.floor(ctx.sampleRate * 0.03);
     const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
     const data = buf.getChannelData(0);
     for(let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
@@ -2387,9 +2386,8 @@ const SFX = {
     filter.frequency.setValueAtTime(3500, t);
     filter.Q.setValueAtTime(6, t);
     const g2 = ctx.createGain();
-    g2.gain.setValueAtTime(0, t);
-    g2.gain.linearRampToValueAtTime(vol * 0.15, t + 0.002);
-    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+    g2.gain.setValueAtTime(vol * 0.2, t);
+    g2.gain.setTargetAtTime(0, t + 0.001, 0.006);
     src.connect(filter).connect(g2).connect(ctx.destination);
     src.start(t);
   },
@@ -2399,33 +2397,29 @@ const SFX = {
   _complete(ctx, vol){
     const t = ctx.currentTime;
     const notes = [523, 659, 784]; // C5, E5, G5
-    const noteLen = 0.1;
-    const overlap = 0.05;
     notes.forEach((freq, i) => {
-      const st = t + i * (noteLen - overlap);
-      const en = st + 0.35;
+      const st = t + i * 0.06;
+      const dur = 0.3;
       // 主音：三角波（温暖）
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = 'triangle';
       o.frequency.setValueAtTime(freq, st);
-      g.gain.setValueAtTime(0, st);
-      g.gain.linearRampToValueAtTime(vol * 0.3, st + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.001, en);
+      g.gain.setValueAtTime(vol * 0.35, st);                  // 瞬间峰值
+      g.gain.setTargetAtTime(0, st + 0.005, 0.07);            // 指数衰减
       o.connect(g).connect(ctx.destination);
       o.start(st);
-      o.stop(en);
+      o.stop(st + dur);
       // 泛音：高八度正弦
       const o2 = ctx.createOscillator();
       const g2 = ctx.createGain();
       o2.type = 'sine';
       o2.frequency.setValueAtTime(freq * 2, st);
-      g2.gain.setValueAtTime(0, st);
-      g2.gain.linearRampToValueAtTime(vol * 0.1, st + 0.015);
-      g2.gain.exponentialRampToValueAtTime(0.001, en - 0.05);
+      g2.gain.setValueAtTime(vol * 0.12, st);
+      g2.gain.setTargetAtTime(0, st + 0.005, 0.05);
       o2.connect(g2).connect(ctx.destination);
       o2.start(st);
-      o2.stop(en);
+      o2.stop(st + dur);
     });
   },
 
@@ -2438,9 +2432,8 @@ const SFX = {
     const g1 = ctx.createGain();
     o1.type = 'sine';
     o1.frequency.setValueAtTime(2400, t);
-    g1.gain.setValueAtTime(0, t);
-    g1.gain.linearRampToValueAtTime(vol * 0.35, t + 0.002);
-    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    g1.gain.setValueAtTime(vol * 0.4, t);                     // 瞬间峰值
+    g1.gain.setTargetAtTime(0, t + 0.002, 0.04);              // 指数衰减
     o1.connect(g1).connect(ctx.destination);
     o1.start(t);
     o1.stop(t + 0.2);
@@ -2449,14 +2442,13 @@ const SFX = {
     const g2 = ctx.createGain();
     o2.type = 'sine';
     o2.frequency.setValueAtTime(3600, t);
-    g2.gain.setValueAtTime(0, t);
-    g2.gain.linearRampToValueAtTime(vol * 0.2, t + 0.002);
-    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    g2.gain.setValueAtTime(vol * 0.25, t);
+    g2.gain.setTargetAtTime(0, t + 0.002, 0.025);
     o2.connect(g2).connect(ctx.destination);
     o2.start(t);
     o2.stop(t + 0.12);
     // 频率下漂模拟金属自然衰减
-    o1.frequency.exponentialRampToValueAtTime(1600, t + 0.2);
+    o1.frequency.setTargetAtTime(1800, t + 0.005, 0.05);
   },
 
   // ------ 开始音 ▶️ ------
@@ -2468,10 +2460,9 @@ const SFX = {
     const g = ctx.createGain();
     o.type = 'triangle';
     o.frequency.setValueAtTime(300, t);
-    o.frequency.exponentialRampToValueAtTime(900, t + 0.3);
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol * 0.4, t + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.frequency.linearRampToValueAtTime(900, t + 0.3);
+    g.gain.setValueAtTime(vol * 0.45, t);
+    g.gain.setTargetAtTime(0, t + 0.005, 0.09);
     o.connect(g).connect(ctx.destination);
     o.start(t);
     o.stop(t + 0.4);
@@ -2480,10 +2471,9 @@ const SFX = {
     const g2 = ctx.createGain();
     o2.type = 'sine';
     o2.frequency.setValueAtTime(150, t);
-    o2.frequency.exponentialRampToValueAtTime(450, t + 0.3);
-    g2.gain.setValueAtTime(0, t);
-    g2.gain.linearRampToValueAtTime(vol * 0.15, t + 0.01);
-    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    o2.frequency.linearRampToValueAtTime(450, t + 0.3);
+    g2.gain.setValueAtTime(vol * 0.18, t);
+    g2.gain.setTargetAtTime(0, t + 0.005, 0.07);
     o2.connect(g2).connect(ctx.destination);
     o2.start(t);
     o2.stop(t + 0.35);
@@ -2495,28 +2485,27 @@ const SFX = {
     const t = ctx.currentTime;
     const notes = [784, 659]; // G5, E5
     notes.forEach((freq, i) => {
-      const st = t + i * 0.18;
-      const en = st + 0.18;
+      const st = t + i * 0.2;
+      // 主音：三角波
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = 'triangle';
       o.frequency.setValueAtTime(freq, st);
-      g.gain.setValueAtTime(0, st);
-      g.gain.linearRampToValueAtTime(vol * 0.3, st + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.001, en);
+      g.gain.setValueAtTime(vol * 0.35, st);
+      g.gain.setTargetAtTime(0, st + 0.003, 0.04);
       o.connect(g).connect(ctx.destination);
       o.start(st);
-      o.stop(en);
+      o.stop(st + 0.18);
+      // 泛音
       const o2 = ctx.createOscillator();
       const g2 = ctx.createGain();
       o2.type = 'sine';
       o2.frequency.setValueAtTime(freq * 2, st);
-      g2.gain.setValueAtTime(0, st);
-      g2.gain.linearRampToValueAtTime(vol * 0.08, st + 0.005);
-      g2.gain.exponentialRampToValueAtTime(0.001, en - 0.05);
+      g2.gain.setValueAtTime(vol * 0.1, st);
+      g2.gain.setTargetAtTime(0, st + 0.003, 0.03);
       o2.connect(g2).connect(ctx.destination);
       o2.start(st);
-      o2.stop(en - 0.02);
+      o2.stop(st + 0.12);
     });
   }
 };
