@@ -1554,7 +1554,10 @@ function rPt(){
 }
 
 // ===== 背包 =====
+let bagSource = 'home';
+
 function openBag(){
+  bagSource = document.getElementById('pS').classList.contains('active') ? 'setting' : 'home';
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pPt').classList.remove('active');
@@ -1564,7 +1567,11 @@ function openBag(){
 function closeBag(){
   document.getElementById('pBag').classList.remove('active');
   document.getElementById('pPt').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
+  if(bagSource === 'setting'){
+    document.getElementById('pS').classList.add('active');
+  } else {
+    document.getElementById('pH').classList.add('active');
+  }
 }
 function rBag(){
   const g = document.getElementById('bagGrid');
