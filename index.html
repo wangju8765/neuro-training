@@ -153,11 +153,8 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .ol{background:rgba(245,247,250,.95);flex-direction:column;gap:.75rem;}
 .ol .oi{font-size:3.5rem;}
 .ol .ot{font-size:1.25rem;font-weight:700;color:#66bb6a;text-align:center;}
-.ol .os{font-size:.875rem;color:#6a7a90;text-align:center;max-width:18.75rem;}
-.ol .od{font-size:.8125rem;color:#7a8a9a;text-align:center;line-height:1.6;}
-.ol .opt{font-size:.8125rem;color:#f5a623;text-align:center;margin-bottom:.25rem;}
-.ol-btn{display:flex;gap:.625rem;width:18.75rem;padding:0;}
-.ol-btn .b{flex:1;padding:.875rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;text-align:center;}
+.ol-btn{display:flex;width:18.75rem;padding:0;justify-content:center;}
+.ol-btn .b{padding:.875rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;text-align:center;}
 
 .cf{background:rgba(245,247,250,.92);}
 .cf .bx{background:#ffffff;border-radius:1rem;padding:1.75rem 1.5rem;border:1px solid #e0e6ed;text-align:center;max-width:18.75rem;box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -618,12 +615,8 @@ select.me-input{appearance:auto;}
 <div class="ol" id="ol">
   <div class="oi">🎉</div>
   <div class="ot" id="olT">完成！</div>
-  <div class="os" id="olS"></div>
-  <div class="opt" id="olPt"></div>
-  <div class="od" id="olD"></div>
   <div class="ol-btn">
-    <button class="b bs" onclick="clOl();goH()">🏠 首页</button>
-    <button class="b bp" onclick="clOl();goH()">📋 继续任务</button>
+    <button class="b bp" onclick="clOl();goH()" style="min-width:8rem;">👍 返回</button>
   </div>
 </div>
 
@@ -1581,17 +1574,8 @@ function sX(id){
     SFX.play('complete');
     SFX.play('coin');
     rH();
-    const allDone = getSlotItems(St.pi).every(it => it && Dn.includes(it.i));
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
-    document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
-    if(PS){
-      document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
-    } else {
-      document.getElementById('olPt').textContent = '';
-    }
-    const det = getSlotItems(St.pi).map(it => (Dn.includes(it.i)?'✅':'⬜')+' '+it.ic+it.n).join('<br>');
-    document.getElementById('olD').innerHTML = '今日进度：' + getSlotItems(St.pi).filter(it=>it && Dn.includes(it.i)).length + '/' + getSlotItems(St.pi).length + '<br>' + det;
     return;
   }
 
@@ -1696,18 +1680,8 @@ function fEx(){
   if(PS && !wasDone) addPoints(pt, St.ex.n);
   SFX.play('complete');
   SFX.play('coin');
-  const items = getSlotItems(St.pi);
-  const allDone = items.every(x => x && Dn.includes(x.i));
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent = `${St.ex.ic} ${St.ex.n} 完成！`;
-  document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
-  if(PS){
-    document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
-  } else {
-    document.getElementById('olPt').textContent = '';
-  }
-  const det = items.map(x => (Dn.includes(x.i)?'✅':'⬜')+' '+x.ic+x.n).join('<br>');
-  document.getElementById('olD').innerHTML = '今日进度：'+items.filter(x=>x && Dn.includes(x.i)).length+'/'+items.length+'<br>'+det;
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -2482,7 +2456,7 @@ function sfxClick(e){
 }
 
 document.addEventListener('click', function(e){
-  const el = e.target.closest('button, a, .ex, .tagb, .mg-acts span, .icon-btn, .bo, .ol-btn .b, .cr .b, .rb, .rs, .rm-del, .rf-add, .add-step-btn, .me-type-btn, .set-row');
+  const el = e.target.closest('button, a, .ex, .tagb, .mg-acts span, .icon-btn, .bo, .ol-btn .b, .ol .ol-btn .b, .cr .b, .rb, .rs, .rm-del, .rf-add, .add-step-btn, .me-type-btn, .set-row');
   if(el && el.id !== 'hdrGold' && el.id !== 'hdrBag' && el.id !== 'sfxToggle' && !el.closest('.ex') && !el.onclick?.toString().includes('sX')){
     SFX.play('click');
   }
