@@ -2393,34 +2393,32 @@ const SFX = {
   },
 
   // ------ 完成音 ✅ ------
-  // C 大三和弦上升琶音 (C5→E5→G5)，三角波主音 + 高八度正弦泛音
+  // 大三和弦齐奏 (C5+E5+G5)，纯正弦，尾声加高八度泛音提亮
   _complete(ctx, vol){
     const t = ctx.currentTime;
-    const notes = [523, 659, 784]; // C5, E5, G5
-    notes.forEach((freq, i) => {
-      const st = t + i * 0.06;
-      const dur = 0.3;
-      // 主音：三角波（温暖）
+    const dur = 0.35;
+    // C 大三和弦：C5 + E5 + G5
+    [523, 659, 784].forEach((freq, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(freq, st);
-      g.gain.setValueAtTime(vol * 0.35, st);                  // 瞬间峰值
-      g.gain.setTargetAtTime(0, st + 0.005, 0.07);            // 指数衰减
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(vol * (0.3 - i * 0.03), t);
+      g.gain.setTargetAtTime(0, t + 0.005, 0.09 + i * 0.01);
       o.connect(g).connect(ctx.destination);
-      o.start(st);
-      o.stop(st + dur);
-      // 泛音：高八度正弦
-      const o2 = ctx.createOscillator();
-      const g2 = ctx.createGain();
-      o2.type = 'sine';
-      o2.frequency.setValueAtTime(freq * 2, st);
-      g2.gain.setValueAtTime(vol * 0.12, st);
-      g2.gain.setTargetAtTime(0, st + 0.005, 0.05);
-      o2.connect(g2).connect(ctx.destination);
-      o2.start(st);
-      o2.stop(st + dur);
+      o.start(t);
+      o.stop(t + dur);
     });
+    // 高八度泛音提亮
+    const o4 = ctx.createOscillator();
+    const g4 = ctx.createGain();
+    o4.type = 'sine';
+    o4.frequency.setValueAtTime(1047, t); // C6
+    g4.gain.setValueAtTime(vol * 0.08, t);
+    g4.gain.setTargetAtTime(0, t + 0.005, 0.05);
+    o4.connect(g4).connect(ctx.destination);
+    o4.start(t);
+    o4.stop(t + dur);
   },
 
   // ------ 金币音 💰 ------
@@ -2452,60 +2450,49 @@ const SFX = {
   },
 
   // ------ 开始音 ▶️ ------
-  // 上升扫频（300→900Hz）+ 低八度副音，三角波，动感
+  // 两音上升 (G4→C5)，纯正弦，像「预备→开始」
   _start(ctx, vol){
     const t = ctx.currentTime;
-    // 主扫频：三角波 300→900Hz
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(300, t);
-    o.frequency.linearRampToValueAtTime(900, t + 0.3);
-    g.gain.setValueAtTime(vol * 0.45, t);
-    g.gain.setTargetAtTime(0, t + 0.005, 0.09);
-    o.connect(g).connect(ctx.destination);
-    o.start(t);
-    o.stop(t + 0.4);
-    // 低八度副音：低频加强
+    // 第一音：G4 (392Hz)
+    const o1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(392, t);
+    g1.gain.setValueAtTime(vol * 0.35, t);
+    g1.gain.setTargetAtTime(0, t + 0.003, 0.06);
+    o1.connect(g1).connect(ctx.destination);
+    o1.start(t);
+    o1.stop(t + 0.18);
+    // 第二音：C5 (523Hz) — 间隔 0.12s
     const o2 = ctx.createOscillator();
     const g2 = ctx.createGain();
     o2.type = 'sine';
-    o2.frequency.setValueAtTime(150, t);
-    o2.frequency.linearRampToValueAtTime(450, t + 0.3);
-    g2.gain.setValueAtTime(vol * 0.18, t);
-    g2.gain.setTargetAtTime(0, t + 0.005, 0.07);
+    o2.frequency.setValueAtTime(523, t + 0.12);
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.setValueAtTime(vol * 0.4, t + 0.123);
+    g2.gain.setTargetAtTime(0, t + 0.125, 0.09);
     o2.connect(g2).connect(ctx.destination);
-    o2.start(t);
+    o2.start(t + 0.12);
     o2.stop(t + 0.35);
   },
 
   // ------ 提醒音 ⏰ ------
-  // 下行小三度两音 (G5→E5)，三角波 + 泛音
+  // 三音上升 (E5→G5→C6)，短促清脆，有辨识度
   _alert(ctx, vol){
     const t = ctx.currentTime;
-    const notes = [784, 659]; // G5, E5
+    const notes = [659, 784, 1047]; // E5, G5, C6
     notes.forEach((freq, i) => {
-      const st = t + i * 0.2;
-      // 主音：三角波
+      const st = t + i * 0.1;
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.type = 'triangle';
+      o.type = 'sine';
       o.frequency.setValueAtTime(freq, st);
-      g.gain.setValueAtTime(vol * 0.35, st);
-      g.gain.setTargetAtTime(0, st + 0.003, 0.04);
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol * (0.3 - i * 0.05), st + 0.003);
+      g.gain.setTargetAtTime(0, st + 0.005, 0.05);
       o.connect(g).connect(ctx.destination);
       o.start(st);
-      o.stop(st + 0.18);
-      // 泛音
-      const o2 = ctx.createOscillator();
-      const g2 = ctx.createGain();
-      o2.type = 'sine';
-      o2.frequency.setValueAtTime(freq * 2, st);
-      g2.gain.setValueAtTime(vol * 0.1, st);
-      g2.gain.setTargetAtTime(0, st + 0.003, 0.03);
-      o2.connect(g2).connect(ctx.destination);
-      o2.start(st);
-      o2.stop(st + 0.12);
+      o.stop(st + 0.15);
     });
   }
 };
