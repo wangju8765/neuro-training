@@ -60,7 +60,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .us{background:#ffffff;border-radius:.625rem;padding:.75rem .875rem;border:1px solid #e0e6ed;font-size:.8125rem;color:#6a7a90;margin-top:.875rem;line-height:1.6;}
 .us .ut{color:#4a5a6a;font-weight:600;margin-bottom:.25rem;}
 
-/* ===== 金币相关 ===== */
+/* ===== 积分相关 ===== */
 .pt-card{background:#ffffff;border-radius:.875rem;padding:1.5rem;text-align:center;border:1px solid #e0e6ed;margin-bottom:.875rem;}
 .pt-card .pts{font-size:2.5rem;font-weight:700;color:#f5a623;line-height:1.2;}
 .pt-card .pl{font-size:.8125rem;color:#6a7a90;margin-top:.25rem;}
@@ -91,7 +91,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .rm-item .rm-del{font-size:.8125rem;padding:.25rem .375rem;border-radius:.25rem;cursor:pointer;opacity:.6;transition:.12s;flex-shrink:0;}
 .rm-item .rm-del:active{opacity:1;background:#fde8e8;}
 .rm-form{display:flex;flex-direction:column;gap:.5rem;padding:.875rem;background:#ffffff;border-radius:.75rem;border:1px solid #e0e6ed;}
-.rm-form .rf-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+.rm-form .rf-row{display:flex;gap:.5rem;align-items:center;}
 .rm-form .rf-row input{flex:1;padding:.5625rem .625rem;border-radius:.375rem;border:1px solid #c8d6e0;background:#f5f7fa;color:#2c3e50;font-size:.8125rem;outline:none;}
 .rm-form .rf-row input:focus{border-color:#4fc3f7;}
 .rm-form .rf-row .rf-add{padding:.5625rem .75rem;border:none;border-radius:.375rem;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;font-size:.8125rem;font-weight:600;cursor:pointer;flex-shrink:0;transition:.12s;}
@@ -422,15 +422,15 @@ select.me-input{appearance:auto;}
       </div>
     </div>
 
-    <!-- 金币商店 -->
+    <!-- 积分商店 -->
     <div class="set-section">
-      <div class="set-sec-title">🎮 金币商店</div>
+      <div class="set-sec-title">🎮 积分商店</div>
       <div class="set-card">
         <div class="set-row" onclick="openPt()">
           <span class="ic">🪙</span>
           <div class="inf">
-            <div class="n">金币商店</div>
-            <div class="d">查看金币余额、兑换奖励卡片</div>
+            <div class="n">积分商店</div>
+            <div class="d">查看积分余额、兑换奖励卡片</div>
           </div>
           <span class="arr">›</span>
         </div>
@@ -497,7 +497,7 @@ select.me-input{appearance:auto;}
         </div>
       </div>
       <div class="me-row">
-        <label>金币值</label>
+        <label>积分值</label>
         <div style="display:flex;align-items:center;gap:.5rem;">
           <input class="me-input" id="mePt" type="number" min="1" placeholder="5" style="flex:1;">
           <span style="font-size:.875rem;color:#6a7a90;flex-shrink:0;">分</span>
@@ -527,19 +527,19 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 金币商店页 ========== -->
+<!-- ========== 积分商店页 ========== -->
 <div class="page" id="pPt">
   <div class="top">
     <span class="bk" onclick="closePt()">✕</span>
-    <span class="mi">🎮 金币商店</span>
+    <span class="mi">🎮 积分商店</span>
     <span class="ri" id="ptTopBalance" style="color:#f5a623;font-weight:600;"></span>
   </div>
   <div class="scroll">
     <div class="pt-card">
       <div class="pts" id="ptBalance">0</div>
-      <div class="pl">🪙 总金币</div>
+      <div class="pl">🪙 总积分</div>
     </div>
-    <div class="pt-today" id="ptToday">今日已获得 0 金币</div>
+    <div class="pt-today" id="ptToday">今日已获得 0 积分</div>
     <div class="pt-grid" id="ptRewards"></div>
     <div class="pt-log" id="ptLog">
       <div class="lt">📋 最近流水</div>
@@ -561,7 +561,7 @@ select.me-input{appearance:auto;}
       <div class="rf-row">
         <input id="rmIcon" placeholder="图标 emoji" maxlength="2" style="max-width:3rem;text-align:center;">
         <input id="rmName" placeholder="奖励名称">
-        <input id="rmCost" type="number" min="1" placeholder="金币" style="max-width:4rem;text-align:center;">
+        <input id="rmCost" type="number" min="1" placeholder="积分" style="max-width:4rem;text-align:center;">
         <button class="rf-add" onclick="addReward()">添加</button>
       </div>
     </div>
@@ -769,7 +769,7 @@ function svDn(){
   localStorage.setItem('dc_'+dk(), JSON.stringify(Dn));
 }
 
-// ===== 金币系统 =====
+// ===== 积分系统 =====
 let PS = null;
 
 function initPS(){
@@ -873,13 +873,12 @@ function rH(){
   l.innerHTML = items.map(x => {
     if(!x) return '';
     const done = Dn.includes(x.i);
-    const pt = x.pt || 5;
-    const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
+    const tpLabel = x.type==='simple' ? '纯打卡' : '跟练型';
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
-      <span class="tp">${timeStr?timeStr + ' · ':''}🪙${pt}</span>
-      <div class="tm ${done?'done':''}">${done?'✅ 已完成':''}</div></div>`;
+      <span class="tp">${tpLabel}</span>
+      <div class="tm ${done?'done':''}">${done?'✅ 已完成':(x.dur!=null?x.dur+'分钟':x.t||'')}</div></div>`;
   }).join('');
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
@@ -946,7 +945,7 @@ function sX(id){
     document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
     // Points info
     if(PS){
-      document.getElementById('olPt').textContent = `🪙 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+      document.getElementById('olPt').textContent = `🪙 +${pt} 积分 · 今日共 ${getTodayEarned()} 分`;
     } else {
       document.getElementById('olPt').textContent = '';
     }
@@ -1063,7 +1062,7 @@ function fEx(){
   document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
   // Points info
   if(PS){
-    document.getElementById('olPt').textContent = `🪙 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+    document.getElementById('olPt').textContent = `🪙 +${pt} 积分 · 今日共 ${getTodayEarned()} 分`;
   } else {
     document.getElementById('olPt').textContent = '';
   }
@@ -1468,7 +1467,7 @@ function saveItem(){
   rH();
 }
 
-// ===== 金币商店 =====
+// ===== 积分商店 =====
 function openPt(){
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pPt').classList.add('active');
@@ -1483,7 +1482,7 @@ function rPt(){
   // Balance
   document.getElementById('ptBalance').textContent = PS.points;
   document.getElementById('ptTopBalance').textContent = '🪙 '+PS.points;
-  document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 金币（上限 100）';
+  document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 积分（上限 100）';
 
   // Rewards grid
   const g = document.getElementById('ptRewards');
@@ -1496,7 +1495,7 @@ function rPt(){
         <div class="ri">${r.icon || '🎁'}</div>
         <div class="rn">${r.name}</div>
         <div class="rc">🪙 ${r.cost}</div>
-        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换':'🪙'+r.cost}</button>
+        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换':'积分不足'}</button>
       </div>`;
     }).join('');
   }
@@ -1574,7 +1573,7 @@ function showRc(idx){
   const r = PS.rewards[idx];
   if(!r) return;
   document.getElementById('rcT').textContent = `兑换 ${r.icon} ${r.name}？`;
-  document.getElementById('rcS').textContent = `消耗 🪙 ${r.cost} 金币`;
+  document.getElementById('rcS').textContent = `消耗 🪙 ${r.cost} 积分`;
   document.getElementById('rc').classList.add('show');
 }
 
