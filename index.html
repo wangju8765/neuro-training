@@ -69,7 +69,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .pt-reward{background:#ffffff;border-radius:.75rem;padding:.875rem;border:1px solid #e0e6ed;text-align:center;}
 .pt-reward .ri{font-size:2rem;margin-bottom:.25rem;}
 .pt-reward .rn{font-size:.875rem;font-weight:600;margin-bottom:.125rem;}
-.pt-reward .rc{font-size:1rem;color:#f5a623;font-weight:700;margin-bottom:.5rem;}
+.pt-reward .rc{font-size:1.125rem;color:#e65100;font-weight:800;margin-bottom:.5rem;background:#fff8e1;border-radius:.375rem;padding:.125rem;}
 .pt-reward .rb{width:100%;padding:.5rem;border:none;border-radius:.5rem;font-size:.8125rem;font-weight:600;cursor:pointer;transition:.12s;}
 .pt-reward .rb:active{transform:scale(.97);}
 .pt-reward .rb.ok{background:linear-gradient(135deg,#f5a623,#ffb74d);color:#fff;}
@@ -312,7 +312,7 @@ select.me-input{appearance:auto;}
       <span class="hi" id="hdrHi"></span>
     </div>
     <div class="rt">
-      <button class="icon-btn" id="hdrGold" onclick="openPt(true)" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
+      <button class="icon-btn" id="hdrGold" onclick="openPt()" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
       <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
@@ -442,6 +442,14 @@ select.me-input{appearance:auto;}
           <div class="inf">
             <div class="n">管理奖励</div>
             <div class="d">添加或删除可兑换的奖励卡片</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="set-row" onclick="openBag()">
+          <span class="ic">🎒</span>
+          <div class="inf">
+            <div class="n">背包管理</div>
+            <div class="d">查看已购买的金币奖励卡片</div>
           </div>
           <span class="arr">›</span>
         </div>
@@ -1487,10 +1495,10 @@ function saveItem(){
 
 // ===== 金币商店 =====
 // 从首页还是设置页进入商店，记录来源，关闭时回来源页
-let ptFromHome = false;
+let ptSource = 'home'; // 'home' | 'setting'
 
-function openPt(fromHome){
-  ptFromHome = !!fromHome;
+function openPt(){
+  ptSource = document.getElementById('pS').classList.contains('active') ? 'setting' : 'home';
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pPt').classList.add('active');
@@ -1499,10 +1507,10 @@ function openPt(fromHome){
 function closePt(){
   document.getElementById('pPt').classList.remove('active');
   document.getElementById('pBag').classList.remove('active');
-  if(ptFromHome){
-    document.getElementById('pH').classList.add('active');
-  } else {
+  if(ptSource === 'setting'){
     document.getElementById('pS').classList.add('active');
+  } else {
+    document.getElementById('pH').classList.add('active');
   }
 }
 
@@ -1523,7 +1531,7 @@ function rPt(){
         <div class="ri">${r.icon || '🎁'}</div>
         <div class="rn">${r.name}</div>
         <div class="rc">💰 ${r.cost}</div>
-        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换':'💰'+r.cost}</button>
+        <button class="rb ${canBuy?'ok':'no'}" onclick="${canBuy?`showRc(${idx})`:''}">${canBuy?'兑换 💰'+r.cost:'💰'+r.cost}</button>
       </div>`;
     }).join('');
   }
