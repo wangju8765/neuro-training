@@ -1619,6 +1619,8 @@ function sX(id){
   document.getElementById('pP').classList.add('active');
   uPpd();
   uP();
+  // 播开场音频
+  TTS.playOpening(x.i);
 }
 
 function uPpd(){
@@ -2544,52 +2546,63 @@ document.addEventListener('click', function(e){
   }
 }, true);
 
-// ===== TTS 语音引导 =====
+// ===== TTS 语音引导（音频版） =====
+// 使用预生成的 TTS 音频（艾飞·激昂解说），无音频时兜底用浏览器 SpeechSynthesis
+const TTS_AUDIO_BASE = 'https://pkxmsfyzcphzvuangrzs.supabase.co/storage/v1/object/public/tts-audio/';
+
 const TTS = {
-  _speaking: false,
+  _audio: null,
 
   _cancel(){
+    if(this._audio){ this._audio.pause(); this._audio = null; }
     window.speechSynthesis.cancel();
-    this._speaking = false;
   },
 
-  speak(text, rate=1.0, pitch=1.0){
+  // 播音频文件，失败时用 SpeechSynthesis 兜底
+  play(key, fallbackText){
     if(SFX.muted) return;
     this._cancel();
-    if(!text) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
-    u.rate = rate;
-    u.pitch = pitch;
-    u.onstart = () => { this._speaking = true; };
-    u.onend = () => { this._speaking = false; };
-    u.onerror = () => { this._speaking = false; };
-    window.speechSynthesis.speak(u);
+    const url = TTS_AUDIO_BASE + 'tts-' + key + '.mp3';
+    const audio = new Audio(url);
+    audio.volume = 1.0;
+    audio.onerror = () => {
+      // 音频加载失败 → SpeechSynthesis 兜底
+      if(fallbackText){
+        const u = new SpeechSynthesisUtterance(fallbackText);
+        u.lang = 'zh-CN';
+        window.speechSynthesis.speak(u);
+      }
+    };
+    audio.play().catch(() => {
+      // play() 被阻止时也走兜底
+      if(fallbackText){
+        const u = new SpeechSynthesisUtterance(fallbackText);
+        u.lang = 'zh-CN';
+        window.speechSynthesis.speak(u);
+      }
+    });
+    this._audio = audio;
   },
 
-  speakStepName(text){
-    this.speak(text, 1.0, 1.0);
+  // 播步骤音频
+  playStep(id, stepIdx, cycle){
+    const m = St.cs > 1;
+    const key = m ? `${id}-r${cycle}-${stepIdx + 1}` : `${id}-${stepIdx + 1}`;
+    this.play(key, St.ss[stepIdx]?.t || '');
   },
 
-  speakNumber(n){
-    this.speak(String(n), 1.0, 1.0);
+  // 播开场音频
+  playOpening(id){
+    this.play(id + '-op', '');
   },
 
-  speakEnd(){
-    this.speak('结束，下一步', 1.0, 1.0);
-  },
-
-  speakFinish(){
-    this.speak('全部完成，太棒了！', 1.0, 1.0);
-  },
-
+  // 播完成音频（兜底用）
   speakComplete(){
-    this.speak('完成', 1.0, 1.0);
+    this.play('', '完成');
   }
 };
 
-// ===== 完全重写 sT 来加入 TTS 语音引导 =====
-// 原始 sT 在浏览器中已被定义（脚本头部），这里重写以插入 TTS 调用
+// ===== 重写 sT：改为播音频 =====
 sT = function(){
   const s = St.ss[St.st];
   if(!s || s.d <= 0){ ad(); return; }
@@ -2597,37 +2610,17 @@ sT = function(){
   St.pl = true;
   uP();
 
-  // 步骤开始时朗读步骤文字
-  if(s && s.t){
-    TTS.speakStepName(s.t);
-  }
+  // 播当前步骤的音频
+  TTS.playStep(St.ex.i, St.st, St.cy);
 
   St.ti = setInterval(() => {
     St.rm--;
     uP();
 
-    // 倒计时读数：剩余秒数 ≤ 5 时逐秒朗读
-    if(St.rm >= 0 && St.rm <= 5 && St.rm <= s.d){
-      TTS.speakNumber(St.rm);
-    }
-
     if(St.rm <= 0){
       clearInterval(St.ti);
       St.ti = null;
       St.pl = false;
-
-      // 步骤结束时朗读
-      const nextStep = St.st + 1;
-      const isLastStepInCycle = nextStep >= St.ss.length;
-      const isLastCycle = St.cy >= St.cs;
-      const isTotallyDone = isLastStepInCycle && isLastCycle;
-
-      if(isTotallyDone){
-        TTS.speakFinish();
-      } else {
-        TTS.speakEnd();
-      }
-
       ad();
     }
   }, 1000);
