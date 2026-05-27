@@ -336,6 +336,7 @@ select.me-input{appearance:auto;}
     <div class="rt">
       <button class="icon-btn" id="hdrGold" onclick="openPt()" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
       <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
+      <button class="icon-btn" id="sfxToggle" onclick="SFX.toggle()">🔊</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
   </div>
@@ -1392,6 +1393,7 @@ function getTodayEarned(){
 }
 
 function addPoints(amount, itemName){
+  SFX.play('coin');
   const key = getDailyKey();
   if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
 
@@ -1506,6 +1508,8 @@ function sX(id){
     svDn();
     const pt = x.pt || 5;
     if(PS) addPoints(pt, x.n);
+    SFX.play('complete');
+    SFX.play('coin');
     rH();
     const allDone = getSlotItems(St.pi).every(it => it && Dn.includes(it.i));
     document.getElementById('ol').classList.add('show');
@@ -1578,6 +1582,8 @@ function rD(n,a){
 // ===== 计时器（自动连播） =====
 document.getElementById('pBtn').addEventListener('click',()=>{
   if(!St.ex)return;
+  SFX.play('start');
+  SFX.play('alert');
   document.getElementById('pExtraBtns').style.display = 'none';
   const btn = document.getElementById('pBtn');
   btn.textContent = '⏳ 进行中...';
@@ -1618,6 +1624,8 @@ function fEx(){
   svDn();
   const pt = St.ex.pt || 5;
   if(PS && !wasDone) addPoints(pt, St.ex.n);
+  SFX.play('complete');
+  SFX.play('coin');
   const items = getSlotItems(St.pi);
   const allDone = items.every(x => x && Dn.includes(x.i));
   document.getElementById('ol').classList.add('show');
@@ -2227,6 +2235,7 @@ function doRedeem(){
   });
   flushPS();
   enqueueSync(async () => { await syncRewards(); await syncRedeemed(); });
+  SFX.play('complete');
   clRc();
   rPt();
 }
@@ -2269,6 +2278,144 @@ initDC();
 loadDn();
 initPS();
 startup();
+
+// ===== 音效系统 (Web Audio API) =====
+const SFX = {
+  _ctx: null,
+  muted: false,
+
+  _getCtx(){
+    if(!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if(this._ctx.state === 'suspended') this._ctx.resume();
+    return this._ctx;
+  },
+
+  _vol: 0.3,
+
+  play(name){
+    try{
+      if(this.muted) return;
+      const ctx = this._getCtx();
+      const vol = this._vol;
+      switch(name){
+        case 'complete': this._complete(ctx, vol); break;
+        case 'coin': this._coin(ctx, vol); break;
+        case 'click': this._click(ctx, vol); break;
+        case 'start': this._start(ctx, vol); break;
+        case 'alert': this._alert(ctx, vol); break;
+      }
+    }catch(e){ /* Web Audio not available, silently ignore */ }
+  },
+
+  setVolume(v){ this._vol = Math.max(0, Math.min(1, v)); },
+
+  toggle(){
+    this.muted = !this.muted;
+    localStorage.setItem('sfx_muted', this.muted ? '1' : '0');
+    const btn = document.getElementById('sfxToggle');
+    if(btn) btn.textContent = this.muted ? '🔇' : '🔊';
+  },
+
+  // 清脆上升叮咚声 (正弦波 523Hz→1047Hz, 0.3s)
+  _complete(ctx, vol){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(1047, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  },
+
+  // 金币叮当声 (两个短脉冲 1200Hz 和 800Hz, 0.15s)
+  _coin(ctx, vol){
+    [1200, 800].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(vol * 0.7, t);
+      gain.gain.linearRampToValueAtTime(0, t + 0.12);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.12);
+    });
+  },
+
+  // 轻触声 (白噪声短脉冲 0.05s)
+  _click(ctx, vol){
+    const bufSize = ctx.sampleRate * 0.05;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    src.buffer = buf;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.05);
+    src.connect(gain).connect(ctx.destination);
+    src.start(ctx.currentTime);
+  },
+
+  // 短预备提示 (440Hz 持续 0.2s)
+  _start(ctx, vol){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
+  },
+
+  // 提醒音 (两个短脉冲 660Hz 间隔 0.15s)
+  _alert(ctx, vol){
+    for(let i = 0; i < 2; i++){
+      const t = ctx.currentTime + i * 0.15;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(660, t);
+      gain.gain.setValueAtTime(vol * 0.8, t);
+      gain.gain.linearRampToValueAtTime(0, t + 0.12);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.12);
+    }
+  }
+};
+
+// Restore mute state from localStorage
+const savedMuted = localStorage.getItem('sfx_muted');
+if(savedMuted === '1'){
+  SFX.muted = true;
+  const btn = document.getElementById('sfxToggle');
+  if(btn) btn.textContent = '🔇';
+}
+
+// Hook click sounds to major interactive elements
+function sfxClick(e){
+  const el = e.currentTarget;
+  // Skip buttons that have their own sound effects
+  if(el.id === 'hdrGold' || el.id === 'hdrBag' || el.id === 'sfxToggle') return;
+  const tag = el.tagName;
+  if(tag === 'BUTTON' || tag === 'A' || (tag === 'SPAN' && el.onclick)){
+    SFX.play('click');
+  }
+}
+
+document.addEventListener('click', function(e){
+  const el = e.target.closest('button, a, .ex, .tagb, .mg-acts span, .icon-btn, .bo, .ol-btn .b, .cr .b, .rb, .rs, .rm-del, .rf-add, .add-step-btn, .me-type-btn, .set-row');
+  if(el && el.id !== 'hdrGold' && el.id !== 'hdrBag' && el.id !== 'sfxToggle' && !el.closest('.ex') && !el.onclick?.toString().includes('sX')){
+    SFX.play('click');
+  }
+}, true);
 </script>
 </body>
 </html>
