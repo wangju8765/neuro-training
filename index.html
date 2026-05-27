@@ -731,7 +731,14 @@ select.me-input{appearance:auto;}
 // ===== Supabase 初始化 =====
 const SUPABASE_URL = 'https://pkxmsfyzcphzvuangrzs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreG1zZnl6Y3BoenZ1YW5ncnpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDkxNzcsImV4cCI6MjA5NDYyNTE3N30.K1_niR4ZylqzbDPFnmTs5HRo2aEbObkGw3V9clM1czo';
-const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase = null;
+try {
+  if(typeof supabaseClient !== 'undefined'){
+    supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch(e){
+  console.warn('Supabase 初始化失败，以降级模式运行:', e);
+}
 
 // ===== 默认数据 =====
 const DEF_ITEMS = [
