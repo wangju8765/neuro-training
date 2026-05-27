@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>✅ 每日打卡</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== 根字体随屏幕宽度缩放 ===== */
 html{font-size:calc(100vw / 375 * 16);}
@@ -304,8 +305,29 @@ select.me-input{appearance:auto;}
 </head>
 <body>
 
+<!-- ========== 登录页 ========== -->
+<div class="page" id="pLogin">
+  <div class="header">
+    <div class="lt">
+      <span class="hi">👋 选择成员</span>
+    </div>
+    <div class="rt">
+      <span style="font-size:.8125rem;color:#7a8a9a;">每日打卡</span>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="pc" style="text-align:center;padding:2rem 1rem;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">💪</div>
+      <div style="font-size:1.125rem;font-weight:600;color:#2c3e50;">欢迎回来！</div>
+      <div style="font-size:.8125rem;color:#6a7a90;margin-top:.25rem;">选择你的头像继续</div>
+    </div>
+    <div id="loginUserList" style="display:flex;flex-direction:column;gap:.75rem;"></div>
+    <button class="bo" onclick="showCreateUser()" style="margin-top:.75rem;">➕ 新成员</button>
+  </div>
+</div>
+
 <!-- ========== 首页 ========== -->
-<div class="page active" id="pH">
+<div class="page" id="pH">
   <div class="header">
     <div class="lt">
       <span class="dt" id="hdrDt"></span>
@@ -616,6 +638,19 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
+<!-- ========== PIN 输入弹窗 ========== -->
+<div class="ne" id="pinModal">
+  <div class="bx">
+    <div class="ct" id="pinModalTitle">输入 PIN 码</div>
+    <input class="ni" id="pinInput" type="password" placeholder="请输入4位PIN码" maxlength="4" inputmode="numeric" pattern="[0-9]*" onkeydown="if(event.key==='Enter')verifyPin()" style="font-size:1.5rem;letter-spacing:.5rem;text-align:center;font-weight:600;">
+    <div class="cs" id="pinError" style="color:#ef5350;font-size:.8125rem;min-height:1.25rem;"></div>
+    <div class="cr">
+      <button class="b bs" onclick="closePinModal()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
+      <button class="b bp" onclick="verifyPin()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">确定</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== 姓名编辑弹窗 ========== -->
 <div class="ne" id="ne">
   <div class="bx">
@@ -624,6 +659,20 @@ select.me-input{appearance:auto;}
     <div class="cr">
       <button class="b bs" onclick="clNE()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
       <button class="b bp" onclick="saveNE()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 创建用户弹窗 ========== -->
+<div class="ne" id="createUserModal">
+  <div class="bx">
+    <div class="ct">➕ 添加新成员</div>
+    <input class="ni" id="createUserName" placeholder="输入名字" maxlength="12" onkeydown="if(event.key==='Enter')document.getElementById('createUserPin').focus()">
+    <input class="ni" id="createUserPin" type="password" placeholder="设置4位PIN码" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="font-size:1.5rem;letter-spacing:.5rem;text-align:center;font-weight:600;" onkeydown="if(event.key==='Enter')createUser()">
+    <div class="cs" id="createUserError" style="color:#ef5350;font-size:.8125rem;min-height:1.25rem;"></div>
+    <div class="cr">
+      <button class="b bs" onclick="closeCreateUserModal()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
+      <button class="b bp" onclick="createUser()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">确定</button>
     </div>
   </div>
 </div>
@@ -678,6 +727,11 @@ select.me-input{appearance:auto;}
 </div>
 
 <script>
+// ===== Supabase 初始化 =====
+const SUPABASE_URL = 'https://pkxmsfyzcphzvuangrzs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreG1zZnl6Y3BoenZ1YW5ncnpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDkxNzcsImV4cCI6MjA5NDYyNTE3N30.K1_niR4ZylqzbDPFnmTs5HRo2aEbObkGw3V9clM1czo';
+const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // ===== 默认数据 =====
 const DEF_ITEMS = [
   {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   no:'洗漱时做', type:'routine', pt:5,
@@ -718,13 +772,33 @@ const DEF_SLOTS = [
   { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish'] }
 ];
 
+// ===== 用户系统 =====
+let currentUser = null; // { id, name, avatar, settings, pin }
+
+function loadCurrentUser(){
+  try{
+    const r = localStorage.getItem('dc_current_user');
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return null;
+}
+
+function saveCurrentUser(user){
+  currentUser = user;
+  localStorage.setItem('dc_current_user', JSON.stringify(user));
+}
+
+function clearCurrentUser(){
+  currentUser = null;
+  localStorage.removeItem('dc_current_user');
+}
+
 // ===== 数据管理 =====
 let DC = {}; // { slots: [], items: [], settings: {userName: ''}, trash: [] }
 
 function initDC(){
   const itemsRaw = localStorage.getItem('dc_items');
   if(!itemsRaw){
-    // First visit: import defaults
     DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
     DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
     DC.settings = {userName: '小伙伴'};
@@ -733,12 +807,10 @@ function initDC(){
     return;
   }
   DC.items = JSON.parse(itemsRaw);
-  // Load trash
   const trashRaw = localStorage.getItem('dc_trash');
   DC.trash = trashRaw ? JSON.parse(trashRaw) : [];
   try{ DC.settings = JSON.parse(localStorage.getItem('dc_settings') || '{}'); }catch(e){ DC.settings = {}; }
   if(!DC.settings.userName) DC.settings.userName = '小伙伴';
-  // Load slots
   const slotsRaw = localStorage.getItem('dc_slots');
   if(slotsRaw){
     try{ DC.slots = JSON.parse(slotsRaw); }catch(e){ DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS)); }
@@ -756,6 +828,7 @@ function flushDC(){
 
 function svSlots(){
   localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
+  syncSlots();
 }
 
 function getSlot(id){
@@ -770,6 +843,484 @@ function getSlotItems(slotId){
 
 function getItem(id){
   return DC.items.find(x => x.i === id);
+}
+
+// ===== 同步到 Supabase =====
+let syncQueue = [];
+
+function enqueueSync(fn){
+  syncQueue.push(fn);
+  if(syncQueue.length === 1) processSyncQueue();
+}
+
+async function processSyncQueue(){
+  while(syncQueue.length > 0){
+    try{
+      await syncQueue[0]();
+    }catch(e){
+      console.warn('Sync failed (will retry on next save):', e);
+    }
+    syncQueue.shift();
+  }
+}
+
+async function syncItems(){
+  if(!currentUser) return;
+  const { error } = await supabase.from('items').upsert(
+    DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
+      user_id: currentUser.id,
+      item_id: x.i,
+      name: x.n,
+      icon: x.ic || '✅',
+      type: x.type || 'simple',
+      duration: x.dur || 1,
+      time_label: x.t || '1分钟',
+      points: x.pt || 5,
+      cycle_count: x.cy || null,
+      note: x.no || '',
+      steps: x.s || [],
+      deleted: false
+    })), { onConflict: 'user_id,item_id' }
+  );
+  if(error) console.warn('syncItems error:', error);
+}
+
+async function syncSlots(){
+  if(!currentUser) return;
+  const { error } = await supabase.from('slots').upsert(
+    DC.slots.map(s => ({
+      user_id: currentUser.id,
+      slot_id: s.i,
+      icon: s.ic || '☀️',
+      name: s.n,
+      item_ids: s.ids
+    })), { onConflict: 'user_id,slot_id' }
+  );
+  if(error) console.warn('syncSlots error:', error);
+}
+
+async function syncSettings(){
+  if(!currentUser) return;
+  const { error } = await supabase.from('users').update({
+    settings: DC.settings,
+    name: DC.settings.userName || '小伙伴'
+  }).eq('id', currentUser.id);
+  if(error) console.warn('syncSettings error:', error);
+}
+
+async function syncDailyLog(){
+  if(!currentUser) return;
+  const key = dk();
+  const { error } = await supabase.from('daily_logs').upsert({
+    user_id: currentUser.id,
+    date_key: key,
+    completed_items: Dn,
+    earned_points: PS ? getTodayEarned() : 0
+  }, { onConflict: 'user_id,date_key' });
+  if(error) console.warn('syncDailyLog error:', error);
+}
+
+async function syncPointsState(){
+  if(!currentUser || !PS) return;
+  const { error } = await supabase.from('points_state').upsert({
+    user_id: currentUser.id,
+    points: PS.points,
+    daily_points: PS.dailyPoints
+  }, { onConflict: 'user_id' });
+  if(error) console.warn('syncPointsState error:', error);
+}
+
+async function syncRewards(){
+  if(!currentUser) return;
+  // Delete all and re-insert
+  await supabase.from('rewards').delete().eq('user_id', currentUser.id);
+  if(PS && PS.rewards && PS.rewards.length > 0){
+    const { error } = await supabase.from('rewards').insert(
+      PS.rewards.map((r, i) => ({
+        user_id: currentUser.id,
+        icon: r.icon || '🎁',
+        name: r.name,
+        cost: r.cost,
+        sort_order: i
+      }))
+    );
+    if(error) console.warn('syncRewards error:', error);
+  }
+}
+
+async function syncRedeemed(){
+  if(!currentUser) return;
+  await supabase.from('redeemed').delete().eq('user_id', currentUser.id);
+  if(PS && PS.redeemed && PS.redeemed.length > 0){
+    const { error } = await supabase.from('redeemed').insert(
+      PS.redeemed.map(r => ({
+        user_id: currentUser.id,
+        redeem_id: r.id,
+        icon: r.icon || '🎁',
+        name: r.name,
+        cost: r.cost,
+        purchased_at: r.purchasedAt
+      }))
+    );
+    if(error) console.warn('syncRedeemed error:', error);
+  }
+}
+
+async function syncPointLogs(){
+  if(!currentUser) return;
+  // Delete all and re-insert for simplicity
+  await supabase.from('point_logs').delete().eq('user_id', currentUser.id);
+  if(PS && PS.pointLog && PS.pointLog.length > 0){
+    const { error } = await supabase.from('point_logs').insert(
+      PS.pointLog.map(l => ({
+        user_id: currentUser.id,
+        type: l.type,
+        amount: l.amount,
+        item_name: l.itemName || '',
+        balance_after: l.balance,
+        timestamp_ms: l.timestamp
+      }))
+    );
+    if(error) console.warn('syncPointLogs error:', error);
+  }
+}
+
+async function syncDeletedItems(){
+  if(!currentUser) return;
+  // Mark items in trash as deleted in Supabase
+  const deletedIds = DC.trash.filter(t => t.item).map(t => t.item.i).filter(Boolean);
+  if(deletedIds.length > 0){
+    const { error } = await supabase.from('items').update({
+      deleted: true,
+      deleted_at: new Date().toISOString()
+    }).eq('user_id', currentUser.id).in('item_id', deletedIds);
+    if(error) console.warn('syncDeletedItems error:', error);
+  }
+}
+
+async function syncAllToSupabase(){
+  if(!currentUser) return;
+  enqueueSync(async () => {
+    await syncItems();
+    await syncSlots();
+    await syncSettings();
+    await syncDailyLog();
+    await syncPointsState();
+    await syncRewards();
+    await syncRedeemed();
+    await syncPointLogs();
+    await syncDeletedItems();
+  });
+}
+
+// ===== 从 Supabase 加载数据 =====
+async function loadUserDataFromSupabase(user){
+  try{
+    // Parallel load all data
+    const [itemsRes, slotsRes, dailyRes, pointsRes, rewardsRes, redeemedRes, logsRes] = await Promise.all([
+      supabase.from('items').select('*').eq('user_id', user.id).eq('deleted', false),
+      supabase.from('slots').select('*').eq('user_id', user.id),
+      supabase.from('daily_logs').select('*').eq('user_id', user.id).eq('date_key', dk()).single(),
+      supabase.from('points_state').select('*').eq('user_id', user.id).single(),
+      supabase.from('rewards').select('*').eq('user_id', user.id).order('sort_order'),
+      supabase.from('redeemed').select('*').eq('user_id', user.id),
+      supabase.from('point_logs').select('*').eq('user_id', user.id).order('timestamp_ms', { ascending: false }).limit(100)
+    ]);
+
+    // Transform items
+    if(!itemsRes.error && itemsRes.data && itemsRes.data.length > 0){
+      DC.items = itemsRes.data.map(r => ({
+        i: r.item_id,
+        n: r.name,
+        ic: r.icon || '✅',
+        t: r.time_label || '1分钟',
+        dur: r.duration || 1,
+        no: r.note || '',
+        type: r.type || 'simple',
+        pt: r.points || 5,
+        cy: r.cycle_count || undefined,
+        s: r.steps || []
+      }));
+    } else {
+      DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
+    }
+
+    // Transform slots
+    if(!slotsRes.error && slotsRes.data && slotsRes.data.length > 0){
+      DC.slots = slotsRes.data.map(r => ({
+        i: r.slot_id,
+        ic: r.icon || '☀️',
+        n: r.name,
+        ids: r.item_ids || []
+      }));
+    } else {
+      DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
+    }
+
+    // Load settings from user record
+    DC.settings = user.settings || {userName: user.name || '小伙伴'};
+    if(!DC.settings.userName) DC.settings.userName = user.name || '小伙伴';
+
+    // Trash: load from Supabase deleted items
+    const trashRes = await supabase.from('items').select('*').eq('user_id', user.id).eq('deleted', true);
+    DC.trash = [];
+    if(!trashRes.error && trashRes.data){
+      DC.trash = trashRes.data.map(r => ({
+        item: {
+          i: r.item_id,
+          n: r.name,
+          ic: r.icon || '✅',
+          t: r.time_label || '1分钟',
+          dur: r.duration || 1,
+          no: r.note || '',
+          type: r.type || 'simple',
+          pt: r.points || 5,
+          cy: r.cycle_count || undefined,
+          s: r.steps || []
+        },
+        deletedAt: r.deleted_at ? new Date(r.deleted_at).getTime() : Date.now()
+      }));
+    }
+
+    // Write to localStorage
+    flushDC();
+
+    // Load daily log
+    if(!dailyRes.error && dailyRes.data){
+      Dn = dailyRes.data.completed_items || [];
+    } else {
+      Dn = [];
+    }
+    localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
+
+    // Load points state
+    if(!pointsRes.error && pointsRes.data){
+      PS = {
+        points: pointsRes.data.points || 0,
+        dailyPoints: pointsRes.data.daily_points || {},
+        pointLog: [],
+        rewards: [],
+        redeemed: []
+      };
+      const key = getDailyKey();
+      if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
+    } else {
+      PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [], redeemed: [] };
+      const key = getDailyKey();
+      PS.dailyPoints[key] = { earned: 0 };
+    }
+
+    // Load rewards
+    if(!rewardsRes.error && rewardsRes.data){
+      PS.rewards = rewardsRes.data.map(r => ({
+        icon: r.icon || '🎁',
+        name: r.name,
+        cost: r.cost
+      }));
+    }
+
+    // Load redeemed
+    if(!redeemedRes.error && redeemedRes.data){
+      PS.redeemed = redeemedRes.data.map(r => ({
+        id: r.redeem_id,
+        icon: r.icon || '🎁',
+        name: r.name,
+        cost: r.cost,
+        purchasedAt: r.purchased_at
+      }));
+    }
+
+    // Load point logs
+    if(!logsRes.error && logsRes.data){
+      PS.pointLog = logsRes.data.map(l => ({
+        type: l.type,
+        amount: l.amount,
+        itemName: l.item_name,
+        balance: l.balance_after,
+        timestamp: l.timestamp_ms
+      }));
+    }
+
+    localStorage.setItem('dc_points_state', JSON.stringify(PS));
+    return true;
+  }catch(e){
+    console.error('Failed to load user data:', e);
+    return false;
+  }
+}
+
+// ===== 登录流程 =====
+let pendingLoginUserId = null;
+
+// 显示登录页
+function showLogin(){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pLogin').classList.add('active');
+  loadLoginUsers();
+}
+
+async function loadLoginUsers(){
+  const l = document.getElementById('loginUserList');
+  l.innerHTML = '<div class="empty-state">⏳ 加载中...</div>';
+  l.innerHTML = '';
+
+  try{
+    const { data, error } = await supabase.from('users').select('*').order('id');
+    if(error){
+      l.innerHTML = '<div class="empty-state">⚠️ 加载失败，请检查网络连接</div>';
+      return;
+    }
+
+    if(!data || data.length === 0){
+      l.innerHTML = '<div class="empty-state">还没有成员<br><span style="font-size:.75rem;">点击下方按钮添加第一个成员</span></div>';
+      return;
+    }
+
+    l.innerHTML = data.map(u => `
+      <div class="ex" onclick="startLogin('${u.id}')" style="cursor:pointer;">
+        <div class="ic" style="font-size:1.5rem;">${u.avatar || '😊'}</div>
+        <div class="inf" style="font-size:1rem;font-weight:600;">${u.name}</div>
+        <div class="tm">点击进入 ›</div>
+      </div>
+    `).join('');
+  }catch(e){
+    l.innerHTML = '<div class="empty-state">⚠️ 网络错误，请重试</div>';
+  }
+}
+
+function startLogin(userId){
+  pendingLoginUserId = userId;
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinModalTitle').textContent = '输入 PIN 码';
+  document.getElementById('pinModal').classList.add('show');
+  setTimeout(() => document.getElementById('pinInput').focus(), 100);
+}
+
+function closePinModal(){
+  document.getElementById('pinModal').classList.remove('show');
+  pendingLoginUserId = null;
+}
+
+async function verifyPin(){
+  const pin = document.getElementById('pinInput').value.trim();
+  const errEl = document.getElementById('pinError');
+  if(!pin || pin.length !== 4){
+    errEl.textContent = '请输入4位PIN码';
+    return;
+  }
+
+  try{
+    const { data, error } = await supabase.from('users').select('*').eq('id', pendingLoginUserId).single();
+    if(error || !data){
+      errEl.textContent = '用户不存在';
+      return;
+    }
+
+    if(data.pin !== pin){
+      errEl.textContent = 'PIN码错误，请重试';
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinInput').focus();
+      return;
+    }
+
+    // Login success
+    closePinModal();
+    saveCurrentUser(data);
+    await loadUserDataFromSupabase(data);
+    enterHome();
+  }catch(e){
+    errEl.textContent = '网络错误，请重试';
+  }
+}
+
+function showCreateUser(){
+  document.getElementById('createUserName').value = '';
+  document.getElementById('createUserPin').value = '';
+  document.getElementById('createUserError').textContent = '';
+  document.getElementById('createUserModal').classList.add('show');
+  setTimeout(() => document.getElementById('createUserName').focus(), 100);
+}
+
+function closeCreateUserModal(){
+  document.getElementById('createUserModal').classList.remove('show');
+}
+
+async function createUser(){
+  const name = document.getElementById('createUserName').value.trim();
+  const pin = document.getElementById('createUserPin').value.trim();
+  const errEl = document.getElementById('createUserError');
+
+  if(!name){ errEl.textContent = '请输入名字'; return; }
+  if(!pin || pin.length !== 4){ errEl.textContent = '请设置4位PIN码'; return; }
+
+  try{
+    const { data, error } = await supabase.from('users').insert({
+      name: name,
+      pin: pin,
+      avatar: '😊',
+      settings: { userName: name }
+    }).select().single();
+
+    if(error){
+      errEl.textContent = '创建失败：' + error.message;
+      return;
+    }
+
+    closeCreateUserModal();
+    // Create default data for new user
+    const user = data;
+    const defaultItems = JSON.parse(JSON.stringify(DEF_ITEMS));
+    const defaultSlots = JSON.parse(JSON.stringify(DEF_SLOTS));
+
+    // Insert default items
+    const itemInserts = defaultItems.map(x => ({
+      user_id: user.id,
+      item_id: x.i,
+      name: x.n,
+      icon: x.ic || '✅',
+      type: x.type || 'simple',
+      duration: x.dur || 1,
+      time_label: x.t || '1分钟',
+      points: x.pt || 5,
+      cycle_count: x.cy || null,
+      note: x.no || '',
+      steps: x.s || []
+    }));
+    await supabase.from('items').insert(itemInserts);
+
+    // Insert default slots
+    const slotInserts = defaultSlots.map(s => ({
+      user_id: user.id,
+      slot_id: s.i,
+      icon: s.ic,
+      name: s.n,
+      item_ids: s.ids
+    }));
+    await supabase.from('slots').insert(slotInserts);
+
+    // Init points
+    await supabase.from('points_state').insert({
+      user_id: user.id,
+      points: 0,
+      daily_points: {}
+    });
+
+    // Auto-login
+    saveCurrentUser(user);
+    await loadUserDataFromSupabase(user);
+    enterHome();
+  }catch(e){
+    errEl.textContent = '网络错误，请重试';
+  }
+}
+
+function enterHome(){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pH').classList.add('active');
+  // Ensure pi is valid
+  if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
+  rH();
 }
 
 // ===== 每日完成记录 =====
@@ -790,23 +1341,23 @@ function loadDn(){
 
 function svDn(){
   localStorage.setItem('dc_'+dk(), JSON.stringify(Dn));
+  syncDailyLog();
 }
 
 // ===== 金币系统 =====
 let PS = null;
 
 function initPS(){
+  // Will be loaded from Supabase after login
   try{
     const r = localStorage.getItem('dc_points_state');
     if(r){
       PS = JSON.parse(r);
-      // Ensure dailyPoints structure
       if(!PS.dailyPoints) PS.dailyPoints = {};
       if(!PS.pointLog) PS.pointLog = [];
       if(!PS.rewards) PS.rewards = [];
       if(!PS.redeemed) PS.redeemed = [];
       if(PS.points == null) PS.points = 0;
-      // Ensure today's entry
       const key = getDailyKey();
       if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
     } else {
@@ -819,6 +1370,9 @@ function initPS(){
     const key = getDailyKey();
     PS.dailyPoints[key] = { earned: 0 };
   }
+  if(!PS.pointLog) PS.pointLog = [];
+  if(!PS.rewards) PS.rewards = [];
+  if(!PS.redeemed) PS.redeemed = [];
   flushPS();
 }
 
@@ -851,6 +1405,7 @@ function addPoints(amount, itemName){
     timestamp: Date.now()
   });
   flushPS();
+  enqueueSync(async () => { await syncPointsState(); await syncDailyLog(); await syncPointLogs(); });
   return amount;
 }
 
@@ -865,6 +1420,7 @@ function spendPoints(amount, rewardName){
     timestamp: Date.now()
   });
   flushPS();
+  enqueueSync(async () => { await syncPointsState(); await syncPointLogs(); });
   return true;
 }
 
@@ -878,16 +1434,11 @@ function swT(id){
 }
 
 function rH(){
-  // Render header greeting
   updateHeader();
-
-  // Render tags (fixed three slots)
   const tgS = document.getElementById('tgS');
   tgS.innerHTML = DC.slots.map(s =>
     `<div class="tagb ${s.i===St.pi?'ac':''}" data-i="${s.i}" onclick="swT('${s.i}')">${s.ic} ${s.n}</div>`
   ).join('');
-
-  // Render items for current slot
   const items = getSlotItems(St.pi);
   const l = document.getElementById('exL');
   l.innerHTML = items.map(x => {
@@ -904,12 +1455,10 @@ function rH(){
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
   }
-
   upPr();
 }
 
 function updateHeader(){
-  // Date
   const now = new Date();
   const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
   const month = now.getMonth()+1;
@@ -917,7 +1466,6 @@ function updateHeader(){
   const wd = weekdays[now.getDay()];
   document.getElementById('hdrDt').textContent = `${wd} · ${month}月${day}日`;
 
-  // Greeting based on time
   const h = now.getHours();
   let greetEmoji, greetWord;
   if(h < 6){ greetEmoji='🌙'; greetWord='夜深了'; }
@@ -940,7 +1488,6 @@ function upPr(){
   document.getElementById('pgB').style.width = `${t>0 ? d/t*100 : 0}%`;
   const doneItems = items.filter(x => x && Dn.includes(x.i)).map(x => x.ic + x.n).join(' · ');
   document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
-  // Update points display
   if(PS){
     document.getElementById('pgPts').textContent = `💰 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
     const hg = document.getElementById('hdrGold');
@@ -954,20 +1501,16 @@ function sX(id){
   const x = getItem(id);
   if(!x) return;
 
-  // Simple type: complete directly
   if(x.type === 'simple'){
     if(!Dn.includes(id)) Dn.push(id);
     svDn();
-    // Add points
     const pt = x.pt || 5;
     if(PS) addPoints(pt, x.n);
     rH();
-    // Show completion popup
     const allDone = getSlotItems(St.pi).every(it => it && Dn.includes(it.i));
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
     document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
-    // Points info
     if(PS){
       document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
     } else {
@@ -978,7 +1521,6 @@ function sX(id){
     return;
   }
 
-  // Routine type: go to practice page
   St.ex = x;
   St.cs = x.cy || 1;
   St.cy = 1;
@@ -987,7 +1529,6 @@ function sX(id){
   St.pl = false;
   if(St.ti){ clearInterval(St.ti); St.ti = null; }
 
-  // Reset buttons to initial state
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -1037,13 +1578,11 @@ function rD(n,a){
 // ===== 计时器（自动连播） =====
 document.getElementById('pBtn').addEventListener('click',()=>{
   if(!St.ex)return;
-  // Hide extra buttons, show "进行中"
   document.getElementById('pExtraBtns').style.display = 'none';
   const btn = document.getElementById('pBtn');
   btn.textContent = '⏳ 进行中...';
   btn.disabled = true;
   btn.style.cursor = 'not-allowed';
-  // Start auto-play from first step
   St.st = 0;
   St.cy = 1;
   uP();
@@ -1077,7 +1616,6 @@ function fEx(){
   const wasDone = Dn.includes(id);
   if(!wasDone) Dn.push(id);
   svDn();
-  // Add points (only if not already completed)
   const pt = St.ex.pt || 5;
   if(PS && !wasDone) addPoints(pt, St.ex.n);
   const items = getSlotItems(St.pi);
@@ -1085,7 +1623,6 @@ function fEx(){
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent = `${St.ex.ic} ${St.ex.n} 完成！`;
   document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
-  // Points info
   if(PS){
     document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
   } else {
@@ -1093,7 +1630,6 @@ function fEx(){
   }
   const det = items.map(x => (Dn.includes(x.i)?'✅':'⬜')+' '+x.ic+x.n).join('<br>');
   document.getElementById('olD').innerHTML = '今日进度：'+items.filter(x=>x && Dn.includes(x.i)).length+'/'+items.length+'<br>'+det;
-  // Reset button state for next time
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -1129,7 +1665,6 @@ function goH(){
   document.getElementById('pBag').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
-  // Reset button state
   document.getElementById('pExtraBtns').style.display = 'flex';
   const pBtn = document.getElementById('pBtn');
   pBtn.textContent = '▶ 开始';
@@ -1152,6 +1687,7 @@ function saveNE(){
   if(v){
     DC.settings.userName = v;
     flushDC();
+    syncSettings();
     rH();
   }
   clNE();
@@ -1241,13 +1777,12 @@ function delItem(id){
   if(!x) return;
   showDC(`删除「${x.n}」？`, '删除后可从「最近删除」恢复', ()=>{
     DC.items = DC.items.filter(it => it.i !== id);
-    // Remove from all slots
     DC.slots.forEach(s => {
       s.ids = s.ids.filter(i => i !== id);
     });
-    // Move to trash
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
+    enqueueSync(async () => { await syncItems(); await syncSlots(); await syncDeletedItems(); });
     rMg();
     rH();
   });
@@ -1284,6 +1819,7 @@ function restoreItem(idx){
   DC.items.push(t.item);
   DC.trash.splice(idx, 1);
   flushDC();
+  enqueueSync(async () => { await syncItems(); await syncDeletedItems(); });
   rTr();
   rH();
 }
@@ -1416,7 +1952,6 @@ function renderStepList(){
         </div>
       </div>
     </div>
-
   `).join('');
 }
 
@@ -1489,13 +2024,13 @@ function saveItem(){
   }
 
   flushDC();
+  enqueueSync(syncItems);
   closeEditor();
   rH();
 }
 
 // ===== 金币商店 =====
-// 从首页还是设置页进入商店，记录来源，关闭时回来源页
-let ptSource = 'home'; // 'home' | 'setting'
+let ptSource = 'home';
 
 function openPt(){
   ptSource = document.getElementById('pS').classList.contains('active') ? 'setting' : 'home';
@@ -1515,12 +2050,10 @@ function closePt(){
 }
 
 function rPt(){
-  // Balance
   document.getElementById('ptBalance').textContent = PS.points;
   document.getElementById('ptTopBalance').textContent = '💰 '+PS.points;
   document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 金币';
 
-  // Rewards grid
   const g = document.getElementById('ptRewards');
   if(PS.rewards.length === 0){
     g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;">暂无奖励卡片<br><span style="font-size:.75rem;">去管理奖励添加</span></div>';
@@ -1536,7 +2069,6 @@ function rPt(){
     }).join('');
   }
 
-  // Log
   const ll = document.getElementById('ptLogList');
   if(PS.pointLog.length === 0){
     ll.innerHTML = '<div class="li" style="justify-content:center;color:#9aabba;">暂无流水记录</div>';
@@ -1598,16 +2130,15 @@ function showUseConfirm(idx){
   document.getElementById('rcT').textContent = '确认要使用 ' + (r.icon||'🎁') + ' ' + r.name + ' 吗？';
   document.getElementById('rcS').textContent = '使用后卡片将消失';
   document.getElementById('rc').classList.add('show');
-  // Override the confirm button to use the backpack confirm handler
   document.getElementById('rcBtn').onclick = doUseItem;
 }
 function doUseItem(){
   if(useIdx < 0) return;
   PS.redeemed.splice(useIdx, 1);
   flushPS();
+  enqueueSync(syncRedeemed);
   clRc();
   rBag();
-  // Restore redeem button handler
   document.getElementById('rcBtn').onclick = doRedeem;
   useIdx = -1;
 }
@@ -1648,6 +2179,7 @@ function addReward(){
   if(!name){ alert('请输入奖励名称'); return; }
   PS.rewards.push({ icon, name, cost });
   flushPS();
+  enqueueSync(syncRewards);
   document.getElementById('rmIcon').value = '';
   document.getElementById('rmName').value = '';
   document.getElementById('rmCost').value = '';
@@ -1657,6 +2189,7 @@ function addReward(){
 function delReward(idx){
   PS.rewards.splice(idx, 1);
   flushPS();
+  enqueueSync(syncRewards);
   rRm();
 }
 
@@ -1685,7 +2218,6 @@ function doRedeem(){
   if(!r) return;
   const ok = spendPoints(r.cost, r.name);
   if(!ok) { clRc(); return; }
-  // Copy to backpack (redeemed) instead of removing
   PS.redeemed.push({
     id: 'rd_' + Date.now(),
     icon: r.icon || '🎁',
@@ -1694,17 +2226,49 @@ function doRedeem(){
     purchasedAt: Date.now()
   });
   flushPS();
+  enqueueSync(async () => { await syncRewards(); await syncRedeemed(); });
   clRc();
   rPt();
 }
 
 // ===== 启动 =====
+async function startup(){
+  const savedUser = loadCurrentUser();
+  if(savedUser){
+    // Try to load from Supabase
+    try{
+      const { data, error } = await supabase.from('users').select('*').eq('id', savedUser.id).single();
+      if(!error && data){
+        currentUser = data;
+        await loadUserDataFromSupabase(data);
+        enterHome();
+        return;
+      }
+    }catch(e){
+      // Fallback: load from localStorage
+    }
+    // Load from localStorage as fallback
+    currentUser = savedUser;
+    initDC();
+    loadDn();
+    initPS();
+    if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
+    enterHome();
+  } else {
+    // Show login page
+    showLogin();
+    // Also prepare local data as fallback
+    initDC();
+    loadDn();
+    initPS();
+  }
+}
+
+// Initialize (will show login or restore session)
 initDC();
 loadDn();
 initPS();
-// Ensure pi is valid
-if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
-rH();
+startup();
 </script>
 </body>
 </html>
