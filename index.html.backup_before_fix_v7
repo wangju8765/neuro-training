@@ -196,8 +196,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
 /* 管理页 - 时段安排 */
 .slots-overview{display:flex;flex-direction:column;gap:.625rem;margin-bottom:.875rem;}
-.slot-card{border-radius:.625rem;background:#ffffff;border:1px solid #e0e6ed;padding:.75rem .875rem;cursor:pointer;transition:.12s;}
-.slot-card:active{background:#f0f4f8;}
+.slot-card{border-radius:.625rem;background:#ffffff;border:1px solid #e0e6ed;padding:.75rem .875rem;}
 .slot-card .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.375rem;}
 .slot-card .hdr .icn{font-size:1rem;width:1.5rem;text-align:center;flex-shrink:0;}
 .slot-card .hdr .nm{font-size:.9375rem;font-weight:600;flex:1;margin-left:.375rem;}
@@ -967,10 +966,11 @@ function rSl(){
   l.innerHTML = DC.slots.map(s => {
     const slotItems = getSlotItems(s.i);
     const itemTags = slotItems.map(x => `<span class="tag">${x.ic} ${x.n}</span>`).join('');
-    return `<div class="slot-card" onclick="openSE('${s.i}')" style="cursor:pointer;">
+    return `<div class="slot-card">
       <div class="hdr">
         <span class="icn">${s.ic}</span>
         <span class="nm">${s.n}</span>
+        <button class="edit-btn" onclick="openSE('${s.i}')">编辑安排</button>
       </div>
       <div class="items">${itemTags || '<span class="empty">暂未安排项目</span>'}</div>
     </div>`;
@@ -989,7 +989,6 @@ function delItem(id){
     // Move to trash
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
-    rMg();
     rH();
   });
 }
@@ -1112,7 +1111,7 @@ function openEditor(id){
     renderSteps([]);
   }
 
-  document.getElementById('pMg').classList.remove('active');
+  document.getElementById('pS').classList.remove('active');
   document.getElementById('pME').classList.add('active');
 }
 

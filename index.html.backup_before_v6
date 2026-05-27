@@ -52,8 +52,9 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 /* 底部管理入口 — 已移除，入口合并到设置页 */
 
 /* 标签按钮 */
-.tags{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.375rem;margin-bottom:.875rem;}
-.tagb{text-align:center;padding:.4375rem .875rem;border-radius:1.25rem;font-size:.8125rem;background:#ffffff;border:1px solid #e0e6ed;color:#5a7a98;cursor:pointer;}
+.tags{display:flex;gap:.375rem;margin-bottom:.875rem;overflow-x:auto;}
+.tags::-webkit-scrollbar{display:none;}
+.tagb{flex-shrink:0;padding:.4375rem .875rem;border-radius:1.25rem;font-size:.8125rem;background:#ffffff;border:1px solid #e0e6ed;color:#5a7a98;cursor:pointer;white-space:nowrap;}
 .tagb:active{background:#e3f2fd;}
 .tagb.ac{background:#e3f2fd;border-color:#4fc3f7;color:#4fc3f7;}
 
@@ -196,8 +197,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
 /* 管理页 - 时段安排 */
 .slots-overview{display:flex;flex-direction:column;gap:.625rem;margin-bottom:.875rem;}
-.slot-card{border-radius:.625rem;background:#ffffff;border:1px solid #e0e6ed;padding:.75rem .875rem;cursor:pointer;transition:.12s;}
-.slot-card:active{background:#f0f4f8;}
+.slot-card{border-radius:.625rem;background:#ffffff;border:1px solid #e0e6ed;padding:.75rem .875rem;}
 .slot-card .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.375rem;}
 .slot-card .hdr .icn{font-size:1rem;width:1.5rem;text-align:center;flex-shrink:0;}
 .slot-card .hdr .nm{font-size:.9375rem;font-weight:600;flex:1;margin-left:.375rem;}
@@ -333,7 +333,7 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">📋 打卡项目</div>
       <div class="set-card">
-        <div class="set-row" onclick="openMg()">
+        <div class="set-row" onclick="openEditor()">
           <span class="ic">📝</span>
           <div class="inf">
             <div class="n">管理项目</div>
@@ -356,7 +356,7 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">⚙️ 每日设定</div>
       <div class="set-card">
-        <div class="set-row" onclick="openSl()">
+        <div class="set-row" onclick="openSE('morning')">
           <span class="ic">📅</span>
           <div class="inf">
             <div class="n">时段安排</div>
@@ -374,31 +374,6 @@ select.me-input{appearance:auto;}
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ========== 项目管理页 ========== -->
-<div class="page" id="pMg">
-  <div class="top">
-    <span class="bk" onclick="clMg()">✕</span>
-    <span class="mi">📋 管理项目</span>
-    <span class="ri"></span>
-  </div>
-  <div class="scroll">
-    <div class="mg-list" id="mgList"></div>
-    <button class="bo" onclick="openEditor()">➕ 新建打卡项目</button>
-  </div>
-</div>
-
-<!-- ========== 时段安排概览 ========== -->
-<div class="page" id="pSl">
-  <div class="top">
-    <span class="bk" onclick="clSl()">✕</span>
-    <span class="mi">📅 时段安排</span>
-    <span class="ri"></span>
-  </div>
-  <div class="scroll">
-    <div class="slots-overview" id="slotOverview"></div>
   </div>
 </div>
 
@@ -864,8 +839,6 @@ function goH(){
   if(St.ti){clearInterval(St.ti);St.ti=null;}
   document.getElementById('pP').classList.remove('active');
   document.getElementById('pS').classList.remove('active');
-  document.getElementById('pMg').classList.remove('active');
-  document.getElementById('pSl').classList.remove('active');
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
@@ -921,62 +894,6 @@ function clSet(){
   document.getElementById('pS').classList.remove('active');
 }
 
-// ===== 管理项目页 =====
-function openMg(){
-  document.getElementById('pS').classList.remove('active');
-  document.getElementById('pMg').classList.add('active');
-  rMg();
-}
-function clMg(){
-  document.getElementById('pMg').classList.remove('active');
-  document.getElementById('pS').classList.add('active');
-}
-function rMg(){
-  const l = document.getElementById('mgList');
-  l.innerHTML = DC.items.map(x => {
-    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
-    return `<div class="mg-item">
-      <div class="ic">${x.ic}</div>
-      <div class="inf">
-        <div class="n">${x.n}</div>
-        <div class="det">${tp} · ${x.dur!=null?x.dur+'分钟':x.t||''}</div>
-      </div>
-      <div class="mg-acts">
-        <span onclick="openEditor('${x.i}')">✏️</span>
-        <span onclick="delItem('${x.i}')">🗑️</span>
-      </div>
-    </div>`;
-  }).join('');
-  if(DC.items.length===0){
-    l.innerHTML = '<div class="empty-state">还没有打卡项目<br><span style="font-size:.75rem;">点击下方按钮新建</span></div>';
-  }
-}
-
-// ===== 时段安排概览页 =====
-function openSl(){
-  document.getElementById('pS').classList.remove('active');
-  document.getElementById('pSl').classList.add('active');
-  rSl();
-}
-function clSl(){
-  document.getElementById('pSl').classList.remove('active');
-  document.getElementById('pS').classList.add('active');
-}
-function rSl(){
-  const l = document.getElementById('slotOverview');
-  l.innerHTML = DC.slots.map(s => {
-    const slotItems = getSlotItems(s.i);
-    const itemTags = slotItems.map(x => `<span class="tag">${x.ic} ${x.n}</span>`).join('');
-    return `<div class="slot-card" onclick="openSE('${s.i}')" style="cursor:pointer;">
-      <div class="hdr">
-        <span class="icn">${s.ic}</span>
-        <span class="nm">${s.n}</span>
-      </div>
-      <div class="items">${itemTags || '<span class="empty">暂未安排项目</span>'}</div>
-    </div>`;
-  }).join('');
-}
-
 function delItem(id){
   const x = getItem(id);
   if(!x) return;
@@ -989,7 +906,6 @@ function delItem(id){
     // Move to trash
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
-    rMg();
     rH();
   });
 }
@@ -1112,14 +1028,13 @@ function openEditor(id){
     renderSteps([]);
   }
 
-  document.getElementById('pMg').classList.remove('active');
+  document.getElementById('pS').classList.remove('active');
   document.getElementById('pME').classList.add('active');
 }
 
 function closeEditor(){
   document.getElementById('pME').classList.remove('active');
-  document.getElementById('pMg').classList.add('active');
-  rMg();
+  goH();
 }
 
 function swType(type){
