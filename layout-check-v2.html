@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>✅ 布局示意 · 打卡改版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:calc(100vw / 375 * 16);}
+body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;background:#f5f7fa;color:#2c3e50;display:flex;flex-direction:column;min-height:100dvh;}
+
+/* ===== 骨架 / 占位样式 ===== */
+.page{display:flex;flex-direction:column;min-height:100dvh;}
+.page.hide{display:none;}
+
+/* ===== 首页 ===== */
+.scroll{flex:1;overflow-y:auto;padding:1rem 1.25rem 2rem;}
+
+/* 顶栏 */
+.header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid #e0e6ed;background:#fff;flex-shrink:0;}
+.header .lt{display:flex;flex-direction:column;gap:.0625rem;}
+.header .lt .date{font-size:.75rem;color:#7a8a9a;}
+.header .lt .hi{font-size:1.25rem;font-weight:700;color:#2c3e50;}
+.header .rt{display:flex;gap:.5rem;}
+.header .rt .icon-btn{font-size:1.125rem;width:2.125rem;height:2.125rem;border-radius:50%;border:none;background:#f0f4f8;color:#5a7a98;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;}
+.header .rt .icon-btn:active{background:#e0e6ed;}
+
+/* 进度卡片 */
+.pc{background:#fff;border-radius:.875rem;padding:1rem;margin-bottom:.875rem;border:1px solid #e0e6ed;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.pc .r{display:flex;justify-content:space-between;font-size:.8125rem;color:#6a7a90;margin-bottom:.375rem;}
+.pc .r .n{color:#4fc3f7;font-size:1.125rem;font-weight:700;}
+.pb{height:.375rem;background:#e0e6ed;border-radius:.1875rem;overflow:hidden;margin-bottom:.375rem;}
+.pb .f{height:100%;width:60%;background:linear-gradient(90deg,#4fc3f7,#81d4fa);border-radius:.1875rem;}
+.pc .sub{font-size:.8125rem;color:#6a7a90;}
+
+/* 时段区块 */
+.slot-section{margin-bottom:1rem;}
+.slot-section .slot-title{font-size:.9375rem;font-weight:600;color:#5a7a98;margin-bottom:.5rem;display:flex;align-items:center;gap:.375rem;}
+.slot-section .ex-list{display:flex;flex-direction:column;gap:.5rem;}
+.slot-section .ex{display:flex;align-items:center;gap:.75rem;padding:.875rem;border-radius:.625rem;background:#fff;border:1px solid #e0e6ed;cursor:pointer;transition:.12s;}
+.slot-section .ex:active{background:#f0f4f8;transform:scale(.98);}
+.slot-section .ex .ck{width:1.375rem;height:1.375rem;border-radius:50%;border:2px solid #c8d6e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6875rem;color:#4fc3f7;}
+.slot-section .ex.done .ck{border-color:#4fc3f7;background:rgba(79,195,247,.1);}
+.slot-section .ex .ic{font-size:1.25rem;width:1.75rem;text-align:center;flex-shrink:0;}
+.slot-section .ex .inf{flex:1;font-size:.9375rem;font-weight:600;}
+.slot-section .ex .inf .s{font-size:.8125rem;font-weight:400;color:#7a8a9a;}
+.slot-section .ex .tm{font-size:.8125rem;color:#7a8a9a;flex-shrink:0;}
+.slot-section .ex .tm.done{color:#4fc3f7;}
+.slot-section .ex .tp{font-size:.6875rem;background:#e8f0fe;color:#4a7a9a;padding:.0625rem .375rem;border-radius:.25rem;flex-shrink:0;}
+
+/* ===== 设置页 ===== */
+.setting-scroll{flex:1;overflow-y:auto;padding:1rem 1.25rem 2rem;}
+.setting-section{margin-bottom:1.5rem;}
+.setting-section .sec-title{font-size:.9375rem;font-weight:600;color:#5a7a98;margin-bottom:.625rem;display:flex;align-items:center;gap:.375rem;}
+.setting-card{background:#fff;border-radius:.75rem;border:1px solid #e0e6ed;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+
+/* 设置行 */
+.setting-row{display:flex;align-items:center;padding:.8125rem .875rem;gap:.75rem;cursor:pointer;transition:.12s;border-bottom:1px solid #f0f4f8;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row:active{background:#f0f4f8;}
+.setting-row .ic{font-size:1.125rem;width:1.5rem;text-align:center;flex-shrink:0;}
+.setting-row .inf{flex:1;}
+.setting-row .inf .n{font-size:.9375rem;font-weight:600;}
+.setting-row .inf .d{font-size:.75rem;color:#7a8a9a;margin-top:.0625rem;}
+.setting-row .arr{font-size:.75rem;color:#9aabba;flex-shrink:0;}
+
+/* ===== 通用 ===== */
+.top{display:flex;align-items:center;padding:.875rem 1.125rem;gap:.625rem;border-bottom:1px solid #e0e6ed;font-size:.875rem;flex-shrink:0;background:#fff;}
+.top .bk{font-size:1.25rem;opacity:.7;cursor:pointer;}
+.top .mi{flex:1;text-align:center;font-weight:600;font-size:1rem;}
+.top .ri{color:#6a7a90;font-size:.875rem;min-width:2.5rem;text-align:right;}
+
+/* 占位 */
+.tags-placeholder{display:flex;gap:.375rem;margin-bottom:.875rem;}
+.tag-placeholder{width:4rem;height:1.75rem;border-radius:1.25rem;background:#e0e6ed;opacity:.5;}
+.usage-note{background:#fff;border-radius:.625rem;padding:.75rem .875rem;border:1px solid #e0e6ed;font-size:.8125rem;color:#6a7a90;margin-top:.875rem;line-height:1.6;}
+.usage-note .ut{color:#4a5a6a;font-weight:600;margin-bottom:.25rem;}
+</style>
+</head>
+<body>
+
+<!-- ===== 首页（新） ===== -->
+<div class="page">
+  <!-- 顶栏 -->
+  <div class="header">
+    <div class="lt">
+      <span class="date">周三 · 5月27日</span>
+      <span class="hi">早上好 👋</span>
+    </div>
+    <div class="rt">
+      <button class="icon-btn">📅</button>
+      <button class="icon-btn">⚙️</button>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <!-- 进度卡片 -->
+    <div class="pc">
+      <div class="r"><span>今日完成</span><span class="n">6 / 8</span></div>
+      <div class="pb"><div class="f" style="width:75%"></div></div>
+      <div class="sub">已完成 75% · 继续加油 💪</div>
+    </div>
+
+    <!-- 上午 -->
+    <div class="slot-section">
+      <div class="slot-title">☀️ 上午</div>
+      <div class="ex-list">
+        <div class="ex done">
+          <div class="ck">✓</div>
+          <span class="ic">❄️</span>
+          <span class="inf">冷水唤醒</span>
+          <span class="tm done">已完成</span>
+        </div>
+        <div class="ex">
+          <div class="ck"></div>
+          <span class="ic">🐝</span>
+          <span class="inf">蜜蜂呼吸</span>
+          <span class="tm">3 分钟</span>
+        </div>
+        <div class="ex">
+          <div class="ck"></div>
+          <span class="ic">⛏️</span>
+          <span class="inf">交叉爬行</span>
+          <span class="tm">2 分钟</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下午 -->
+    <div class="slot-section">
+      <div class="slot-title">🌤️ 下午</div>
+      <div class="ex-list">
+        <div class="ex">
+          <div class="ck"></div>
+          <span class="ic">🦩</span>
+          <span class="inf">单脚站</span>
+          <span class="tm">2 分钟</span>
+        </div>
+        <div class="ex">
+          <div class="ck"></div>
+          <span class="ic">🏐</span>
+          <span class="inf">球上平衡</span>
+          <span class="tm">2 分钟</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 使用说明 -->
+    <div class="usage-note">
+      <div class="ut">💡 小提示</div>
+      点一个项目开始跟练，做完会自动标记。纯打卡项目一键完成。
+    </div>
+  </div>
+</div>
+
+<hr style="border:none;border-top:2px dashed #e0e6ed;margin:1.25rem;">
+
+<!-- ⬇️ 下面是设置页示意 ⬇️ -->
+<div style="padding:0 1.25rem .5rem;">
+  <span style="font-size:.75rem;color:#9aabba;">⚙️ 设置页预览（从首页点齿轮进入）</span>
+</div>
+
+<!-- ===== 设置页 ===== -->
+<div class="page">
+  <div class="top">
+    <span class="bk">✕</span>
+    <span class="mi">⚙️ 设置</span>
+    <span class="ri"></span>
+  </div>
+  <div class="setting-scroll">
+    <!-- 区块一：打卡项目 -->
+    <div class="setting-section">
+      <div class="sec-title">📋 打卡项目</div>
+      <div class="setting-card">
+        <div class="setting-row">
+          <span class="ic">📝</span>
+          <div class="inf">
+            <div class="n">管理项目</div>
+            <div class="d">新建、编辑、删除打卡项目</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="setting-row">
+          <span class="ic">🗑️</span>
+          <div class="inf">
+            <div class="n">最近删除</div>
+            <div class="d">恢复已删除的项目</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 区块二：每日设定 -->
+    <div class="setting-section">
+      <div class="sec-title">⚙️ 每日设定</div>
+      <div class="setting-card">
+        <div class="setting-row">
+          <span class="ic">📅</span>
+          <div class="inf">
+            <div class="n">时段安排</div>
+            <div class="d">将项目分配到上午/下午/晚上</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="setting-row">
+          <span class="ic">✏️</span>
+          <div class="inf">
+            <div class="n">称呼设置</div>
+            <div class="d">自定义打卡人的名字</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="padding:1.25rem;color:#5a7a98;background:#fff8e1;border-radius:.5rem;margin:1rem;font-size:.8125rem;border:1px solid #ffe082;text-align:center;">
+  ⬆️ 这是布局示意图，不是真实页面<br>
+  确认后我会改真实代码
+</div>
+
+</body>
+</html>

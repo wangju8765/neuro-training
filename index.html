@@ -18,10 +18,15 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 
 /* ===== 首页 ===== */
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:1rem 1.25rem 2rem;-webkit-overflow-scrolling:touch;}
-.title{font-size:1.625rem;font-weight:700;margin-bottom:.25rem;}
-.hello{font-size:.9375rem;color:#5a7a98;margin-bottom:.75rem;display:flex;align-items:center;gap:.375rem;}
-.hello .ne-btn{font-size:.75rem;opacity:.4;cursor:pointer;padding:.125rem .25rem;border-radius:.25rem;transition:.12s;}
-.hello .ne-btn:active{opacity:1;background:#e0e6ed;}
+
+/* 顶栏 */
+.header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.125rem;border-bottom:1px solid #e0e6ed;background:#fff;flex-shrink:0;}
+.header .lt{display:flex;flex-direction:column;gap:.0625rem;}
+.header .lt .dt{font-size:.75rem;color:#7a8a9a;}
+.header .lt .hi{font-size:1.25rem;font-weight:700;color:#2c3e50;}
+.header .rt{display:flex;gap:.5rem;}
+.header .rt .icon-btn{font-size:1.125rem;width:2.125rem;height:2.125rem;border-radius:50%;border:none;background:#f0f4f8;color:#5a7a98;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;}
+.header .rt .icon-btn:active{background:#e0e6ed;}
 
 /* 进度卡片 */
 .pc{background:#ffffff;border-radius:.875rem;padding:1rem;margin-bottom:.875rem;border:1px solid #e0e6ed;box-shadow:0 1px 3px rgba(0,0,0,.04);}
@@ -44,10 +49,7 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .ex .tm.done{color:#4fc3f7;}
 .ex .tp{font-size:.6875rem;background:#e8f0fe;color:#4a7a9a;padding:.0625rem .375rem;border-radius:.25rem;flex-shrink:0;}
 
-/* 底部管理入口 */
-.mg-entry{display:flex;gap:.5rem;margin-top:.75rem;justify-content:center;}
-.mg-entry button{flex:1;max-width:9rem;padding:.625rem;border-radius:.625rem;border:1px solid #e0e6ed;background:#ffffff;color:#6a7a90;font-size:.8125rem;cursor:pointer;transition:.12s;}
-.mg-entry button:active{background:#f0f4f8;color:#5a7a98;}
+/* 底部管理入口 — 已移除，入口合并到设置页 */
 
 /* 标签按钮 */
 .tags{display:flex;gap:.375rem;margin-bottom:.875rem;overflow-x:auto;}
@@ -208,6 +210,19 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 /* 空状态 */
 .empty-state{text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;line-height:1.6;}
 
+/* ===== 设置页 ===== */
+.set-section{margin-bottom:1.5rem;}
+.set-sec-title{font-size:.9375rem;font-weight:600;color:#5a7a98;margin-bottom:.625rem;display:flex;align-items:center;gap:.375rem;}
+.set-card{background:#fff;border-radius:.75rem;border:1px solid #e0e6ed;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.set-row{display:flex;align-items:center;padding:.8125rem .875rem;gap:.75rem;cursor:pointer;transition:.12s;border-bottom:1px solid #f0f4f8;}
+.set-row:last-child{border-bottom:none;}
+.set-row:active{background:#f0f4f8;}
+.set-row .ic{font-size:1.125rem;width:1.5rem;text-align:center;flex-shrink:0;}
+.set-row .inf{flex:1;}
+.set-row .inf .n{font-size:.9375rem;font-weight:600;}
+.set-row .inf .d{font-size:.75rem;color:#7a8a9a;margin-top:.0625rem;}
+.set-row .arr{font-size:.75rem;color:#9aabba;flex-shrink:0;}
+
 /* ===== 编辑器 ===== */
 .me-form{display:flex;flex-direction:column;gap:.875rem;}
 .me-row{display:flex;flex-direction:column;gap:.25rem;}
@@ -244,13 +259,16 @@ select.me-input{appearance:auto;}
 
 <!-- ========== 首页 ========== -->
 <div class="page active" id="pH">
-  <div class="scroll">
-    <div class="title">✅ 每日打卡</div>
-    <div class="hello" id="gr">
-      <span id="grTxt">🌅 早上好，小伙伴</span>
-      <span class="ne-btn" onclick="openNE()">✏️</span>
+  <div class="header">
+    <div class="lt">
+      <span class="dt" id="hdrDt"></span>
+      <span class="hi" id="hdrHi"></span>
     </div>
-
+    <div class="rt">
+      <button class="icon-btn" onclick="openSet()">⚙️</button>
+    </div>
+  </div>
+  <div class="scroll">
     <div class="pc">
       <div class="r"><span>今日完成</span><span class="n" id="pgN">0 / 0</span></div>
       <div class="pb"><div class="f" id="pgB" style="width:0%"></div></div>
@@ -261,14 +279,9 @@ select.me-input{appearance:auto;}
 
     <div class="el" id="exL"></div>
 
-    <div class="mg-entry">
-      <button onclick="openMg()">📋 管理打卡项目</button>
-      <button onclick="resetToday()">🔄 重置今日</button>
-    </div>
-
     <div class="us">
-      <div class="ut">💡 使用说明</div>
-      每个打卡项目可设为"跟练型"（有步骤引导）或"纯打卡"（一键完成）。你可以在管理页创建自己的打卡项目，并在时段安排中分配到不同时段。
+      <div class="ut">💡 小提示</div>
+      点击项目开始跟练，做完会自动标记。纯打卡项目一键完成。
     </div>
   </div>
 </div>
@@ -308,23 +321,59 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 管理页 ========== -->
-<div class="page" id="pM">
+<!-- ========== 设置页 ========== -->
+<div class="page" id="pS">
   <div class="top">
     <span class="bk" onclick="goH()">✕</span>
-    <span class="mi">✅ 打卡管理</span>
+    <span class="mi">⚙️ 设置</span>
     <span class="ri"></span>
   </div>
   <div class="scroll">
-    <!-- 项目列表 -->
-    <div class="mg-section-title">📋 打卡项目</div>
-    <div class="mg-list" id="mgItemList"></div>
-    <button class="bo" onclick="openEditor()">➕ 新建打卡项目</button>
+    <!-- 打卡项目 -->
+    <div class="set-section">
+      <div class="set-sec-title">📋 打卡项目</div>
+      <div class="set-card">
+        <div class="set-row" onclick="openEditor()">
+          <span class="ic">📝</span>
+          <div class="inf">
+            <div class="n">管理项目</div>
+            <div class="d">新建、编辑、删除打卡项目</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="set-row" onclick="openTr()">
+          <span class="ic">🗑️</span>
+          <div class="inf">
+            <div class="n">最近删除</div>
+            <div class="d">恢复已删除的项目</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- 时段安排概览 -->
-    <div class="mg-section-title">📅 时段安排</div>
-    <div class="slots-overview" id="slotOverview"></div>
-    <button class="bo" onclick="openTr()" style="margin-top:.5rem;">🗑️ 最近删除</button>
+    <!-- 每日设定 -->
+    <div class="set-section">
+      <div class="set-sec-title">⚙️ 每日设定</div>
+      <div class="set-card">
+        <div class="set-row" onclick="openSE('morning')">
+          <span class="ic">📅</span>
+          <div class="inf">
+            <div class="n">时段安排</div>
+            <div class="d">将项目分配到上午/下午/晚上</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="set-row" onclick="openNE()">
+          <span class="ic">✏️</span>
+          <div class="inf">
+            <div class="n">称呼设置</div>
+            <div class="d">自定义打卡人的名字</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -574,9 +623,8 @@ function swT(id){
 }
 
 function rH(){
-  // Render greeting
-  const grTxt = document.getElementById('grTxt');
-  grTxt.textContent = '🌅 早上好，' + (DC.settings.userName || '小伙伴');
+  // Render header greeting
+  updateHeader();
 
   // Render tags (fixed three slots)
   const tgS = document.getElementById('tgS');
@@ -598,10 +646,34 @@ function rH(){
       <div class="tm ${done?'done':''}">${done?'✅ 已完成':(x.dur!=null?x.dur+'分钟':x.t||'')}</div></div>`;
   }).join('');
   if(items.length===0){
-    l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去管理页的「时段安排」添加</span></div>';
+    l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
   }
 
   upPr();
+}
+
+function updateHeader(){
+  // Date
+  const now = new Date();
+  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+  const month = now.getMonth()+1;
+  const day = now.getDate();
+  const wd = weekdays[now.getDay()];
+  document.getElementById('hdrDt').textContent = `${wd} · ${month}月${day}日`;
+
+  // Greeting based on time
+  const h = now.getHours();
+  let greetEmoji, greetWord;
+  if(h < 6){ greetEmoji='🌙'; greetWord='夜深了'; }
+  else if(h < 9){ greetEmoji='🌅'; greetWord='早上好'; }
+  else if(h < 12){ greetEmoji='☀️'; greetWord='上午好'; }
+  else if(h < 14){ greetEmoji='🌤️'; greetWord='中午好'; }
+  else if(h < 18){ greetEmoji='🌟'; greetWord='下午好'; }
+  else if(h < 21){ greetEmoji='🌆'; greetWord='傍晚好'; }
+  else { greetEmoji='🌙'; greetWord='晚上好'; }
+
+  const name = DC.settings.userName || '小伙伴';
+  document.getElementById('hdrHi').textContent = `${greetEmoji} ${greetWord} 👋`;
 }
 
 function upPr(){
@@ -763,10 +835,10 @@ function resetP(){
 // ===== 弹窗控制 =====
 function clOl(){document.getElementById('ol').classList.remove('show');}
 function goH(){
-  clOl();clCf();
+  clOl();clCf();clNE();clSet();
   if(St.ti){clearInterval(St.ti);St.ti=null;}
   document.getElementById('pP').classList.remove('active');
-  document.getElementById('pM').classList.remove('active');
+  document.getElementById('pS').classList.remove('active');
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
@@ -813,61 +885,13 @@ function doDel(){
 }
 
 // ===== 重置今日 =====
-function resetToday(){
-  showDC('重置今日打卡？', '所有今日完成记录将被清除', ()=>{
-    Dn = [];
-    svDn();
-    rH();
-  });
-}
-
-// ===== 管理页 =====
-function openMg(){
+// ===== 设置页 =====
+function openSet(){
   document.getElementById('pH').classList.remove('active');
-  document.getElementById('pM').classList.add('active');
-  rMg();
+  document.getElementById('pS').classList.add('active');
 }
-
-function rMg(){
-  rMgItems();
-  rSlotOverview();
-}
-
-function rMgItems(){
-  const l = document.getElementById('mgItemList');
-  l.innerHTML = DC.items.map(x => {
-    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
-    return `<div class="mg-item">
-      <div class="ic">${x.ic}</div>
-      <div class="inf">
-        <div class="n">${x.n}</div>
-        <div class="det">${tp} · ${x.dur!=null?x.dur+'分钟':x.t||''}</div>
-      </div>
-      <div class="mg-acts">
-        <span onclick="openEditor('${x.i}')">✏️</span>
-        <span onclick="delItem('${x.i}')">🗑️</span>
-      </div>
-    </div>`;
-  }).join('');
-  if(DC.items.length===0){
-    l.innerHTML = '<div class="empty-state">还没有打卡项目<br><span style="font-size:.75rem;">点击下方按钮新建</span></div>';
-  }
-}
-
-function rSlotOverview(){
-  const l = document.getElementById('slotOverview');
-  l.innerHTML = DC.slots.map(s => {
-    const slotItems = getSlotItems(s.i);
-    const itemTags = slotItems.map(x => `<span class="tag">${x.ic} ${x.n}</span>`).join('');
-    return `<div class="slot-card">
-      <div class="hdr">
-        <span class="icn">${s.ic}</span>
-        <span class="nm">${s.n}</span>
-        <button class="edit-btn" onclick="openSE('${s.i}')">编辑安排</button>
-      </div>
-      <div class="items">${itemTags || '<span class="empty">暂未安排项目</span>'}</div>
-    </div>`;
-  }).join('');
+function clSet(){
+  document.getElementById('pS').classList.remove('active');
 }
 
 function delItem(id){
@@ -882,7 +906,6 @@ function delItem(id){
     // Move to trash
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
-    rMg();
     rH();
   });
 }
@@ -919,7 +942,6 @@ function restoreItem(idx){
   DC.trash.splice(idx, 1);
   flushDC();
   rTr();
-  rMg();
   rH();
 }
 
@@ -974,7 +996,6 @@ function tgSE(id){
 function svSE(){
   svSlots();
   clSE();
-  rMg();
   rH();
 }
 
@@ -1007,14 +1028,13 @@ function openEditor(id){
     renderSteps([]);
   }
 
-  document.getElementById('pM').classList.remove('active');
+  document.getElementById('pS').classList.remove('active');
   document.getElementById('pME').classList.add('active');
 }
 
 function closeEditor(){
   document.getElementById('pME').classList.remove('active');
-  document.getElementById('pM').classList.add('active');
-  rMg();
+  goH();
 }
 
 function swType(type){
