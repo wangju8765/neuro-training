@@ -1637,7 +1637,6 @@ function rD(n,a){
 document.getElementById('pBtn').addEventListener('click',()=>{
   if(!St.ex)return;
   SFX.play('start');
-  SFX.play('alert');
   document.getElementById('pExtraBtns').style.display = 'none';
   const btn = document.getElementById('pBtn');
   btn.textContent = '⏳ 进行中...';
@@ -2325,17 +2324,17 @@ initPS();
 startup();
 
 // ===== 音效系统 (Web Audio API) =====
+// 所有音效使用多振荡器 + 谐波 + ADSR 包络，追求精致品质
 const SFX = {
   _ctx: null,
   muted: false,
+  _vol: 0.5,          // 默认音量（之前 0.3 偏小）
 
   _getCtx(){
     if(!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
     if(this._ctx.state === 'suspended') this._ctx.resume();
     return this._ctx;
   },
-
-  _vol: 0.3,
 
   play(name){
     try{
@@ -2344,10 +2343,10 @@ const SFX = {
       const vol = this._vol;
       switch(name){
         case 'complete': this._complete(ctx, vol); break;
-        case 'coin': this._coin(ctx, vol); break;
-        case 'click': this._click(ctx, vol); break;
-        case 'start': this._start(ctx, vol); break;
-        case 'alert': this._alert(ctx, vol); break;
+        case 'coin':     this._coin(ctx, vol); break;
+        case 'click':    this._click(ctx, vol); break;
+        case 'start':    this._start(ctx, vol); break;
+        case 'alert':    this._alert(ctx, vol); break;
       }
     }catch(e){ /* Web Audio not available, silently ignore */ }
   },
@@ -2361,78 +2360,164 @@ const SFX = {
     if(btn) btn.textContent = this.muted ? '🔇' : '🔊';
   },
 
-  // 清脆上升叮咚声 (正弦波 523Hz→1047Hz, 0.3s)
-  _complete(ctx, vol){
+  // ------ 点击音 🔘 ------
+  // "tick"：1600Hz 正弦脉冲 + 带通滤波白噪声纹理，短促清脆
+  _click(ctx, vol){
+    const t = ctx.currentTime;
+    // 主音：1600Hz 正弦，2ms 起音 → 快速指数衰减
     const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const g = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(523, ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(1047, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    osc.frequency.setValueAtTime(1600, t);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.35, t + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.05);
+    // 纹理层：带通滤波白噪声（触摸质感）
+    const bufSize = Math.floor(ctx.sampleRate * 0.025);
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(3500, t);
+    filter.Q.setValueAtTime(6, t);
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.linearRampToValueAtTime(vol * 0.15, t + 0.002);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+    src.connect(filter).connect(g2).connect(ctx.destination);
+    src.start(t);
   },
 
-  // 金币叮当声 (两个短脉冲 1200Hz 和 800Hz, 0.15s)
-  _coin(ctx, vol){
-    [1200, 800].forEach((freq, i) => {
-      const t = ctx.currentTime + i * 0.08;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(vol * 0.7, t);
-      gain.gain.linearRampToValueAtTime(0, t + 0.12);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.12);
+  // ------ 完成音 ✅ ------
+  // C 大三和弦上升琶音 (C5→E5→G5)，三角波主音 + 高八度正弦泛音
+  _complete(ctx, vol){
+    const t = ctx.currentTime;
+    const notes = [523, 659, 784]; // C5, E5, G5
+    const noteLen = 0.1;
+    const overlap = 0.05;
+    notes.forEach((freq, i) => {
+      const st = t + i * (noteLen - overlap);
+      const en = st + 0.35;
+      // 主音：三角波（温暖）
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(freq, st);
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol * 0.3, st + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, en);
+      o.connect(g).connect(ctx.destination);
+      o.start(st);
+      o.stop(en);
+      // 泛音：高八度正弦
+      const o2 = ctx.createOscillator();
+      const g2 = ctx.createGain();
+      o2.type = 'sine';
+      o2.frequency.setValueAtTime(freq * 2, st);
+      g2.gain.setValueAtTime(0, st);
+      g2.gain.linearRampToValueAtTime(vol * 0.1, st + 0.015);
+      g2.gain.exponentialRampToValueAtTime(0.001, en - 0.05);
+      o2.connect(g2).connect(ctx.destination);
+      o2.start(st);
+      o2.stop(en);
     });
   },
 
-  // 轻触声 (白噪声短脉冲 0.05s)
-  _click(ctx, vol){
-    const bufSize = ctx.sampleRate * 0.05;
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for(let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
-    const src = ctx.createBufferSource();
-    const gain = ctx.createGain();
-    src.buffer = buf;
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.05);
-    src.connect(gain).connect(ctx.destination);
-    src.start(ctx.currentTime);
+  // ------ 金币音 💰 ------
+  // 明亮金属感：两个非谐波高频振荡器（2.4kHz + 3.6kHz），类铃铛
+  _coin(ctx, vol){
+    const t = ctx.currentTime;
+    // 主音：2400Hz 正弦
+    const o1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(2400, t);
+    g1.gain.setValueAtTime(0, t);
+    g1.gain.linearRampToValueAtTime(vol * 0.35, t + 0.002);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    o1.connect(g1).connect(ctx.destination);
+    o1.start(t);
+    o1.stop(t + 0.2);
+    // 泛音：3600Hz（3:2 非整数倍 → 金属感）
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(3600, t);
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.linearRampToValueAtTime(vol * 0.2, t + 0.002);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o2.connect(g2).connect(ctx.destination);
+    o2.start(t);
+    o2.stop(t + 0.12);
+    // 频率下漂模拟金属自然衰减
+    o1.frequency.exponentialRampToValueAtTime(1600, t + 0.2);
   },
 
-  // 短预备提示 (440Hz 持续 0.2s)
+  // ------ 开始音 ▶️ ------
+  // 上升扫频（300→900Hz）+ 低八度副音，三角波，动感
   _start(ctx, vol){
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, ctx.currentTime);
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.2);
+    const t = ctx.currentTime;
+    // 主扫频：三角波 300→900Hz
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(300, t);
+    o.frequency.exponentialRampToValueAtTime(900, t + 0.3);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * 0.4, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(g).connect(ctx.destination);
+    o.start(t);
+    o.stop(t + 0.4);
+    // 低八度副音：低频加强
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(150, t);
+    o2.frequency.exponentialRampToValueAtTime(450, t + 0.3);
+    g2.gain.setValueAtTime(0, t);
+    g2.gain.linearRampToValueAtTime(vol * 0.15, t + 0.01);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    o2.connect(g2).connect(ctx.destination);
+    o2.start(t);
+    o2.stop(t + 0.35);
   },
 
-  // 提醒音 (两个短脉冲 660Hz 间隔 0.15s)
+  // ------ 提醒音 ⏰ ------
+  // 下行小三度两音 (G5→E5)，三角波 + 泛音
   _alert(ctx, vol){
-    for(let i = 0; i < 2; i++){
-      const t = ctx.currentTime + i * 0.15;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(660, t);
-      gain.gain.setValueAtTime(vol * 0.8, t);
-      gain.gain.linearRampToValueAtTime(0, t + 0.12);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.12);
-    }
+    const t = ctx.currentTime;
+    const notes = [784, 659]; // G5, E5
+    notes.forEach((freq, i) => {
+      const st = t + i * 0.18;
+      const en = st + 0.18;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(freq, st);
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol * 0.3, st + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, en);
+      o.connect(g).connect(ctx.destination);
+      o.start(st);
+      o.stop(en);
+      const o2 = ctx.createOscillator();
+      const g2 = ctx.createGain();
+      o2.type = 'sine';
+      o2.frequency.setValueAtTime(freq * 2, st);
+      g2.gain.setValueAtTime(0, st);
+      g2.gain.linearRampToValueAtTime(vol * 0.08, st + 0.005);
+      g2.gain.exponentialRampToValueAtTime(0.001, en - 0.05);
+      o2.connect(g2).connect(ctx.destination);
+      o2.start(st);
+      o2.stop(en - 0.02);
+    });
   }
 };
 
