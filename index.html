@@ -990,12 +990,18 @@ async function syncPointsState(){
 
 async function syncRewards(){
   if(!currentUser) return;
-  // Delete all and re-insert
   try {
+    const localR = PS && PS.rewards ? PS.rewards : [];
+    // 保护：本地为空但 Supabase 有数据时，不覆盖
+    if(localR.length === 0){
+      const existing = await SB.get('rewards', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
+      if(existing && existing.length > 0) return; // Supabase 有数据，不删
+    }
+    // Delete all and re-insert
     await SB.del('rewards', { 'user_id': `eq.${currentUser.id}` });
-    if(PS && PS.rewards && PS.rewards.length > 0){
+    if(localR.length > 0){
       await SB.post('rewards',
-        PS.rewards.map((r, i) => ({
+        localR.map((r, i) => ({
           user_id: currentUser.id,
           icon: r.icon || '🎁',
           name: r.name,
@@ -1010,10 +1016,16 @@ async function syncRewards(){
 async function syncRedeemed(){
   if(!currentUser) return;
   try {
+    const localRd = PS && PS.redeemed ? PS.redeemed : [];
+    // 保护：本地为空但 Supabase 有数据时，不覆盖
+    if(localRd.length === 0){
+      const existing = await SB.get('redeemed', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
+      if(existing && existing.length > 0) return;
+    }
     await SB.del('redeemed', { 'user_id': `eq.${currentUser.id}` });
-    if(PS && PS.redeemed && PS.redeemed.length > 0){
+    if(localRd.length > 0){
       await SB.post('redeemed',
-        PS.redeemed.map(r => ({
+        localRd.map(r => ({
           user_id: currentUser.id,
           redeem_id: r.id,
           icon: r.icon || '🎁',
@@ -1028,12 +1040,17 @@ async function syncRedeemed(){
 
 async function syncPointLogs(){
   if(!currentUser) return;
-  // Delete all and re-insert for simplicity
   try {
+    const localLogs = PS && PS.pointLog ? PS.pointLog : [];
+    // 保护：本地为空但 Supabase 有数据时，不覆盖
+    if(localLogs.length === 0){
+      const existing = await SB.get('point_logs', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
+      if(existing && existing.length > 0) return;
+    }
     await SB.del('point_logs', { 'user_id': `eq.${currentUser.id}` });
-    if(PS && PS.pointLog && PS.pointLog.length > 0){
+    if(localLogs.length > 0){
       await SB.post('point_logs',
-        PS.pointLog.map(l => ({
+        localLogs.map(l => ({
           user_id: currentUser.id,
           type: l.type,
           amount: l.amount,
@@ -1080,8 +1097,15 @@ async function syncAllToSupabase(){
 }
 
 // ===== 从 Supabase 加载数据 =====
+// 安全策略：localStorage 是基线，Supabase 只补充非空数据，不覆盖
 async function loadUserDataFromSupabase(user){
   try{
+    // Step 0: 先加载 localStorage 作为基线
+    const localPS_json = localStorage.getItem('dc_points_state');
+    let localPS = null;
+    try{ if(localPS_json) localPS = JSON.parse(localPS_json); }catch(e){}
+    const hasLocalPS = localPS && typeof localPS.points === 'number';
+
     // Parallel load all data
     const [itemsData, slotsData, dailyData, pointsData, rewardsData, redeemedData, logsData] = await Promise.all([
       SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.false' }).catch(() => null),
@@ -1159,24 +1183,25 @@ async function loadUserDataFromSupabase(user){
     }
     localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
 
-    // Load points state
-    if(pointsData && pointsData.length > 0 && pointsData[0]){
-      PS = {
-        points: pointsData[0].points || 0,
-        dailyPoints: pointsData[0].daily_points || {},
-        pointLog: [],
-        rewards: [],
-        redeemed: []
-      };
-      const key = getDailyKey();
-      if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
+    // ---- PS 加载：localStorage 是基线，Supabase 只覆盖非空数据 ----
+    if(hasLocalPS){
+      PS = localPS;
+      if(!PS.dailyPoints) PS.dailyPoints = {};
+      if(!PS.pointLog) PS.pointLog = [];
+      if(!PS.rewards) PS.rewards = [];
+      if(!PS.redeemed) PS.redeemed = [];
     } else {
       PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [], redeemed: [] };
-      const key = getDailyKey();
-      PS.dailyPoints[key] = { earned: 0 };
     }
+    const key = getDailyKey();
+    if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
 
-    // Load rewards
+    // 从 Supabase 覆盖——仅当数据非空
+    if(pointsData && pointsData.length > 0 && pointsData[0]){
+      PS.points = pointsData[0].points || 0;
+      PS.dailyPoints = pointsData[0].daily_points || PS.dailyPoints;
+      if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
+    }
     if(rewardsData && rewardsData.length > 0){
       PS.rewards = rewardsData.map(r => ({
         icon: r.icon || '🎁',
@@ -1184,8 +1209,6 @@ async function loadUserDataFromSupabase(user){
         cost: r.cost
       }));
     }
-
-    // Load redeemed
     if(redeemedData && redeemedData.length > 0){
       PS.redeemed = redeemedData.map(r => ({
         id: r.redeem_id,
@@ -1195,8 +1218,6 @@ async function loadUserDataFromSupabase(user){
         purchasedAt: r.purchased_at
       }));
     }
-
-    // Load point logs
     if(logsData && logsData.length > 0){
       PS.pointLog = logsData.map(l => ({
         type: l.type,
