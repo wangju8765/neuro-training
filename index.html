@@ -2416,6 +2416,95 @@ document.addEventListener('click', function(e){
     SFX.play('click');
   }
 }, true);
+
+// ===== TTS 语音引导 =====
+const TTS = {
+  _speaking: false,
+
+  _cancel(){
+    window.speechSynthesis.cancel();
+    this._speaking = false;
+  },
+
+  speak(text, rate=1.0, pitch=1.0){
+    if(SFX.muted) return;
+    this._cancel();
+    if(!text) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = rate;
+    u.pitch = pitch;
+    u.onstart = () => { this._speaking = true; };
+    u.onend = () => { this._speaking = false; };
+    u.onerror = () => { this._speaking = false; };
+    window.speechSynthesis.speak(u);
+  },
+
+  speakStepName(text){
+    this.speak(text, 1.0, 1.0);
+  },
+
+  speakNumber(n){
+    this.speak(String(n), 1.0, 1.0);
+  },
+
+  speakEnd(){
+    this.speak('结束，下一步', 1.0, 1.0);
+  },
+
+  speakFinish(){
+    this.speak('全部完成，太棒了！', 1.0, 1.0);
+  },
+
+  speakComplete(){
+    this.speak('完成', 1.0, 1.0);
+  }
+};
+
+// ===== 完全重写 sT 来加入 TTS 语音引导 =====
+// 原始 sT 在浏览器中已被定义（脚本头部），这里重写以插入 TTS 调用
+sT = function(){
+  const s = St.ss[St.st];
+  if(!s || s.d <= 0){ ad(); return; }
+  St.rm = s.d;
+  St.pl = true;
+  uP();
+
+  // 步骤开始时朗读步骤文字
+  if(s && s.t){
+    TTS.speakStepName(s.t);
+  }
+
+  St.ti = setInterval(() => {
+    St.rm--;
+    uP();
+
+    // 倒计时读数：剩余秒数 ≤ 5 时逐秒朗读
+    if(St.rm >= 0 && St.rm <= 5 && St.rm <= s.d){
+      TTS.speakNumber(St.rm);
+    }
+
+    if(St.rm <= 0){
+      clearInterval(St.ti);
+      St.ti = null;
+      St.pl = false;
+
+      // 步骤结束时朗读
+      const nextStep = St.st + 1;
+      const isLastStepInCycle = nextStep >= St.ss.length;
+      const isLastCycle = St.cy >= St.cs;
+      const isTotallyDone = isLastStepInCycle && isLastCycle;
+
+      if(isTotallyDone){
+        TTS.speakFinish();
+      } else {
+        TTS.speakEnd();
+      }
+
+      ad();
+    }
+  }, 1000);
+};
 </script>
 </body>
 </html>
