@@ -467,6 +467,21 @@ select.me-input{appearance:auto;}
         </div>
       </div>
     </div>
+
+    <!-- 账号 -->
+    <div class="set-section">
+      <div class="set-sec-title">👤 账号</div>
+      <div class="set-card">
+        <div class="set-row" onclick="openLogout()" style="color:#e53935;">
+          <span class="ic">🚪</span>
+          <div class="inf">
+            <div class="n">退出登录</div>
+            <div class="d">切换到其他用户</div>
+          </div>
+          <span class="arr" style="color:#e53935;">›</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -659,6 +674,18 @@ select.me-input{appearance:auto;}
     <div class="cr">
       <button class="b bs" onclick="closeCreateUserModal()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
       <button class="b bp" onclick="createUser()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 退出登录确认弹窗 ========== -->
+<div class="dc" id="lo" style="display:none;">
+  <div class="bx">
+    <div class="ct">退出登录？</div>
+    <div class="cs">退出后需重新使用PIN码登录</div>
+    <div class="cr">
+      <button class="b bs" onclick="closeLogout()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
+      <button class="b bp" onclick="doLogout()" style="background:linear-gradient(135deg,#ef5350,#e53935);color:#fff;">退出</button>
     </div>
   </div>
 </div>
@@ -1775,6 +1802,20 @@ function clDC(){document.getElementById('dc').classList.remove('show'); delCallb
 function doDel(){
   if(delCallback){ delCallback(); delCallback = null; }
   clDC();
+}
+
+// ===== 退出登录 =====
+function openLogout(){
+  document.getElementById('lo').style.display = 'flex';
+}
+function closeLogout(){
+  document.getElementById('lo').style.display = 'none';
+}
+function doLogout(){
+  closeLogout();
+  clearCurrentUser();
+  PS_clear && PS_clear();
+  showLogin();
 }
 
 // ===== 设置页 =====
