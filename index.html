@@ -289,6 +289,26 @@ select.me-input{appearance:auto;}
 .metro-btn{cursor:pointer;}
 .metro-btn:disabled{opacity:.5;}
 
+/* 数字盘 */
+.dial{width:15rem;height:15rem;border-radius:50%;border:2px solid #e0e6ed;position:relative;margin:0 auto .75rem;}
+.dial-num{position:absolute;width:2rem;height:2rem;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;transform:translate(-50%,-50%);line-height:1;}
+.dial-num .lbl{font-size:.5rem;margin-top:.0625rem;opacity:.6;}
+.dial-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.8125rem;color:#aaa;}
+.dial-num.right{background:#e3f2fd;color:#1565c0;}
+.dial-num.left{background:#fff3e0;color:#e65100;}
+.dial-num.mid{background:#f0f0f0;color:#555;}
+
+/* 信息卡 */
+.info-card{flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;}
+.info-card .v{font-size:1.25rem;font-weight:700;color:#4fc3f7;}
+.info-card .l{font-size:.6875rem;color:#7a8a9a;margin-top:.125rem;}
+.info-card .v.orange{color:#f5a623;}
+
+/* 数字盘进度点 */
+.dot{width:.5rem;height:.5rem;border-radius:50%;background:#d0d8e0;display:inline-block;transition:.2s;}
+.dot.act{background:#4fc3f7;transform:scale(1.2);}
+.dot.dn{background:#a5d6a7;}
+
 /* 编辑器 - 步骤 */
 .steps-title{font-size:.875rem;font-weight:600;color:#5a7a98;margin-top:.5rem;}
 .me-step{background:#ffffff;border-radius:.5rem;padding:.75rem;border:1px solid #e0e6ed;margin-bottom:.5rem;}
@@ -411,6 +431,64 @@ select.me-input{appearance:auto;}
     <div class="metro-btns" style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
       <button class="metro-btn" id="metroPauseBtn" onclick="pauseMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">▶ 开始</button>
       <button class="metro-btn" onclick="stopMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 数字盘页 ========== -->
+<div class="page" id="pNumberPad">
+  <div class="top">
+    <span class="bk" onclick="closeNumberPad()">✕</span>
+    <span class="mi" id="npTitle">🦩 单脚数字盘</span>
+    <span class="ri"></span>
+  </div>
+  <div class="scroll" style="text-align:center;">
+    <!-- 数字盘布局（详情状态） -->
+    <div id="npDetail" style="display:block;">
+      <div class="dial-container" style="display:flex;flex-direction:column;align-items:center;padding:1rem 1rem .5rem;">
+        <div class="dial" style="width:15rem;height:15rem;border-radius:50%;border:2px solid #e0e6ed;position:relative;margin-bottom:.75rem;">
+          <!-- 用 JS 渲染数字位置 -->
+          <div id="npDialNumbers" style="position:absolute;inset:0;"></div>
+          <div class="dial-center">👣</div>
+        </div>
+        <div style="display:flex;gap:.5rem;font-size:.6875rem;margin-bottom:.5rem;">
+          <span style="color:#1565c0;">🔵 右侧（1-4）</span>
+          <span style="color:#e65100;">🟠 左侧（6-9）</span>
+          <span style="color:#555;">⚪ 中（0、5）</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:.75rem;">
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">8组</div><div style="font-size:.6875rem;color:#7a8a9a;">总组数</div></div>
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#f5a623;">🦶×2</div><div style="font-size:.6875rem;color:#7a8a9a;">左+右</div></div>
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">66个</div><div style="font-size:.6875rem;color:#7a8a9a;">总数字</div></div>
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">~5s</div><div style="font-size:.6875rem;color:#7a8a9a;">间隔</div></div>
+      </div>
+      <div style="font-size:.75rem;color:#555;background:#f8fafc;padding:.5rem .75rem;border-radius:.5rem;margin:0 1rem .75rem;text-align:left;">左脚：3位×5 → 4位×8 → 5位×10 → 6位×10<br>右脚：同上</div>
+      <button onclick="startNumberPadPractice()" style="width:calc(100% - 2rem);margin:0 1rem 1.5rem;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;">▶ 开始练习（左脚先）</button>
+    </div>
+    
+    <!-- 练习中（隐藏） -->
+    <div id="npPractice" style="display:none;">
+      <div style="display:flex;flex-direction:column;align-items:center;padding:.5rem 1rem 1rem;">
+        <div id="npFootTag" style="font-size:.8125rem;padding:.25rem 1rem;border-radius:1rem;margin-bottom:.5rem;background:#fff3e0;color:#e65100;">🦶 左脚</div>
+        <div id="npGroupInfo" style="font-size:.8125rem;color:#aaa;margin-bottom:.5rem;">第 1 组 · 5 个三位数</div>
+        <div id="npCurrentDigit" style="font-size:6rem;font-weight:200;color:#2c3e50;line-height:1;margin-bottom:.5rem;">7</div>
+        <div id="npStatus" style="font-size:.8125rem;color:#7a8a9a;margin-bottom:1rem;">🎵 请听语音...</div>
+        <div id="npDots" style="display:flex;gap:.375rem;margin-bottom:1rem;"></div>
+        <div style="font-size:.75rem;color:#aaa;margin-bottom:1rem;" id="npOverallProgress">已完成：左 0/4组 · 右 0/4组</div>
+        <div style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
+          <button id="npPauseBtn" onclick="npPause()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">⏸ 暂停</button>
+          <button onclick="npStop()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 换脚提示（隐藏） -->
+    <div id="npSwitchFoot" style="display:none;padding:2rem;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">🦶➡️🦶</div>
+      <div style="font-size:1rem;color:#555;margin-bottom:.25rem;">左脚已完成！请换右脚</div>
+      <div style="font-size:.8125rem;color:#aaa;margin-bottom:1.5rem;">准备好了点击继续</div>
+      <button onclick="npSwitchToRight()" style="padding:.9375rem 3rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;">▶ 换右脚继续</button>
     </div>
   </div>
 </div>
@@ -1681,6 +1759,11 @@ function sX(id){
     return;
   }
 
+  if(x.type === 'numberpad'){
+    openNumberPad(x);
+    return;
+  }
+
   St.ex = x;
   St.cs = x.cy || 1;
   St.cy = 1;
@@ -1858,6 +1941,7 @@ function doSimple(){
 
 function goH(){
   if(metroState) stopMetronome();
+  if(npState){ if(npState.timer){ clearTimeout(npState.timer); npState.timer = null; } TTS._cancel(); npState = null; }
   clOl();clCf();clNE();clSet();clRc();
   if(St.ti){clearInterval(St.ti);St.ti=null;}
   if(St.audioPoll){clearInterval(St.audioPoll);St.audioPoll=null;}
@@ -1870,6 +1954,7 @@ function goH(){
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pPt').classList.remove('active');
   document.getElementById('pRm').classList.remove('active');
+  document.getElementById('pNumberPad').classList.remove('active');
   document.getElementById('pBag').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
@@ -2056,6 +2141,328 @@ function closeMetronome(showComplete, completedItem){
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = (completedItem.ic || '✅') + ' ' + (completedItem.n || '练习') + ' 完成！';
   }
+}
+
+// ===== 数字盘 =====
+let npState = null;
+
+// 生成一个数字序列（遵守跨中线约束）
+function generateNumberPadSequence(length, digits){
+  const result = [];
+  const randomDigit = () => Math.floor(Math.random() * 10);
+  
+  function isAdjacentConflict(a, b){
+    const right = [1,2,3,4];
+    const left = [6,7,8,9];
+    if(right.includes(a) && right.includes(b) && Math.abs(a-b) === 1) return true;
+    if(left.includes(a) && left.includes(b) && Math.abs(a-b) === 1) return true;
+    return false;
+  }
+  
+  function generateMultiDigit(digits, prevLast){
+    let attempt = 0;
+    while(attempt < 100){
+      const str = [];
+      let prev = prevLast;
+      let valid = true;
+      for(let i = 0; i < digits; i++){
+        let d;
+        if(i === 0 && prev !== null){
+          let tries = 0;
+          do {
+            d = randomDigit();
+            tries++;
+          } while(tries < 20 && isAdjacentConflict(prev, d));
+          if(isAdjacentConflict(prev, d)) { valid = false; break; }
+        } else {
+          d = randomDigit();
+        }
+        if(i > 0 && isAdjacentConflict(str[i-1], d)) { valid = false; break; }
+        str.push(d);
+      }
+      if(valid) return { value: parseInt(str.join('')), lastDigit: str[str.length-1], digits: str };
+      attempt++;
+    }
+    const fallback = Array.from({length: digits}, () => randomDigit());
+    return { value: parseInt(fallback.join('')), lastDigit: fallback[fallback.length-1], digits: fallback };
+  }
+  
+  let lastDigit = null;
+  for(let i = 0; i < length; i++){
+    const num = generateMultiDigit(digits, lastDigit);
+    result.push(num.value);
+    lastDigit = num.lastDigit;
+  }
+  return result;
+}
+
+// 生成全部 8 组序列
+function generateAllSequences(){
+  const digitLengths = [3,4,5,6];
+  const groupLengths = [5,8,10,10];
+  const all = [];
+  for(let foot = 0; foot < 2; foot++){
+    for(let g = 0; g < 4; g++){
+      all.push(generateNumberPadSequence(groupLengths[g], digitLengths[g]));
+    }
+  }
+  return all;
+}
+
+// 渲染数字盘布局
+function renderNumberPad(){
+  const container = document.getElementById('npDialNumbers');
+  container.innerHTML = '';
+  const radius = 6.5;
+  const centerX = 7.5;
+  const centerY = 7.5;
+  
+  const numLabels = ['0','1','2','3','4','5','6','7','8','9'];
+  const sideLabels = ['前后','右','右','右','右','前后','左','左','左','左'];
+  
+  for(let i = 0; i < 10; i++){
+    const angle = (i / 10) * 360 - 90;
+    const rad = angle * Math.PI / 180;
+    const x = centerX + radius * Math.cos(rad);
+    const y = centerY + radius * Math.sin(rad);
+    
+    let cls = 'dial-num';
+    if([1,2,3,4].includes(i)) cls += ' right';
+    else if([6,7,8,9].includes(i)) cls += ' left';
+    else cls += ' mid';
+    
+    const div = document.createElement('div');
+    div.className = cls;
+    div.style.left = x + 'rem';
+    div.style.top = y + 'rem';
+    div.innerHTML = numLabels[i] + '<span class="lbl">' + sideLabels[i] + '</span>';
+    container.appendChild(div);
+  }
+}
+
+function openNumberPad(item){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pNumberPad').classList.add('active');
+  
+  if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+  TTS._cancel();
+  
+  document.getElementById('npTitle').textContent = (item.ic||'🦩') + ' ' + (item.n||'单脚数字盘');
+  
+  renderNumberPad();
+  
+  document.getElementById('npDetail').style.display = 'block';
+  document.getElementById('npPractice').style.display = 'none';
+  document.getElementById('npSwitchFoot').style.display = 'none';
+  
+  npState = { item: item };
+}
+
+function closeNumberPad(){
+  if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+  TTS._cancel();
+  npState = null;
+  document.getElementById('pNumberPad').classList.remove('active');
+  document.getElementById('pH').classList.add('active');
+  rH();
+}
+
+function startNumberPadPractice(){
+  if(!npState) return;
+  
+  const sequences = generateAllSequences();
+  
+  npState.sequences = sequences;
+  npState.currentFoot = 'left';
+  npState.currentGroup = 0;
+  npState.currentDigitIndex = 0;
+  npState.digits = [3,4,5,6];
+  npState.lengths = [5,8,10,10];
+  npState.paused = false;
+  npState.timer = null;
+  npState.completedGroups = { left: 0, right: 0 };
+  npState.completedDigits = 0;
+  
+  document.getElementById('npDetail').style.display = 'none';
+  document.getElementById('npPractice').style.display = 'block';
+  document.getElementById('npSwitchFoot').style.display = 'none';
+  
+  npUpdateDisplay();
+  npSpeakAndDisplay();
+}
+
+function npSpeakDigit(digit){
+  TTS._cancel();
+  try {
+    const u = new SpeechSynthesisUtterance(String(digit));
+    u.lang = 'zh-CN';
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  } catch(e) { }
+}
+
+function npSpeakAndDisplay(){
+  if(!npState || npState.paused) return;
+  
+  const footIdx = npState.currentFoot === 'left' ? 0 : 1;
+  const groupIdx = footIdx * 4 + npState.currentGroup;
+  const seq = npState.sequences[groupIdx];
+  
+  if(!seq || npState.currentDigitIndex >= seq.length){
+    npNextGroup();
+    return;
+  }
+  
+  const digit = seq[npState.currentDigitIndex];
+  document.getElementById('npCurrentDigit').textContent = digit;
+  document.getElementById('npStatus').textContent = '🎵 请听语音...';
+  
+  npSpeakDigit(digit);
+  npUpdateDisplay();
+  
+  if(npState.timer) { clearTimeout(npState.timer); }
+  npState.timer = setTimeout(() => {
+    if(npState && !npState.paused){
+      npState.currentDigitIndex++;
+      npState.completedDigits++;
+      npNextDigit();
+    }
+  }, 5000);
+}
+
+function npNextDigit(){
+  if(!npState) return;
+  
+  const footIdx = npState.currentFoot === 'left' ? 0 : 1;
+  const groupIdx = footIdx * 4 + npState.currentGroup;
+  const seq = npState.sequences[groupIdx];
+  
+  if(npState.currentDigitIndex < seq.length){
+    npSpeakAndDisplay();
+  } else {
+    npNextGroup();
+  }
+}
+
+function npNextGroup(){
+  if(!npState) return;
+  
+  npState.currentDigitIndex = 0;
+  npState.currentGroup++;
+  
+  if(npState.currentGroup >= 4){
+    npState.completedGroups[npState.currentFoot] = 4;
+    
+    if(npState.currentFoot === 'left'){
+      document.getElementById('npPractice').style.display = 'none';
+      document.getElementById('npSwitchFoot').style.display = 'block';
+      if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+    } else {
+      npFinish();
+    }
+  } else {
+    npSpeakAndDisplay();
+  }
+}
+
+function npSwitchToRight(){
+  if(!npState) return;
+  
+  npState.currentFoot = 'right';
+  npState.currentGroup = 0;
+  npState.currentDigitIndex = 0;
+  
+  document.getElementById('npSwitchFoot').style.display = 'none';
+  document.getElementById('npPractice').style.display = 'block';
+  
+  npUpdateDisplay();
+  npSpeakAndDisplay();
+}
+
+function npUpdateDisplay(){
+  if(!npState) return;
+  
+  const footIdx = npState.currentFoot === 'left' ? 0 : 1;
+  const groupIdx = footIdx * 4 + npState.currentGroup;
+  const seq = npState.sequences[groupIdx];
+  
+  const footEl = document.getElementById('npFootTag');
+  if(npState.currentFoot === 'left'){
+    footEl.textContent = '🦶 左脚';
+    footEl.style.background = '#fff3e0';
+    footEl.style.color = '#e65100';
+  } else {
+    footEl.textContent = '🦶 右脚';
+    footEl.style.background = '#e3f2fd';
+    footEl.style.color = '#1565c0';
+  }
+  
+  const groupLen = npState.lengths[npState.currentGroup];
+  const digitLen = npState.digits[npState.currentGroup];
+  document.getElementById('npGroupInfo').textContent = '第 ' + (npState.currentGroup+1) + ' 组 · ' + groupLen + ' 个' + digitLen + '位数';
+  
+  const dotsEl = document.getElementById('npDots');
+  if(seq){
+    dotsEl.innerHTML = seq.map(function(_, i){
+      var cls = '';
+      if(i < npState.currentDigitIndex) cls = 'dot dn';
+      else if(i === npState.currentDigitIndex) cls = 'dot act';
+      else cls = 'dot';
+      return '<span class="' + cls + '"></span>';
+    }).join('');
+  } else {
+    dotsEl.innerHTML = '';
+  }
+  
+  const leftDone = npState.completedGroups.left;
+  const rightDone = npState.completedGroups.right;
+  document.getElementById('npOverallProgress').textContent = '已完成：左 ' + leftDone + '/4组 · 右 ' + rightDone + '/4组';
+}
+
+function npPause(){
+  if(!npState) return;
+  
+  if(npState.paused){
+    npState.paused = false;
+    document.getElementById('npPauseBtn').textContent = '⏸ 暂停';
+    document.getElementById('npStatus').textContent = '🎵 请听语音...';
+    npSpeakAndDisplay();
+  } else {
+    npState.paused = true;
+    document.getElementById('npPauseBtn').textContent = '▶ 继续';
+    document.getElementById('npStatus').textContent = '⏸ 已暂停';
+    if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+    TTS._cancel();
+  }
+}
+
+function npStop(){
+  if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+  TTS._cancel();
+  npState = null;
+  closeNumberPad();
+}
+
+function npFinish(){
+  if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+  TTS._cancel();
+  
+  const item = npState?.item;
+  if(item && !Dn.includes(item.i)){
+    Dn.push(item.i);
+    svDn();
+    if(PS) addPoints(item.pt || 10, item.n);
+  }
+  
+  const completedItem = item;
+  npState = null;
+  document.getElementById('pNumberPad').classList.remove('active');
+  document.getElementById('pH').classList.add('active');
+  rH();
+  
+  SFX.play('complete');
+  document.getElementById('ol').classList.add('show');
+  document.getElementById('olT').textContent = (completedItem?.ic||'✅') + ' ' + (completedItem?.n||'练习') + ' 完成！';
 }
 
 // ===== 姓名编辑 =====
