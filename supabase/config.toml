@@ -1,0 +1,14 @@
+[project]
+project_id = "pkxmsfyzcphzvuangrzs"
+
+[functions]
+enabled = true
+
+[functions."tts"]
+enabled = true
+
+[auth]
+enabled = false
+
+[api]
+enabled = true

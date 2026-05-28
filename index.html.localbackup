@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>✅ 每日打卡</title>
-<!-- Supabase REST API via fetch (零依赖) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== 根字体随屏幕宽度缩放 ===== */
 html{font-size:calc(100vw / 375 * 16);}
@@ -153,8 +153,11 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .ol{background:rgba(245,247,250,.95);flex-direction:column;gap:.75rem;}
 .ol .oi{font-size:3.5rem;}
 .ol .ot{font-size:1.25rem;font-weight:700;color:#66bb6a;text-align:center;}
-.ol-btn{display:flex;width:18.75rem;padding:0;justify-content:center;}
-.ol-btn .b{padding:.875rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;text-align:center;}
+.ol .os{font-size:.875rem;color:#6a7a90;text-align:center;max-width:18.75rem;}
+.ol .od{font-size:.8125rem;color:#7a8a9a;text-align:center;line-height:1.6;}
+.ol .opt{font-size:.8125rem;color:#f5a623;text-align:center;margin-bottom:.25rem;}
+.ol-btn{display:flex;gap:.625rem;width:18.75rem;padding:0;}
+.ol-btn .b{flex:1;padding:.875rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;text-align:center;}
 
 .cf{background:rgba(245,247,250,.92);}
 .cf .bx{background:#ffffff;border-radius:1rem;padding:1.75rem 1.5rem;border:1px solid #e0e6ed;text-align:center;max-width:18.75rem;box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -302,6 +305,7 @@ select.me-input{appearance:auto;}
 </head>
 <body>
 
+<!-- ========== 首页 ========== -->
 <!-- ========== 登录页 ========== -->
 <div class="page" id="pLogin">
   <div class="header">
@@ -323,8 +327,7 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 首页 ========== -->
-<div class="page" id="pH">
+<div class="page active" id="pH">
   <div class="header">
     <div class="lt">
       <span class="dt" id="hdrDt"></span>
@@ -333,7 +336,6 @@ select.me-input{appearance:auto;}
     <div class="rt">
       <button class="icon-btn" id="hdrGold" onclick="openPt()" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
       <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
-      <button class="icon-btn" id="sfxToggle" onclick="SFX.toggle()">🔊</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
   </div>
@@ -615,8 +617,12 @@ select.me-input{appearance:auto;}
 <div class="ol" id="ol">
   <div class="oi">🎉</div>
   <div class="ot" id="olT">完成！</div>
+  <div class="os" id="olS"></div>
+  <div class="opt" id="olPt"></div>
+  <div class="od" id="olD"></div>
   <div class="ol-btn">
-    <button class="b bp" onclick="clOl();goH()" style="min-width:8rem;">👍 返回</button>
+    <button class="b bs" onclick="clOl();goH()">🏠 首页</button>
+    <button class="b bp" onclick="clOl();goH()">📋 继续任务</button>
   </div>
 </div>
 
@@ -721,70 +727,6 @@ select.me-input{appearance:auto;}
 </div>
 
 <script>
-// ===== Supabase REST API (零依赖) =====
-const SUPABASE_URL = 'https://pkxmsfyzcphzvuangrzs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreG1zZnl6Y3BoenZ1YW5ncnpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNDkxNzcsImV4cCI6MjA5NDYyNTE3N30.K1_niR4ZylqzbDPFnmTs5HRo2aEbObkGw3V9clM1czo';
-
-// Supabase REST API 工具函数（零依赖）
-const SB = {
-  url: SUPABASE_URL + '/rest/v1',
-  headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-
-  async get(table, query = {}) {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([k, v]) => params.set(k, v));
-    const res = await fetch(`${this.url}/${table}?${params}`, {
-      headers: { ...this.headers, Accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error(`Supabase GET ${table} failed: ${res.status}`);
-    return res.json();
-  },
-
-  async post(table, body) {
-    const res = await fetch(`${this.url}/${table}`, {
-      method: 'POST',
-      headers: { ...this.headers, Prefer: 'return=representation' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`Supabase POST ${table} failed: ${res.status}`);
-    return res.json();
-  },
-
-  async upsert(table, body, conflictCol) {
-    const params = conflictCol ? `?on_conflict=${conflictCol}` : '';
-    const res = await fetch(`${this.url}/${table}${params}`, {
-      method: 'POST',
-      headers: { ...this.headers, Prefer: 'resolution=merge-duplicates,return=representation' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`Supabase UPSERT ${table} failed: ${res.status}`);
-    return res.json();
-  },
-
-  async patch(table, body, query = {}) {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([k, v]) => params.set(k, v));
-    const res = await fetch(`${this.url}/${table}?${params}`, {
-      method: 'PATCH',
-      headers: this.headers,
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`Supabase PATCH ${table} failed: ${res.status}`);
-    return res.json();
-  },
-
-  async del(table, query = {}) {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([k, v]) => params.set(k, v));
-    const res = await fetch(`${this.url}/${table}?${params}`, {
-      method: 'DELETE',
-      headers: this.headers,
-    });
-    if (!res.ok) throw new Error(`Supabase DELETE ${table} failed: ${res.status}`);
-    return res.json();
-  }
-};
-
 // ===== 默认数据 =====
 const DEF_ITEMS = [
   {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   no:'洗漱时做', type:'routine', pt:5,
@@ -825,33 +767,13 @@ const DEF_SLOTS = [
   { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish'] }
 ];
 
-// ===== 用户系统 =====
-let currentUser = null; // { id, name, avatar, settings, pin }
-
-function loadCurrentUser(){
-  try{
-    const r = localStorage.getItem('dc_current_user');
-    if(r) return JSON.parse(r);
-  }catch(e){}
-  return null;
-}
-
-function saveCurrentUser(user){
-  currentUser = user;
-  localStorage.setItem('dc_current_user', JSON.stringify(user));
-}
-
-function clearCurrentUser(){
-  currentUser = null;
-  localStorage.removeItem('dc_current_user');
-}
-
 // ===== 数据管理 =====
 let DC = {}; // { slots: [], items: [], settings: {userName: ''}, trash: [] }
 
 function initDC(){
   const itemsRaw = localStorage.getItem('dc_items');
   if(!itemsRaw){
+    // First visit: import defaults
     DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
     DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
     DC.settings = {userName: '小伙伴'};
@@ -860,10 +782,12 @@ function initDC(){
     return;
   }
   DC.items = JSON.parse(itemsRaw);
+  // Load trash
   const trashRaw = localStorage.getItem('dc_trash');
   DC.trash = trashRaw ? JSON.parse(trashRaw) : [];
   try{ DC.settings = JSON.parse(localStorage.getItem('dc_settings') || '{}'); }catch(e){ DC.settings = {}; }
   if(!DC.settings.userName) DC.settings.userName = '小伙伴';
+  // Load slots
   const slotsRaw = localStorage.getItem('dc_slots');
   if(slotsRaw){
     try{ DC.slots = JSON.parse(slotsRaw); }catch(e){ DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS)); }
@@ -881,7 +805,6 @@ function flushDC(){
 
 function svSlots(){
   localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
-  syncSlots();
 }
 
 function getSlot(id){
@@ -896,516 +819,6 @@ function getSlotItems(slotId){
 
 function getItem(id){
   return DC.items.find(x => x.i === id);
-}
-
-// ===== 同步到 Supabase =====
-let syncQueue = [];
-
-function enqueueSync(fn){
-  syncQueue.push(fn);
-  if(syncQueue.length === 1) processSyncQueue();
-}
-
-async function processSyncQueue(){
-  while(syncQueue.length > 0){
-    try{
-      await syncQueue[0]();
-    }catch(e){
-      console.warn('Sync failed (will retry on next save):', e);
-    }
-    syncQueue.shift();
-  }
-}
-
-async function syncItems(){
-  if(!currentUser) return;
-  try {
-    await SB.upsert('items',
-      DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
-        user_id: currentUser.id,
-        item_id: x.i,
-        name: x.n,
-        icon: x.ic || '✅',
-        type: x.type || 'simple',
-        duration: x.dur || 1,
-        time_label: x.t || '1分钟',
-        points: x.pt || 5,
-        cycle_count: x.cy || null,
-        note: x.no || '',
-        steps: x.s || [],
-        deleted: false
-      })), 'user_id,item_id'
-    );
-  } catch(e){ console.warn('syncItems error:', e); }
-}
-
-async function syncSlots(){
-  if(!currentUser) return;
-  try {
-    await SB.upsert('slots',
-      DC.slots.map(s => ({
-        user_id: currentUser.id,
-        slot_id: s.i,
-        icon: s.ic || '☀️',
-        name: s.n,
-        item_ids: s.ids
-      })), 'user_id,slot_id'
-    );
-  } catch(e){ console.warn('syncSlots error:', e); }
-}
-
-async function syncSettings(){
-  if(!currentUser) return;
-  try {
-    await SB.patch('users', {
-      settings: DC.settings,
-      name: DC.settings.userName || '小伙伴'
-    }, { 'id': `eq.${currentUser.id}` });
-  } catch(e){ console.warn('syncSettings error:', e); }
-}
-
-async function syncDailyLog(){
-  if(!currentUser) return;
-  const key = dk();
-  try {
-    await SB.upsert('daily_logs', {
-      user_id: currentUser.id,
-      date_key: key,
-      completed_items: Dn,
-      earned_points: PS ? getTodayEarned() : 0
-    }, 'user_id,date_key');
-  } catch(e){ console.warn('syncDailyLog error:', e); }
-}
-
-async function syncPointsState(){
-  if(!currentUser || !PS) return;
-  try {
-    await SB.upsert('points_state', {
-      user_id: currentUser.id,
-      points: PS.points,
-      daily_points: PS.dailyPoints
-    }, 'user_id');
-  } catch(e){ console.warn('syncPointsState error:', e); }
-}
-
-async function syncRewards(){
-  if(!currentUser) return;
-  try {
-    const localR = PS && PS.rewards ? PS.rewards : [];
-    // 保护：本地为空但 Supabase 有数据时，不覆盖
-    if(localR.length === 0){
-      const existing = await SB.get('rewards', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
-      if(existing && existing.length > 0) return; // Supabase 有数据，不删
-    }
-    // Delete all and re-insert
-    await SB.del('rewards', { 'user_id': `eq.${currentUser.id}` });
-    if(localR.length > 0){
-      await SB.post('rewards',
-        localR.map((r, i) => ({
-          user_id: currentUser.id,
-          icon: r.icon || '🎁',
-          name: r.name,
-          cost: r.cost,
-          sort_order: i
-        }))
-      );
-    }
-  } catch(e){ console.warn('syncRewards error:', e); }
-}
-
-async function syncRedeemed(){
-  if(!currentUser) return;
-  try {
-    const localRd = PS && PS.redeemed ? PS.redeemed : [];
-    // 保护：本地为空但 Supabase 有数据时，不覆盖
-    if(localRd.length === 0){
-      const existing = await SB.get('redeemed', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
-      if(existing && existing.length > 0) return;
-    }
-    await SB.del('redeemed', { 'user_id': `eq.${currentUser.id}` });
-    if(localRd.length > 0){
-      await SB.post('redeemed',
-        localRd.map(r => ({
-          user_id: currentUser.id,
-          redeem_id: r.id,
-          icon: r.icon || '🎁',
-          name: r.name,
-          cost: r.cost,
-          purchased_at: r.purchasedAt
-        }))
-      );
-    }
-  } catch(e){ console.warn('syncRedeemed error:', e); }
-}
-
-async function syncPointLogs(){
-  if(!currentUser) return;
-  try {
-    const localLogs = PS && PS.pointLog ? PS.pointLog : [];
-    // 保护：本地为空但 Supabase 有数据时，不覆盖
-    if(localLogs.length === 0){
-      const existing = await SB.get('point_logs', { select: 'id', 'user_id': `eq.${currentUser.id}` }).catch(() => []);
-      if(existing && existing.length > 0) return;
-    }
-    await SB.del('point_logs', { 'user_id': `eq.${currentUser.id}` });
-    if(localLogs.length > 0){
-      await SB.post('point_logs',
-        localLogs.map(l => ({
-          user_id: currentUser.id,
-          type: l.type,
-          amount: l.amount,
-          item_name: l.itemName || '',
-          balance_after: l.balance,
-          timestamp_ms: l.timestamp
-        }))
-      );
-    }
-  } catch(e){ console.warn('syncPointLogs error:', e); }
-}
-
-async function syncDeletedItems(){
-  if(!currentUser) return;
-  // Mark items in trash as deleted in Supabase
-  const deletedIds = DC.trash.filter(t => t.item).map(t => t.item.i).filter(Boolean);
-  if(deletedIds.length > 0){
-    try {
-      // Supabase REST: PATCH with individual updates since `in` filter isn't directly supported
-      // Batch update via multiple patches or use a single request with or clause
-      for(const id of deletedIds) {
-        await SB.patch('items', {
-          deleted: true,
-          deleted_at: new Date().toISOString()
-        }, { 'user_id': `eq.${currentUser.id}`, 'item_id': `eq.${id}` });
-      }
-    } catch(e){ console.warn('syncDeletedItems error:', e); }
-  }
-}
-
-async function syncAllToSupabase(){
-  if(!currentUser) return;
-  enqueueSync(async () => {
-    await syncItems();
-    await syncSlots();
-    await syncSettings();
-    await syncDailyLog();
-    await syncPointsState();
-    await syncRewards();
-    await syncRedeemed();
-    await syncPointLogs();
-    await syncDeletedItems();
-  });
-}
-
-// ===== 从 Supabase 加载数据 =====
-// 安全策略：localStorage 是基线，Supabase 只补充非空数据，不覆盖
-async function loadUserDataFromSupabase(user){
-  try{
-    // Step 0: 先加载 localStorage 作为基线
-    const localPS_json = localStorage.getItem('dc_points_state');
-    let localPS = null;
-    try{ if(localPS_json) localPS = JSON.parse(localPS_json); }catch(e){}
-    const hasLocalPS = localPS && typeof localPS.points === 'number';
-
-    // Parallel load all data
-    const [itemsData, slotsData, dailyData, pointsData, rewardsData, redeemedData, logsData] = await Promise.all([
-      SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.false' }).catch(() => null),
-      SB.get('slots', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
-      SB.get('daily_logs', { select: '*', 'user_id': `eq.${user.id}`, 'date_key': `eq.${dk()}` }).catch(() => null),
-      SB.get('points_state', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
-      SB.get('rewards', { select: '*', 'user_id': `eq.${user.id}`, order: 'sort_order.asc' }).catch(() => null),
-      SB.get('redeemed', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
-      SB.get('point_logs', { select: '*', 'user_id': `eq.${user.id}`, order: 'timestamp_ms.desc', limit: '100' }).catch(() => null)
-    ]);
-
-    // Transform items
-    if(itemsData && itemsData.length > 0){
-      DC.items = itemsData.map(r => ({
-        i: r.item_id,
-        n: r.name,
-        ic: r.icon || '✅',
-        t: r.time_label || '1分钟',
-        dur: r.duration || 1,
-        no: r.note || '',
-        type: r.type || 'simple',
-        pt: r.points || 5,
-        cy: r.cycle_count || undefined,
-        s: r.steps || []
-      }));
-    } else {
-      DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
-    }
-
-    // Transform slots
-    if(slotsData && slotsData.length > 0){
-      DC.slots = slotsData.map(r => ({
-        i: r.slot_id,
-        ic: r.icon || '☀️',
-        n: r.name,
-        ids: r.item_ids || []
-      }));
-    } else {
-      DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
-    }
-
-    // Load settings from user record
-    DC.settings = user.settings || {userName: user.name || '小伙伴'};
-    if(!DC.settings.userName) DC.settings.userName = user.name || '小伙伴';
-
-    // Trash: load from Supabase deleted items
-    const trashData = await SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.true' }).catch(() => null);
-    DC.trash = [];
-    if(trashData && trashData.length > 0){
-      DC.trash = trashData.map(r => ({
-        item: {
-          i: r.item_id,
-          n: r.name,
-          ic: r.icon || '✅',
-          t: r.time_label || '1分钟',
-          dur: r.duration || 1,
-          no: r.note || '',
-          type: r.type || 'simple',
-          pt: r.points || 5,
-          cy: r.cycle_count || undefined,
-          s: r.steps || []
-        },
-        deletedAt: r.deleted_at ? new Date(r.deleted_at).getTime() : Date.now()
-      }));
-    }
-
-    // Write to localStorage
-    flushDC();
-
-    // Load daily log
-    if(dailyData && dailyData.length > 0 && dailyData[0]){
-      Dn = dailyData[0].completed_items || [];
-    } else {
-      Dn = [];
-    }
-    localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
-
-    // ---- PS 加载：localStorage 是基线，Supabase 只覆盖非空数据 ----
-    if(hasLocalPS){
-      PS = localPS;
-      if(!PS.dailyPoints) PS.dailyPoints = {};
-      if(!PS.pointLog) PS.pointLog = [];
-      if(!PS.rewards) PS.rewards = [];
-      if(!PS.redeemed) PS.redeemed = [];
-    } else {
-      PS = { points: 0, dailyPoints: {}, pointLog: [], rewards: [], redeemed: [] };
-    }
-    const key = getDailyKey();
-    if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
-
-    // 从 Supabase 覆盖——仅当数据非空
-    if(pointsData && pointsData.length > 0 && pointsData[0]){
-      PS.points = pointsData[0].points || 0;
-      PS.dailyPoints = pointsData[0].daily_points || PS.dailyPoints;
-      if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
-    }
-    if(rewardsData && rewardsData.length > 0){
-      PS.rewards = rewardsData.map(r => ({
-        icon: r.icon || '🎁',
-        name: r.name,
-        cost: r.cost
-      }));
-    }
-    if(redeemedData && redeemedData.length > 0){
-      PS.redeemed = redeemedData.map(r => ({
-        id: r.redeem_id,
-        icon: r.icon || '🎁',
-        name: r.name,
-        cost: r.cost,
-        purchasedAt: r.purchased_at
-      }));
-    }
-    if(logsData && logsData.length > 0){
-      PS.pointLog = logsData.map(l => ({
-        type: l.type,
-        amount: l.amount,
-        itemName: l.item_name,
-        balance: l.balance_after,
-        timestamp: l.timestamp_ms
-      }));
-    }
-
-    localStorage.setItem('dc_points_state', JSON.stringify(PS));
-    return true;
-  }catch(e){
-    console.error('Failed to load user data:', e);
-    return false;
-  }
-}
-
-// ===== 登录流程 =====
-let pendingLoginUserId = null;
-
-// 显示登录页
-function showLogin(){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('pLogin').classList.add('active');
-  loadLoginUsers();
-}
-
-async function loadLoginUsers(){
-  const l = document.getElementById('loginUserList');
-  l.innerHTML = '<div class="empty-state">⏳ 加载中...</div>';
-  l.innerHTML = '';
-
-  try{
-    const data = await SB.get('users', { select: '*', order: 'id.asc' });
-
-    if(!data || data.length === 0){
-      l.innerHTML = '<div class="empty-state">还没有成员<br><span style="font-size:.75rem;">点击下方按钮添加第一个成员</span></div>';
-      return;
-    }
-
-    l.innerHTML = data.map(u => `
-      <div class="ex" onclick="startLogin('${u.id}')" style="cursor:pointer;">
-        <div class="ic" style="font-size:1.5rem;">${u.avatar || '😊'}</div>
-        <div class="inf" style="font-size:1rem;font-weight:600;">${u.name}</div>
-        <div class="tm">点击进入 ›</div>
-      </div>
-    `).join('');
-  }catch(e){
-    l.innerHTML = '<div class="empty-state">⚠️ 网络错误，请重试</div>';
-  }
-}
-
-function startLogin(userId){
-  pendingLoginUserId = userId;
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinError').textContent = '';
-  document.getElementById('pinModalTitle').textContent = '输入 PIN 码';
-  document.getElementById('pinModal').classList.add('show');
-  setTimeout(() => document.getElementById('pinInput').focus(), 100);
-}
-
-function closePinModal(){
-  document.getElementById('pinModal').classList.remove('show');
-  pendingLoginUserId = null;
-}
-
-async function verifyPin(){
-  const pin = document.getElementById('pinInput').value.trim();
-  const errEl = document.getElementById('pinError');
-  if(!pin || pin.length !== 4){
-    errEl.textContent = '请输入4位PIN码';
-    return;
-  }
-
-  try{
-    const users = await SB.get('users', { select: '*', 'id': `eq.${pendingLoginUserId}` });
-    const data = users && users.length > 0 ? users[0] : null;
-    if(!data){
-      errEl.textContent = '用户不存在';
-      return;
-    }
-
-    if(data.pin !== pin){
-      errEl.textContent = 'PIN码错误，请重试';
-      document.getElementById('pinInput').value = '';
-      document.getElementById('pinInput').focus();
-      return;
-    }
-
-    // Login success
-    closePinModal();
-    saveCurrentUser(data);
-    await loadUserDataFromSupabase(data);
-    enterHome();
-  }catch(e){
-    errEl.textContent = '网络错误，请重试';
-  }
-}
-
-function showCreateUser(){
-  document.getElementById('createUserName').value = '';
-  document.getElementById('createUserPin').value = '';
-  document.getElementById('createUserError').textContent = '';
-  document.getElementById('createUserModal').classList.add('show');
-  setTimeout(() => document.getElementById('createUserName').focus(), 100);
-}
-
-function closeCreateUserModal(){
-  document.getElementById('createUserModal').classList.remove('show');
-}
-
-async function createUser(){
-  const name = document.getElementById('createUserName').value.trim();
-  const pin = document.getElementById('createUserPin').value.trim();
-  const errEl = document.getElementById('createUserError');
-
-  if(!name){ errEl.textContent = '请输入名字'; return; }
-  if(!pin || pin.length !== 4){ errEl.textContent = '请设置4位PIN码'; return; }
-
-  try{
-    const users = await SB.post('users', {
-      name: name,
-      pin: pin,
-      avatar: '😊',
-      settings: { userName: name }
-    });
-    const data = users && users.length > 0 ? users[0] : null;
-
-    if(!data){
-      errEl.textContent = '创建失败';
-      return;
-    }
-
-    closeCreateUserModal();
-    // Create default data for new user
-    const user = data;
-    const defaultItems = JSON.parse(JSON.stringify(DEF_ITEMS));
-    const defaultSlots = JSON.parse(JSON.stringify(DEF_SLOTS));
-
-    // Insert default items
-    const itemInserts = defaultItems.map(x => ({
-      user_id: user.id,
-      item_id: x.i,
-      name: x.n,
-      icon: x.ic || '✅',
-      type: x.type || 'simple',
-      duration: x.dur || 1,
-      time_label: x.t || '1分钟',
-      points: x.pt || 5,
-      cycle_count: x.cy || null,
-      note: x.no || '',
-      steps: x.s || []
-    }));
-    await SB.post('items', itemInserts);
-
-    // Insert default slots
-    const slotInserts = defaultSlots.map(s => ({
-      user_id: user.id,
-      slot_id: s.i,
-      icon: s.ic,
-      name: s.n,
-      item_ids: s.ids
-    }));
-    await SB.post('slots', slotInserts);
-
-    // Init points
-    await SB.post('points_state', {
-      user_id: user.id,
-      points: 0,
-      daily_points: {}
-    });
-
-    // Auto-login
-    saveCurrentUser(user);
-    await loadUserDataFromSupabase(user);
-    enterHome();
-  }catch(e){
-    errEl.textContent = '网络错误，请重试';
-  }
-}
-
-function enterHome(){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('pH').classList.add('active');
-  // Ensure pi is valid
-  if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
-  rH();
 }
 
 // ===== 每日完成记录 =====
@@ -1426,23 +839,23 @@ function loadDn(){
 
 function svDn(){
   localStorage.setItem('dc_'+dk(), JSON.stringify(Dn));
-  syncDailyLog();
 }
 
 // ===== 金币系统 =====
 let PS = null;
 
 function initPS(){
-  // Will be loaded from Supabase after login
   try{
     const r = localStorage.getItem('dc_points_state');
     if(r){
       PS = JSON.parse(r);
+      // Ensure dailyPoints structure
       if(!PS.dailyPoints) PS.dailyPoints = {};
       if(!PS.pointLog) PS.pointLog = [];
       if(!PS.rewards) PS.rewards = [];
       if(!PS.redeemed) PS.redeemed = [];
       if(PS.points == null) PS.points = 0;
+      // Ensure today's entry
       const key = getDailyKey();
       if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
     } else {
@@ -1455,9 +868,6 @@ function initPS(){
     const key = getDailyKey();
     PS.dailyPoints[key] = { earned: 0 };
   }
-  if(!PS.pointLog) PS.pointLog = [];
-  if(!PS.rewards) PS.rewards = [];
-  if(!PS.redeemed) PS.redeemed = [];
   flushPS();
 }
 
@@ -1477,7 +887,6 @@ function getTodayEarned(){
 }
 
 function addPoints(amount, itemName){
-  SFX.play('coin');
   const key = getDailyKey();
   if(!PS.dailyPoints[key]) PS.dailyPoints[key] = { earned: 0 };
 
@@ -1491,7 +900,6 @@ function addPoints(amount, itemName){
     timestamp: Date.now()
   });
   flushPS();
-  enqueueSync(async () => { await syncPointsState(); await syncDailyLog(); await syncPointLogs(); });
   return amount;
 }
 
@@ -1506,12 +914,11 @@ function spendPoints(amount, rewardName){
     timestamp: Date.now()
   });
   flushPS();
-  enqueueSync(async () => { await syncPointsState(); await syncPointLogs(); });
   return true;
 }
 
 // ===== 状态 =====
-let St={pi:'morning',dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0,audioDone:true,audioPoll:null,audioTimeout:null};
+let St={pi:'morning',dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0};
 
 // ===== 首页渲染 =====
 function swT(id){
@@ -1520,11 +927,16 @@ function swT(id){
 }
 
 function rH(){
+  // Render header greeting
   updateHeader();
+
+  // Render tags (fixed three slots)
   const tgS = document.getElementById('tgS');
   tgS.innerHTML = DC.slots.map(s =>
     `<div class="tagb ${s.i===St.pi?'ac':''}" data-i="${s.i}" onclick="swT('${s.i}')">${s.ic} ${s.n}</div>`
   ).join('');
+
+  // Render items for current slot
   const items = getSlotItems(St.pi);
   const l = document.getElementById('exL');
   l.innerHTML = items.map(x => {
@@ -1541,10 +953,12 @@ function rH(){
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
   }
+
   upPr();
 }
 
 function updateHeader(){
+  // Date
   const now = new Date();
   const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
   const month = now.getMonth()+1;
@@ -1552,6 +966,7 @@ function updateHeader(){
   const wd = weekdays[now.getDay()];
   document.getElementById('hdrDt').textContent = `${wd} · ${month}月${day}日`;
 
+  // Greeting based on time
   const h = now.getHours();
   let greetEmoji, greetWord;
   if(h < 6){ greetEmoji='🌙'; greetWord='夜深了'; }
@@ -1574,6 +989,7 @@ function upPr(){
   document.getElementById('pgB').style.width = `${t>0 ? d/t*100 : 0}%`;
   const doneItems = items.filter(x => x && Dn.includes(x.i)).map(x => x.ic + x.n).join(' · ');
   document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
+  // Update points display
   if(PS){
     document.getElementById('pgPts').textContent = `💰 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
     const hg = document.getElementById('hdrGold');
@@ -1587,19 +1003,31 @@ function sX(id){
   const x = getItem(id);
   if(!x) return;
 
+  // Simple type: complete directly
   if(x.type === 'simple'){
     if(!Dn.includes(id)) Dn.push(id);
     svDn();
+    // Add points
     const pt = x.pt || 5;
     if(PS) addPoints(pt, x.n);
-    SFX.play('complete');
-    SFX.play('coin');
     rH();
+    // Show completion popup
+    const allDone = getSlotItems(St.pi).every(it => it && Dn.includes(it.i));
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
+    document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油 💪';
+    // Points info
+    if(PS){
+      document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+    } else {
+      document.getElementById('olPt').textContent = '';
+    }
+    const det = getSlotItems(St.pi).map(it => (Dn.includes(it.i)?'✅':'⬜')+' '+it.ic+it.n).join('<br>');
+    document.getElementById('olD').innerHTML = '今日进度：' + getSlotItems(St.pi).filter(it=>it && Dn.includes(it.i)).length + '/' + getSlotItems(St.pi).length + '<br>' + det;
     return;
   }
 
+  // Routine type: go to practice page
   St.ex = x;
   St.cs = x.cy || 1;
   St.cy = 1;
@@ -1607,10 +1035,8 @@ function sX(id){
   St.ss = x.s || [];
   St.pl = false;
   if(St.ti){ clearInterval(St.ti); St.ti = null; }
-  if(St.audioPoll){ clearInterval(St.audioPoll); St.audioPoll = null; }
-  if(St.audioTimeout){ clearTimeout(St.audioTimeout); St.audioTimeout = null; }
-  TTS._cancel();
 
+  // Reset buttons to initial state
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -1622,8 +1048,6 @@ function sX(id){
   document.getElementById('pP').classList.add('active');
   uPpd();
   uP();
-  // 播开场音频
-  TTS.playOpening(x.i);
 }
 
 function uPpd(){
@@ -1647,7 +1071,7 @@ function uP(){
   sn.textContent=(m?`第${St.cy}轮·`:'')+'步'+(St.st+1)+'/'+St.ss.length;
   st.innerHTML=s.t;
   sc.innerHTML=(s.h?'💡 '+s.h:'')+(x.no&&St.st===0?`<br><span class="tg2">📌 ${x.no}</span>`:'');
-  if(s.d>0){if(St.audioPoll){tn.textContent='0';tl.textContent='等待语音...';}else{tn.textContent=St.pl?St.rm:s.d;tl.textContent='秒';}}else{tn.textContent='—';tl.textContent='';}
+  if(s.d>0){tn.textContent=St.pl?St.rm:s.d;tl.textContent='秒';}else{tn.textContent='—';tl.textContent='';}
   if(m)rD(St.cs,St.cy-1);else rD(St.ss.length,St.st);
 }
 
@@ -1662,12 +1086,13 @@ function rD(n,a){
 // ===== 计时器（自动连播） =====
 document.getElementById('pBtn').addEventListener('click',()=>{
   if(!St.ex)return;
-  SFX.play('start');
+  // Hide extra buttons, show "进行中"
   document.getElementById('pExtraBtns').style.display = 'none';
   const btn = document.getElementById('pBtn');
   btn.textContent = '⏳ 进行中...';
   btn.disabled = true;
   btn.style.cursor = 'not-allowed';
+  // Start auto-play from first step
   St.st = 0;
   St.cy = 1;
   uP();
@@ -1701,12 +1126,23 @@ function fEx(){
   const wasDone = Dn.includes(id);
   if(!wasDone) Dn.push(id);
   svDn();
+  // Add points (only if not already completed)
   const pt = St.ex.pt || 5;
   if(PS && !wasDone) addPoints(pt, St.ex.n);
-  SFX.play('complete');
-  SFX.play('coin');
+  const items = getSlotItems(St.pi);
+  const allDone = items.every(x => x && Dn.includes(x.i));
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent = `${St.ex.ic} ${St.ex.n} 完成！`;
+  document.getElementById('olS').textContent = allDone ? '🎉 今日全部完成！' : '继续加油，还有练习等着你 💪';
+  // Points info
+  if(PS){
+    document.getElementById('olPt').textContent = `💰 +${pt} 金币 · 今日共 ${getTodayEarned()} 金币`;
+  } else {
+    document.getElementById('olPt').textContent = '';
+  }
+  const det = items.map(x => (Dn.includes(x.i)?'✅':'⬜')+' '+x.ic+x.n).join('<br>');
+  document.getElementById('olD').innerHTML = '今日进度：'+items.filter(x=>x && Dn.includes(x.i)).length+'/'+items.length+'<br>'+det;
+  // Reset button state for next time
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -1732,9 +1168,6 @@ function clOl(){document.getElementById('ol').classList.remove('show');}
 function goH(){
   clOl();clCf();clNE();clSet();clRc();
   if(St.ti){clearInterval(St.ti);St.ti=null;}
-  if(St.audioPoll){clearInterval(St.audioPoll);St.audioPoll=null;}
-  if(St.audioTimeout){clearTimeout(St.audioTimeout);St.audioTimeout=null;}
-  TTS._cancel();
   document.getElementById('pP').classList.remove('active');
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pMg').classList.remove('active');
@@ -1745,6 +1178,7 @@ function goH(){
   document.getElementById('pBag').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
+  // Reset button state
   document.getElementById('pExtraBtns').style.display = 'flex';
   const pBtn = document.getElementById('pBtn');
   pBtn.textContent = '▶ 开始';
@@ -1767,7 +1201,6 @@ function saveNE(){
   if(v){
     DC.settings.userName = v;
     flushDC();
-    syncSettings();
     rH();
   }
   clNE();
@@ -1857,12 +1290,13 @@ function delItem(id){
   if(!x) return;
   showDC(`删除「${x.n}」？`, '删除后可从「最近删除」恢复', ()=>{
     DC.items = DC.items.filter(it => it.i !== id);
+    // Remove from all slots
     DC.slots.forEach(s => {
       s.ids = s.ids.filter(i => i !== id);
     });
+    // Move to trash
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
-    enqueueSync(async () => { await syncItems(); await syncSlots(); await syncDeletedItems(); });
     rMg();
     rH();
   });
@@ -1899,7 +1333,6 @@ function restoreItem(idx){
   DC.items.push(t.item);
   DC.trash.splice(idx, 1);
   flushDC();
-  enqueueSync(async () => { await syncItems(); await syncDeletedItems(); });
   rTr();
   rH();
 }
@@ -2032,6 +1465,7 @@ function renderStepList(){
         </div>
       </div>
     </div>
+
   `).join('');
 }
 
@@ -2104,13 +1538,13 @@ function saveItem(){
   }
 
   flushDC();
-  enqueueSync(syncItems);
   closeEditor();
   rH();
 }
 
 // ===== 金币商店 =====
-let ptSource = 'home';
+// 从首页还是设置页进入商店，记录来源，关闭时回来源页
+let ptSource = 'home'; // 'home' | 'setting'
 
 function openPt(){
   ptSource = document.getElementById('pS').classList.contains('active') ? 'setting' : 'home';
@@ -2130,10 +1564,12 @@ function closePt(){
 }
 
 function rPt(){
+  // Balance
   document.getElementById('ptBalance').textContent = PS.points;
   document.getElementById('ptTopBalance').textContent = '💰 '+PS.points;
   document.getElementById('ptToday').textContent = '今日已获得 '+getTodayEarned()+' 金币';
 
+  // Rewards grid
   const g = document.getElementById('ptRewards');
   if(PS.rewards.length === 0){
     g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;">暂无奖励卡片<br><span style="font-size:.75rem;">去管理奖励添加</span></div>';
@@ -2149,6 +1585,7 @@ function rPt(){
     }).join('');
   }
 
+  // Log
   const ll = document.getElementById('ptLogList');
   if(PS.pointLog.length === 0){
     ll.innerHTML = '<div class="li" style="justify-content:center;color:#9aabba;">暂无流水记录</div>';
@@ -2210,15 +1647,16 @@ function showUseConfirm(idx){
   document.getElementById('rcT').textContent = '确认要使用 ' + (r.icon||'🎁') + ' ' + r.name + ' 吗？';
   document.getElementById('rcS').textContent = '使用后卡片将消失';
   document.getElementById('rc').classList.add('show');
+  // Override the confirm button to use the backpack confirm handler
   document.getElementById('rcBtn').onclick = doUseItem;
 }
 function doUseItem(){
   if(useIdx < 0) return;
   PS.redeemed.splice(useIdx, 1);
   flushPS();
-  enqueueSync(syncRedeemed);
   clRc();
   rBag();
+  // Restore redeem button handler
   document.getElementById('rcBtn').onclick = doRedeem;
   useIdx = -1;
 }
@@ -2259,7 +1697,6 @@ function addReward(){
   if(!name){ alert('请输入奖励名称'); return; }
   PS.rewards.push({ icon, name, cost });
   flushPS();
-  enqueueSync(syncRewards);
   document.getElementById('rmIcon').value = '';
   document.getElementById('rmName').value = '';
   document.getElementById('rmCost').value = '';
@@ -2269,7 +1706,6 @@ function addReward(){
 function delReward(idx){
   PS.rewards.splice(idx, 1);
   flushPS();
-  enqueueSync(syncRewards);
   rRm();
 }
 
@@ -2298,6 +1734,7 @@ function doRedeem(){
   if(!r) return;
   const ok = spendPoints(r.cost, r.name);
   if(!ok) { clRc(); return; }
+  // Copy to backpack (redeemed) instead of removing
   PS.redeemed.push({
     id: 'rd_' + Date.now(),
     icon: r.icon || '🎁',
@@ -2306,366 +1743,17 @@ function doRedeem(){
     purchasedAt: Date.now()
   });
   flushPS();
-  enqueueSync(async () => { await syncRewards(); await syncRedeemed(); });
-  SFX.play('complete');
   clRc();
   rPt();
 }
 
 // ===== 启动 =====
-async function startup(){
-  const savedUser = loadCurrentUser();
-  if(savedUser){
-    // Try to load from Supabase
-    try{
-      const users = await SB.get('users', { select: '*', 'id': `eq.${savedUser.id}` });
-      const data = users && users.length > 0 ? users[0] : null;
-      if(data){
-        currentUser = data;
-        await loadUserDataFromSupabase(data);
-        enterHome();
-        return;
-      }
-    }catch(e){
-      // Fallback: load from localStorage
-    }
-    // Load from localStorage as fallback
-    currentUser = savedUser;
-    initDC();
-    loadDn();
-    initPS();
-    if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
-    enterHome();
-  } else {
-    // Show login page
-    showLogin();
-    // Also prepare local data as fallback
-    initDC();
-    loadDn();
-    initPS();
-  }
-}
-
-// Initialize (will show login or restore session)
 initDC();
 loadDn();
 initPS();
-startup();
-
-// ===== 音效系统 (Web Audio API) =====
-// 所有音效使用多振荡器 + 谐波 + 指数衰减（setTargetAtTime），追求精致品质
-const SFX = {
-  _ctx: null,
-  muted: false,
-  _vol: 0.6,          // 默认音量
-
-  _getCtx(){
-    if(!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if(this._ctx.state === 'suspended') this._ctx.resume();
-    return this._ctx;
-  },
-
-  play(name){
-    try{
-      if(this.muted) return;
-      const ctx = this._getCtx();
-      const vol = this._vol;
-      switch(name){
-        case 'complete': this._complete(ctx, vol); break;
-        case 'coin':     this._coin(ctx, vol); break;
-        case 'click':    this._click(ctx, vol); break;
-        case 'start':    this._start(ctx, vol); break;
-        case 'alert':    this._alert(ctx, vol); break;
-      }
-    }catch(e){ /* Web Audio not available, silently ignore */ }
-  },
-
-  setVolume(v){ this._vol = Math.max(0, Math.min(1, v)); },
-
-  toggle(){
-    this.muted = !this.muted;
-    localStorage.setItem('sfx_muted', this.muted ? '1' : '0');
-    const btn = document.getElementById('sfxToggle');
-    if(btn) btn.textContent = this.muted ? '🔇' : '🔊';
-  },
-
-  // ------ 点击音 🔘 ------
-  // "tick"：1600Hz 正弦脉冲 + 带通噪声纹理，短促清脆
-  _click(ctx, vol){
-    const t = ctx.currentTime;
-    // 主音：1600Hz 正弦，瞬间起音 → 指数衰减（setTargetAtTime 更鲁棒）
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1600, t);
-    g.gain.setValueAtTime(vol * 0.5, t);                     // 瞬间峰值
-    g.gain.setTargetAtTime(0, t + 0.001, 0.008);             // 自然指数衰减
-    osc.connect(g).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.06);
-    // 纹理层：带通滤波白噪声
-    const bufSize = Math.floor(ctx.sampleRate * 0.03);
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for(let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(3500, t);
-    filter.Q.setValueAtTime(6, t);
-    const g2 = ctx.createGain();
-    g2.gain.setValueAtTime(vol * 0.2, t);
-    g2.gain.setTargetAtTime(0, t + 0.001, 0.006);
-    src.connect(filter).connect(g2).connect(ctx.destination);
-    src.start(t);
-  },
-
-  // ------ 完成音 ✅ ------
-  // 大三和弦齐奏 (C5+E5+G5)，纯正弦，尾声加高八度泛音提亮
-  _complete(ctx, vol){
-    const t = ctx.currentTime;
-    const dur = 0.35;
-    // C 大三和弦：C5 + E5 + G5
-    [523, 659, 784].forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(vol * (0.3 - i * 0.03), t);
-      g.gain.setTargetAtTime(0, t + 0.005, 0.09 + i * 0.01);
-      o.connect(g).connect(ctx.destination);
-      o.start(t);
-      o.stop(t + dur);
-    });
-    // 高八度泛音提亮
-    const o4 = ctx.createOscillator();
-    const g4 = ctx.createGain();
-    o4.type = 'sine';
-    o4.frequency.setValueAtTime(1047, t); // C6
-    g4.gain.setValueAtTime(vol * 0.08, t);
-    g4.gain.setTargetAtTime(0, t + 0.005, 0.05);
-    o4.connect(g4).connect(ctx.destination);
-    o4.start(t);
-    o4.stop(t + dur);
-  },
-
-  // ------ 金币音 💰 ------
-  // 明亮金属感：两个非谐波高频振荡器（2.4kHz + 3.6kHz），类铃铛
-  _coin(ctx, vol){
-    const t = ctx.currentTime;
-    // 主音：2400Hz 正弦
-    const o1 = ctx.createOscillator();
-    const g1 = ctx.createGain();
-    o1.type = 'sine';
-    o1.frequency.setValueAtTime(2400, t);
-    g1.gain.setValueAtTime(vol * 0.4, t);                     // 瞬间峰值
-    g1.gain.setTargetAtTime(0, t + 0.002, 0.04);              // 指数衰减
-    o1.connect(g1).connect(ctx.destination);
-    o1.start(t);
-    o1.stop(t + 0.2);
-    // 泛音：3600Hz（3:2 非整数倍 → 金属感）
-    const o2 = ctx.createOscillator();
-    const g2 = ctx.createGain();
-    o2.type = 'sine';
-    o2.frequency.setValueAtTime(3600, t);
-    g2.gain.setValueAtTime(vol * 0.25, t);
-    g2.gain.setTargetAtTime(0, t + 0.002, 0.025);
-    o2.connect(g2).connect(ctx.destination);
-    o2.start(t);
-    o2.stop(t + 0.12);
-    // 频率下漂模拟金属自然衰减
-    o1.frequency.setTargetAtTime(1800, t + 0.005, 0.05);
-  },
-
-  // ------ 开始音 ▶️ ------
-  // 两音上升 (G4→C5)，纯正弦，像「预备→开始」
-  _start(ctx, vol){
-    const t = ctx.currentTime;
-    // 第一音：G4 (392Hz)
-    const o1 = ctx.createOscillator();
-    const g1 = ctx.createGain();
-    o1.type = 'sine';
-    o1.frequency.setValueAtTime(392, t);
-    g1.gain.setValueAtTime(vol * 0.35, t);
-    g1.gain.setTargetAtTime(0, t + 0.003, 0.06);
-    o1.connect(g1).connect(ctx.destination);
-    o1.start(t);
-    o1.stop(t + 0.18);
-    // 第二音：C5 (523Hz) — 间隔 0.12s
-    const o2 = ctx.createOscillator();
-    const g2 = ctx.createGain();
-    o2.type = 'sine';
-    o2.frequency.setValueAtTime(523, t + 0.12);
-    g2.gain.setValueAtTime(0, t);
-    g2.gain.setValueAtTime(vol * 0.4, t + 0.123);
-    g2.gain.setTargetAtTime(0, t + 0.125, 0.09);
-    o2.connect(g2).connect(ctx.destination);
-    o2.start(t + 0.12);
-    o2.stop(t + 0.35);
-  },
-
-  // ------ 提醒音 ⏰ ------
-  // 三音上升 (E5→G5→C6)，短促清脆，有辨识度
-  _alert(ctx, vol){
-    const t = ctx.currentTime;
-    const notes = [659, 784, 1047]; // E5, G5, C6
-    notes.forEach((freq, i) => {
-      const st = t + i * 0.1;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(freq, st);
-      g.gain.setValueAtTime(0, st);
-      g.gain.linearRampToValueAtTime(vol * (0.3 - i * 0.05), st + 0.003);
-      g.gain.setTargetAtTime(0, st + 0.005, 0.05);
-      o.connect(g).connect(ctx.destination);
-      o.start(st);
-      o.stop(st + 0.15);
-    });
-  }
-};
-
-// Restore mute state from localStorage
-const savedMuted = localStorage.getItem('sfx_muted');
-if(savedMuted === '1'){
-  SFX.muted = true;
-  const btn = document.getElementById('sfxToggle');
-  if(btn) btn.textContent = '🔇';
-}
-
-// Hook click sounds to major interactive elements
-function sfxClick(e){
-  const el = e.currentTarget;
-  // Skip buttons that have their own sound effects
-  if(el.id === 'hdrGold' || el.id === 'hdrBag' || el.id === 'sfxToggle') return;
-  const tag = el.tagName;
-  if(tag === 'BUTTON' || tag === 'A' || (tag === 'SPAN' && el.onclick)){
-    SFX.play('click');
-  }
-}
-
-document.addEventListener('click', function(e){
-  const el = e.target.closest('button, a, .ex, .tagb, .mg-acts span, .icon-btn, .bo, .ol-btn .b, .ol .ol-btn .b, .cr .b, .rb, .rs, .rm-del, .rf-add, .add-step-btn, .me-type-btn, .set-row');
-  if(el && el.id !== 'hdrGold' && el.id !== 'hdrBag' && el.id !== 'sfxToggle' && !el.closest('.ex') && !el.onclick?.toString().includes('sX')){
-    SFX.play('click');
-  }
-}, true);
-
-// ===== TTS 语音引导（音频版） =====
-// 使用预生成的 TTS 音频（艾飞·激昂解说），无音频时兜底用浏览器 SpeechSynthesis
-const TTS_AUDIO_BASE = 'https://pkxmsfyzcphzvuangrzs.supabase.co/storage/v1/object/public/tts-audio/';
-
-const TTS = {
-  _audio: null,
-
-  _cancel(){
-    if(this._audio){ this._audio.pause(); this._audio = null; }
-    window.speechSynthesis.cancel();
-  },
-
-  // 播音频文件，失败时用 SpeechSynthesis 兜底
-  // onEnd: 音频播放结束后（正常结束/失败/兜底结束）回调
-  play(key, fallbackText, onEnd){
-    if(SFX.muted) { if(onEnd) setTimeout(onEnd, 0); return; }
-    this._cancel();
-    const url = TTS_AUDIO_BASE + 'tts-' + key + '.mp3';
-    const audio = new Audio(url);
-    audio.volume = 1.0;
-    audio.onended = () => { if(onEnd) onEnd(); };
-    audio.onerror = () => {
-      // 音频加载失败 → SpeechSynthesis 兜底
-      if(fallbackText){
-        const u = new SpeechSynthesisUtterance(fallbackText);
-        u.lang = 'zh-CN';
-        u.onend = () => { if(onEnd) onEnd(); };
-        window.speechSynthesis.speak(u);
-      } else {
-        if(onEnd) onEnd();
-      }
-    };
-    audio.play().catch(() => {
-      // play() 被阻止时也走兜底
-      if(fallbackText){
-        const u = new SpeechSynthesisUtterance(fallbackText);
-        u.lang = 'zh-CN';
-        u.onend = () => { if(onEnd) onEnd(); };
-        window.speechSynthesis.speak(u);
-      } else {
-        if(onEnd) onEnd();
-      }
-    });
-    this._audio = audio;
-  },
-
-  // 播步骤音频
-  playStep(id, stepIdx, cycle, onEnd){
-    const m = St.cs > 1;
-    const key = m ? `${id}-r${cycle}-${stepIdx + 1}` : `${id}-${stepIdx + 1}`;
-    this.play(key, St.ss[stepIdx]?.t || '', onEnd);
-  },
-
-  // 播开场音频
-  playOpening(id){
-    this.play(id + '-op', '');
-  },
-
-  // 播完成音频（兜底用）
-  speakComplete(){
-    this.play('', '完成');
-  }
-};
-
-// ===== 重写 sT：音频与倒计时解耦 =====
-sT = function(){
-  const s = St.ss[St.st];
-  if(!s || s.d <= 0){ ad(); return; }
-  St.rm = s.d;
-  St.pl = true;
-  uP();
-
-  // 播当前步骤的音频，结束后标记 audioDone
-  St.audioDone = false;
-  TTS.playStep(St.ex.i, St.st, St.cy, function(){ St.audioDone = true; });
-
-  St.ti = setInterval(() => {
-    St.rm--;
-    uP();
-
-    if(St.rm <= 0){
-      clearInterval(St.ti);
-      St.ti = null;
-      St.pl = false;
-      uP();
-      _waitAudioThenAdvance();
-    }
-  }, 1000);
-};
-
-// 倒计时结束后等待音频播完再切下一步
-function _waitAudioThenAdvance(){
-  if(St.audioDone){ ad(); return; }
-
-  // 静音模式：音频不会播放，直接推进
-  if(SFX.muted){ St.audioDone = true; ad(); return; }
-
-  // 等待音频结束（每 200ms 检查一次）
-  var waited = false;
-  function advance(){
-    if(waited) return;
-    waited = true;
-    if(St.audioPoll){ clearInterval(St.audioPoll); St.audioPoll = null; }
-    if(St.audioTimeout){ clearTimeout(St.audioTimeout); St.audioTimeout = null; }
-    ad();
-  }
-
-  St.audioPoll = setInterval(function(){
-    if(St.audioDone) advance();
-  }, 200);
-
-  // 安全超时：最多等 60 秒，防止死锁
-  St.audioTimeout = setTimeout(advance, 60000);
-}
+// Ensure pi is valid
+if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
+rH();
 </script>
 </body>
 </html>
