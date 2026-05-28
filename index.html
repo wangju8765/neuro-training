@@ -115,11 +115,6 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .sn{font-size:.8125rem;color:#7a8a9a;flex-shrink:0;margin-bottom:.75rem;}
 .sn .st{color:#2c3e50;margin-left:.25rem;}
 
-/* 独立倒计时（无画布） */
-.tm-lg{text-align:center;flex-shrink:0;margin-bottom:.75rem;}
-.tm-lg .n{font-size:3.25rem;font-weight:200;color:#4fc3f7;line-height:1;}
-.tm-lg .l{font-size:1rem;color:#7a8a9a;margin-top:.25rem;}
-
 /* 步骤点 */
 .dots{display:flex;gap:.375rem;flex-shrink:0;margin:.25rem 0;}
 .dots div{width:.5rem;height:.5rem;border-radius:50%;background:#d0d8e0;transition:.2s;}
@@ -371,9 +366,6 @@ select.me-input{appearance:auto;}
     </div>
 
     <div class="sn"><span id="pSn">准备</span> <span class="st" id="pSt"></span></div>
-
-    <!-- 独立倒计时（无画布） -->
-    <div class="tm-lg"><div class="n" id="pTim">—</div><div class="l" id="pTimL">秒</div></div>
 
     <div class="dots" id="pDt"></div>
 
@@ -1636,18 +1628,16 @@ function uPpd(){
 function uP(){
   if(!St.ex)return; const x=St.ex; const m=St.cs>1;
   const sn=document.getElementById('pSn'),st=document.getElementById('pSt'),sc=document.getElementById('pSc');
-  const tn=document.getElementById('pTim'),tl=document.getElementById('pTimL');
   if(St.st===-1){
     sn.textContent='准备';st.innerHTML=''+(m?`第${St.cy}/${St.cs}轮 `:'')+St.ss[0].t;
     sc.textContent=St.ss[0].h?'💡 '+St.ss[0].h:'';
-    tn.textContent='';tl.textContent='';
     rD(1,0);return;
   }
   const s=St.ss[St.st];
   sn.textContent=(m?`第${St.cy}轮·`:'')+'步'+(St.st+1)+'/'+St.ss.length;
   st.innerHTML=s.t;
   sc.innerHTML=(s.h?'💡 '+s.h:'')+(x.no&&St.st===0?`<br><span class="tg2">📌 ${x.no}</span>`:'');
-  if(s.d>0){if(St.audioPoll){tn.textContent='0';tl.textContent='等待语音...';}else{tn.textContent=St.pl?St.rm:s.d;tl.textContent='秒';}}else{tn.textContent='—';tl.textContent='';}
+  // 倒计时文字已移除
   if(m)rD(St.cs,St.cy-1);else rD(St.ss.length,St.st);
 }
 
