@@ -679,7 +679,7 @@ select.me-input{appearance:auto;}
 </div>
 
 <!-- ========== 退出登录确认弹窗 ========== -->
-<div class="dc" id="lo" style="display:none;">
+<div class="dc" id="lo">
   <div class="bx">
     <div class="ct">退出登录？</div>
     <div class="cs">退出后需重新使用PIN码登录</div>
@@ -1806,10 +1806,10 @@ function doDel(){
 
 // ===== 退出登录 =====
 function openLogout(){
-  document.getElementById('lo').style.display = 'flex';
+  document.getElementById('lo').classList.add('show');
 }
 function closeLogout(){
-  document.getElementById('lo').style.display = 'none';
+  document.getElementById('lo').classList.remove('show');
 }
 function doLogout(){
   closeLogout();
