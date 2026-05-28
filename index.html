@@ -1923,9 +1923,6 @@ function openMetronome(item){
   ).join('');
   
   document.getElementById('metroPauseBtn').textContent = '▶ 开始';
-  
-  // 自动开始
-  startMetronome();
 }
 
 function startMetronome(){
@@ -1939,19 +1936,18 @@ function startMetronome(){
   }
   
   const intervalMs = 60000 / metroState.bpm;
-  const now = Date.now();
-  if(!metroState.startTime) metroState.startTime = now;
+  if(!metroState.startTime) metroState.startTime = Date.now();
   
   metroState.beatTimer = setInterval(() => {
     if(metroState.paused) return;
     
-    const beatIdx = metroState.beatCount % 4;
-    // 更新视觉
+    const beatIdx = metroState.beatCount % 2; // 两拍一组：0=强 1=弱
+    // 更新视觉——两拍圆点交替高亮
     document.querySelectorAll('.beat-dot').forEach((el, i) => {
       el.classList.toggle('ac', i === beatIdx);
     });
     
-    // 播放音效：第一拍用不同音调
+    // 播放音效：强拍(beatIdx===0)用高音+大音量，弱拍用低音+小音量
     playMetronomeBeat(beatIdx === 0);
     
     metroState.beatCount++;
@@ -1973,7 +1969,8 @@ function startMetronome(){
   }, intervalMs);
 }
 
-function playMetronomeBeat(isFirst){
+// 两拍一组：isStrong=true(强拍) 高音+大音量，isStrong=false(弱拍) 低音+小音量
+function playMetronomeBeat(isStrong){
   try{
     if(!metroState || !metroState.audioCtx) return;
     const ctx = metroState.audioCtx;
@@ -1981,9 +1978,10 @@ function playMetronomeBeat(isFirst){
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.frequency.value = isFirst ? 1200 : 900;
+    osc.frequency.value = isStrong ? 1000 : 660;
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    const vol = isStrong ? 0.45 : 0.25;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.08);
@@ -2274,6 +2272,7 @@ function tgSE(id){
 function svSE(){
   svSlots();
   clSE();
+  rSl();
   rH();
 }
 
