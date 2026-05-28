@@ -1671,7 +1671,7 @@ document.getElementById('pBtn').addEventListener('click',()=>{
   St.st = 0;
   St.cy = 1;
   uP();
-  if(St.ss[0] && St.ss[0].d > 0) sT();
+  sT();
 });
 
 function sT(){
@@ -1690,7 +1690,7 @@ function ad(){
     St.cy++;St.st=0;
   }
   uP();
-  if(St.st<St.ss.length&&St.ss[St.st].d>0)sT();
+  if(St.st<St.ss.length) sT();
 }
 
 function doneP(){fEx();}
@@ -2555,7 +2555,7 @@ document.addEventListener('click', function(e){
 
 // ===== TTS 语音引导（音频版） =====
 // 使用预生成的 TTS 音频（艾飞·激昂解说），无音频时兜底用浏览器 SpeechSynthesis
-const TTS_AUDIO_BASE = 'https://pkxmsfyzcphzvuangrzs.supabase.co/storage/v1/object/public/tts-audio/';
+const TTS_AUDIO_BASE = 'audio/';
 
 const TTS = {
   _audio: null,
@@ -2620,7 +2620,30 @@ const TTS = {
 // ===== 重写 sT：音频与倒计时解耦 =====
 sT = function(){
   const s = St.ss[St.st];
-  if(!s || s.d <= 0){ ad(); return; }
+  if(!s){ ad(); return; }
+  
+  // d<=0 的步骤：播 TTS 引导语，播完后自动推进
+  if(s.d <= 0){
+    St.audioDone = false;
+    TTS.playStep(St.ex.i, St.st, St.cy, function(){ St.audioDone = true; });
+    // 等待音频播完（最多等 60 秒），然后推进
+    var waited = false;
+    function adv(){
+      if(waited) return;
+      waited = true;
+      if(St.audioPoll){ clearInterval(St.audioPoll); St.audioPoll = null; }
+      if(St.audioTimeout){ clearTimeout(St.audioTimeout); St.audioTimeout = null; }
+      ad();
+    }
+    // 静音模式直接推进
+    if(SFX.muted){ St.audioDone = true; adv(); return; }
+    St.audioPoll = setInterval(function(){
+      if(St.audioDone) adv();
+    }, 200);
+    St.audioTimeout = setTimeout(adv, 60000);
+    return;
+  }
+  
   St.rm = s.d;
   St.pl = true;
   uP();
