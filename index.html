@@ -277,6 +277,18 @@ select.me-input{appearance:auto;}
 .me-type-btn:active{background:#f0f4f8;}
 .me-type-btn.ac{background:#e3f2fd;border-color:#4fc3f7;color:#4fc3f7;}
 
+/* 节拍器工具标记 */
+.tag.tool{font-size:.6875rem;background:#fff3e0;color:#e65100;padding:.125rem .5rem;border-radius:.25rem;flex-shrink:0;}
+
+/* 节拍器页面 */
+.beat-grid{display:flex;gap:.5rem;margin-bottom:1.5rem;justify-content:center;}
+.beat-dot{width:1.5rem;height:1.5rem;border-radius:50%;background:#d0d8e0;transition:.1s;flex-shrink:0;}
+.beat-dot.ac{background:#4fc3f7;transform:scale(1.2);}
+.beat-dot.first{width:1.75rem;height:1.75rem;}
+.metro-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
+.metro-btn{cursor:pointer;}
+.metro-btn:disabled{opacity:.5;}
+
 /* 编辑器 - 步骤 */
 .steps-title{font-size:.875rem;font-weight:600;color:#5a7a98;margin-top:.5rem;}
 .me-step{background:#ffffff;border-radius:.5rem;padding:.75rem;border:1px solid #e0e6ed;margin-bottom:.5rem;}
@@ -380,6 +392,26 @@ select.me-input{appearance:auto;}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ========== 节拍器页 ========== -->
+<div class="page" id="pMetronome">
+  <div class="top">
+    <span class="bk" onclick="closeMetronome()">✕</span>
+    <span class="mi" id="metroTitle">节拍器</span>
+    <span class="ri"></span>
+  </div>
+  <div class="metro-content">
+    <div style="font-size:.8125rem;color:#7a8a9a;margin-bottom:.5rem;">🎵 节拍器</div>
+    <div style="font-size:5rem;font-weight:200;color:#4fc3f7;line-height:1;" id="metroBpmDisplay">54</div>
+    <div style="font-size:.9375rem;color:#7a8a9a;margin-top:-.25rem;">BPM</div>
+    <div style="font-size:2.5rem;font-weight:200;color:#2c3e50;margin:1rem 0;" id="metroTimeDisplay">5:00</div>
+    <div class="beat-grid" id="metroBeatGrid"></div>
+    <div class="metro-btns" style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
+      <button class="metro-btn" id="metroPauseBtn" onclick="pauseMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">▶ 开始</button>
+      <button class="metro-btn" onclick="stopMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
+    </div>
   </div>
 </div>
 
@@ -532,6 +564,7 @@ select.me-input{appearance:auto;}
         <div class="me-type">
           <span class="me-type-btn" data-t="routine" onclick="swType('routine')">跟练型</span>
           <span class="me-type-btn ac" data-t="simple" onclick="swType('simple')">纯打卡</span>
+          <span class="me-type-btn" data-t="metronome" onclick="swType('metronome')">🎵 节拍器</span>
         </div>
       </div>
       <div class="me-row">
@@ -555,6 +588,16 @@ select.me-input{appearance:auto;}
       <div class="me-row">
         <label>循环次数（跟练型）</label>
         <input class="me-input" id="meCy" type="number" min="1" placeholder="1" value="1">
+      </div>
+      <div id="meMetronomeParams" style="display:none;">
+        <div class="me-row">
+          <label>节拍 (BPM)</label>
+          <input class="me-input" id="meBpm" type="number" min="20" max="200" placeholder="54" value="54">
+        </div>
+        <div class="me-row">
+          <label>时长（分钟）</label>
+          <input class="me-input" id="meMetDur" type="number" min="0.5" step="0.5" placeholder="5" value="5">
+        </div>
       </div>
       <div id="meSteps">
         <div class="steps-title">📝 步骤</div>
@@ -1555,6 +1598,7 @@ function rH(){
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
       <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
+      ${x.type === 'metronome' ? `<span class="tag tool">🎵 ${x.bpm||54} BPM</span>` : ''}
       <div class="tm ${done?'done':''}"></div></div>`;
   }).join('');
   if(items.length===0){
@@ -1616,6 +1660,11 @@ function sX(id){
     rH();
     document.getElementById('ol').classList.add('show');
     document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
+    return;
+  }
+
+  if(x.type === 'metronome'){
+    openMetronome(x);
     return;
   }
 
@@ -1747,6 +1796,7 @@ function resetP(){
 // ===== 弹窗控制 =====
 function clOl(){document.getElementById('ol').classList.remove('show');}
 function goH(){
+  if(metroState) stopMetronome();
   clOl();clCf();clNE();clSet();clRc();
   if(St.ti){clearInterval(St.ti);St.ti=null;}
   if(St.audioPoll){clearInterval(St.audioPoll);St.audioPoll=null;}
@@ -1771,6 +1821,182 @@ function goH(){
 function cfExit(){document.getElementById('cf').classList.add('show');}
 function clCf(){document.getElementById('cf').classList.remove('show');}
 function doExit(){clCf();goH();}
+
+// ===== 节拍器 =====
+let metroState = null;
+
+function openMetronome(item){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pMetronome').classList.add('active');
+  document.getElementById('metroTitle').textContent = item.ic + ' ' + item.n;
+  document.getElementById('metroBpmDisplay').textContent = item.bpm || 54;
+  // 显示剩余时间
+  const totalSec = (item.dur || 5) * 60;
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  document.getElementById('metroTimeDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
+  
+  // 重置状态
+  if(metroState){
+    if(metroState.beatTimer) clearInterval(metroState.beatTimer);
+    if(metroState.audioCtx) metroState.audioCtx.close();
+  }
+  metroState = {
+    item: item,
+    bpm: item.bpm || 54,
+    totalSec: (item.dur || 5) * 60,
+    elapsed: 0,
+    beatCount: 0,
+    paused: true,
+    beatTimer: null,
+    audioCtx: null,
+    startTime: 0,
+    pausedDuration: 0,
+    lastPauseTime: 0
+  };
+  
+  // 渲染节拍网格（4拍一组）
+  const grid = document.getElementById('metroBeatGrid');
+  grid.innerHTML = [0,1,2,3].map((_,i) => 
+    `<div class="beat-dot ${i===0?'first':''}" id="beatDot${i}"></div>`
+  ).join('');
+  
+  document.getElementById('metroPauseBtn').textContent = '▶ 开始';
+  
+  // 自动开始
+  startMetronome();
+}
+
+function startMetronome(){
+  if(!metroState || metroState.paused === false) return;
+  
+  metroState.paused = false;
+  document.getElementById('metroPauseBtn').textContent = '⏸ 暂停';
+  
+  if(!metroState.audioCtx){
+    metroState.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  
+  const intervalMs = 60000 / metroState.bpm;
+  const now = Date.now();
+  if(!metroState.startTime) metroState.startTime = now;
+  
+  metroState.beatTimer = setInterval(() => {
+    if(metroState.paused) return;
+    
+    const beatIdx = metroState.beatCount % 4;
+    // 更新视觉
+    document.querySelectorAll('.beat-dot').forEach((el, i) => {
+      el.classList.toggle('ac', i === beatIdx);
+    });
+    
+    // 播放音效：第一拍用不同音调
+    playMetronomeBeat(beatIdx === 0);
+    
+    metroState.beatCount++;
+    
+    // 更新倒计时
+    const elapsedBeats = metroState.beatCount;
+    const elapsedSec = elapsedBeats * (60000 / metroState.bpm) / 1000;
+    const remainingSec = Math.max(0, metroState.totalSec - elapsedSec);
+    const min = Math.floor(remainingSec / 60);
+    const sec = Math.floor(remainingSec % 60);
+    document.getElementById('metroTimeDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
+    
+    // 结束条件
+    if(elapsedSec >= metroState.totalSec){
+      clearInterval(metroState.beatTimer);
+      metroState.beatTimer = null;
+      finishMetronome();
+    }
+  }, intervalMs);
+}
+
+function playMetronomeBeat(isFirst){
+  try{
+    if(!metroState || !metroState.audioCtx) return;
+    const ctx = metroState.audioCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = isFirst ? 1200 : 900;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.08);
+  }catch(e){ /* 静默降级 */ }
+}
+
+function pauseMetronome(){
+  if(!metroState) return;
+  if(metroState.paused){
+    // 继续
+    metroState.paused = false;
+    document.getElementById('metroPauseBtn').textContent = '⏸ 暂停';
+  } else {
+    // 暂停
+    metroState.paused = true;
+    document.getElementById('metroPauseBtn').textContent = '▶ 继续';
+  }
+}
+
+function stopMetronome(){
+  if(metroState){
+    if(metroState.beatTimer){
+      clearInterval(metroState.beatTimer);
+      metroState.beatTimer = null;
+    }
+    if(metroState.audioCtx){
+      metroState.audioCtx.close();
+      metroState.audioCtx = null;
+    }
+  }
+  closeMetronome(false);
+}
+
+function finishMetronome(){
+  if(metroState){
+    if(metroState.audioCtx){
+      metroState.audioCtx.close();
+      metroState.audioCtx = null;
+    }
+  }
+  const x = metroState?.item;
+  // 标记完成并加金币
+  if(x && !Dn.includes(x.i)){
+    Dn.push(x.i);
+    svDn();
+    const pt = x.pt || 5;
+    if(PS) addPoints(pt, x.n);
+  }
+  const completedItem = x;
+  closeMetronome(true, completedItem);
+}
+
+function closeMetronome(showComplete, completedItem){
+  if(metroState){
+    if(metroState.beatTimer){
+      clearInterval(metroState.beatTimer);
+      metroState.beatTimer = null;
+    }
+    if(metroState.audioCtx){
+      metroState.audioCtx.close();
+      metroState.audioCtx = null;
+    }
+    metroState = null;
+  }
+  document.getElementById('pMetronome').classList.remove('active');
+  document.getElementById('pH').classList.add('active');
+  rH();
+  
+  if(showComplete && completedItem){
+    SFX.play('complete');
+    document.getElementById('ol').classList.add('show');
+    document.getElementById('olT').textContent = (completedItem.ic || '✅') + ' ' + (completedItem.n || '练习') + ' 完成！';
+  }
+}
 
 // ===== 姓名编辑 =====
 function openNE(){
@@ -1840,7 +2066,7 @@ function clMg(){
 function rMg(){
   const l = document.getElementById('mgList');
   l.innerHTML = DC.items.map(x => {
-    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
+    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
     return `<div class="mg-item">
       <div class="ic">${x.ic}</div>
       <div class="inf">
@@ -1915,7 +2141,7 @@ function rTr(){
   }
   l.innerHTML = DC.trash.map((t, idx) => {
     const x = t.item;
-    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
+    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
     return `<div class="si">
       <span class="ic">${x.ic}</span>
       <span class="nn">${x.n}</span>
@@ -1958,7 +2184,7 @@ function renderSE(){
   if(!slot) return;
   l.innerHTML = DC.items.map(x => {
     const chk = slot.ids.includes(x.i);
-    const tp = x.type==='simple' ? '纯打卡' : '跟练型';
+    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
     return `<div class="si ${chk?'chk':''}" onclick="tgSE('${x.i}')">
       <div class="cb">${chk?'✓':''}</div>
       <div class="ic">${x.ic}</div>
@@ -2007,6 +2233,8 @@ function openEditor(id){
       document.getElementById('meT').value = x.dur != null ? x.dur : '';
       document.getElementById('meNo').value = x.no || '';
       document.getElementById('meCy').value = x.cy || 1;
+      document.getElementById('meBpm').value = x.bpm || 54;
+      document.getElementById('meMetDur').value = x.dur != null ? x.dur : 5;
       renderSteps(x.s || []);
     }
   } else {
@@ -2017,6 +2245,8 @@ function openEditor(id){
     document.getElementById('meT').value = '';
     document.getElementById('meNo').value = '';
     document.getElementById('meCy').value = 1;
+    document.getElementById('meBpm').value = 54;
+    document.getElementById('meMetDur').value = 5;
     renderSteps([]);
   }
 
@@ -2035,6 +2265,8 @@ function swType(type){
   const showSteps = type === 'routine';
   document.getElementById('meSteps').style.display = showSteps ? 'block' : 'none';
   document.getElementById('meCy').parentElement.style.display = showSteps ? 'flex' : 'none';
+  const showMetro = type === 'metronome';
+  document.getElementById('meMetronomeParams').style.display = showMetro ? 'block' : 'none';
 }
 
 // ===== 步骤编辑器 =====
@@ -2092,6 +2324,8 @@ function saveItem(){
   const no = document.getElementById('meNo').value.trim();
   const cy = parseInt(document.getElementById('meCy').value) || 1;
   const type = document.querySelector('.me-type-btn.ac').dataset.t;
+  const bpm = parseInt(document.getElementById('meBpm').value) || 54;
+  const metDur = parseFloat(document.getElementById('meMetDur').value) || 5;
 
   if(!n){ alert('请输入名称'); return; }
 
@@ -2108,6 +2342,12 @@ function saveItem(){
       x.type = type;
       if(type==='routine'){
         x.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
+      } else if(type==='metronome'){
+        x.bpm = bpm;
+        x.dur = metDur;
+        x.t = metDur + '分钟';
+        x.s = [];
+        delete x.cy;
       } else {
         x.s = [];
         delete x.cy;
@@ -2128,6 +2368,11 @@ function saveItem(){
     if(type==='routine'){
       item.cy = cy;
       item.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
+    } else if(type==='metronome'){
+      item.bpm = bpm;
+      item.dur = metDur;
+      item.t = metDur + '分钟';
+      item.s = [];
     } else {
       item.s = [];
     }
