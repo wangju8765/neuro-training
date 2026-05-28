@@ -380,6 +380,7 @@ select.me-input{appearance:auto;}
       <div class="ut">💡 小提示</div>
       点击项目开始跟练，做完会自动标记。纯打卡项目一键完成。
     </div>
+    <button onclick="testNumberPad()" style="margin-top:.5rem;padding:.5rem 1rem;border:1px solid #e0e6ed;border-radius:.5rem;font-size:.75rem;color:#999;background:transparent;cursor:pointer;width:100%;">🔬 测试数字盘</button>
   </div>
 </div>
 
@@ -2256,6 +2257,17 @@ function openNumberPad(item){
   document.getElementById('npSwitchFoot').style.display = 'none';
   
   npState = { item: item };
+}
+
+// 测试入口：点击「测试数字盘」时调用
+function testNumberPad(){
+  const testItem = {
+    i: 'np_test_' + Date.now(),
+    ic: '🦩',
+    n: '单脚数字盘（测试）',
+    pt: 10
+  };
+  openNumberPad(testItem);
 }
 
 function closeNumberPad(){
