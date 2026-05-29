@@ -280,18 +280,6 @@ select.me-input{appearance:auto;}
 /* 节拍器工具标记 */
 .tag.tool{font-size:.6875rem;background:#fff3e0;color:#e65100;padding:.125rem .5rem;border-radius:.25rem;flex-shrink:0;}
 
-/* 标签 */
-.tg-label{font-size:.6875rem;padding:.0625rem .375rem;border-radius:.25rem;margin-right:.25rem;}
-.me-tags{display:flex;flex-wrap:wrap;gap:.375rem;}
-.me-tag-btn{font-size:.75rem;padding:.25rem .5rem;border-radius:.375rem;border:1px solid #d0d8e0;background:#fff;color:#6a7a90;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.me-tag-btn.ac{border-color:transparent;color:#fff;}
-/* 统计 */
-.stat-bar{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:#f8f9fb;border-radius:.5rem;}
-.stat-bar-emoji{font-size:1.25rem;flex-shrink:0;}
-.stat-bar-fill{height:.625rem;border-radius:.3125rem;transition:width .4s;}
-.stat-bar-count{font-size:.875rem;font-weight:600;color:#2c3e50;flex-shrink:0;min-width:2rem;text-align:right;}
-.stat-bar-name{font-size:.8125rem;color:#6a7a90;flex:1;}
-
 /* 节拍器页面 */
 /* 节拍器视觉提示已替换为文字指示 */
 .metro-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
@@ -389,7 +377,7 @@ select.me-input{appearance:auto;}
     </div>
   </div>
   <div class="scroll">
-    <div class="pc" onclick="openStat('home')" style="cursor:pointer;">
+    <div class="pc">
       <div class="r"><span>今日完成</span><span class="n" id="pgN">0 / 0</span></div>
       <div class="pb"><div class="f" id="pgB" style="width:0%"></div></div>
       <div class="sub" id="pgT">点击打卡项开始</div>
@@ -533,22 +521,6 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 训练统计页 ========== -->
-<div class="page" id="pStat">
-  <div class="top">
-    <span class="bk" onclick="closeStat()">✕</span>
-    <span class="mi">📊 本周训练统计</span>
-    <span class="ri"></span>
-  </div>
-  <div class="scroll">
-    <div class="stat-summary" style="text-align:center;padding:1.5rem 0;font-size:2rem;font-weight:200;color:#2c3e50;" id="statTotal">0次</div>
-    <div style="text-align:center;color:#9aa8b8;font-size:.75rem;margin-top:-.5rem;margin-bottom:1rem;">本周总完成</div>
-    <div class="stat-list" id="statList" style="display:flex;flex-direction:column;gap:.5rem;padding:0 1rem;">
-      <!-- 动态生成条形图 -->
-    </div>
-  </div>
-</div>
-
 <!-- ========== 自助打卡详情页 ========== -->
 <div class="page" id="pSelf">
   <div class="top">
@@ -587,14 +559,6 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">📋 打卡项目</div>
       <div class="set-card">
-        <div class="set-row" onclick="openStat('setting')">
-          <span class="ic">📊</span>
-          <div class="inf">
-            <div class="n">训练统计</div>
-            <div class="d">查看本周各标签训练完成情况</div>
-          </div>
-          <span class="arr">›</span>
-        </div>
         <div class="set-row" onclick="openMg()">
           <span class="ic">📝</span>
           <div class="inf">
@@ -733,12 +697,6 @@ select.me-input{appearance:auto;}
           <span class="me-type-btn" data-t="routine" onclick="swType('routine')">跟练型</span>
           <span class="me-type-btn ac" data-t="tool" onclick="swType('tool')">工具型</span>
           <span class="me-type-btn" data-t="self" onclick="swType('self')">自助打卡</span>
-        </div>
-      </div>
-      <div class="me-row" id="meTagRow">
-        <label>类别（可选）</label>
-        <div class="me-tags" id="meTags">
-          <!-- 动态生成7个标签按钮 -->
         </div>
       </div>
       <div class="me-row">
@@ -1040,156 +998,44 @@ const SB = {
   }
 };
 
-// ===== 标签定义 =====
-const TAG_DEFS = [
-  { emoji:'🧩', name:'原始反射整合', color:'#7c4dff' },
-  { emoji:'🌀', name:'前庭-小脑训练', color:'#26c6da' },
-  { emoji:'👁️', name:'视觉训练', color:'#42a5f5' },
-  { emoji:'🌬️', name:'自主神经调节', color:'#ff7043' },
-  { emoji:'✋', name:'精细运动', color:'#ec407a' },
-  { emoji:'⚡', name:'节奏与时序', color:'#ffca28' },
-  { emoji:'🧘', name:'姿势与本体感觉', color:'#66bb6a' },
-];
-
-function getTagInfo(tagStr) {
-  if (!tagStr) return null;
-  const found = TAG_DEFS.find(t => `${t.emoji}${t.name}` === tagStr);
-  if (found) return found;
-  return { emoji:'📋', name:'自建项目', color:'#90a4ae' };
-}
-
 // ===== 默认数据 =====
 const DEF_ITEMS = [
-  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   no:'洗漱时做', type:'routine', pt:5, tag:['🌬️自主神经调节'],
+  {i:'cold',    n:'冷水唤醒',    ic:'❄️',  t:'1min',  dur:1,   no:'洗漱时做', type:'routine', pt:5,
     s:[{t:'冷水拍脸颊眼周',   h:'',   d:8},{t:'冷水拍脖子前侧',   h:'',   d:6},{t:'深吸气缓慢呼出',  h:'',   d:8},{t:'深呼吸第二次',    h:'',   d:8},{t:'深呼吸第三次',    h:'',   d:8}]},
-  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['🌬️自主神经调节'],
+  {i:'bee',     n:'蜜蜂呼吸',    ic:'🐝',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'坐直闭眼',         h:'',   d:0},{t:'深吸一口气',        h:'',   d:4},{t:'呼气时嗡嗡嗡——',   h:'感受震动', d:8},{t:'深呼吸再来一次',   h:'',   d:4},{t:'呼气嗡——',  h:'',   d:8},{t:'最后一次深呼吸',   h:'',   d:4},{t:'呼气嗡——睁眼',     h:'',   d:10}]},
-  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['🧩原始反射整合','⚡节奏与时序'],
+  {i:'crawl',   n:'交叉爬行',    ic:'⛏️',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'抬右手时抬左膝',   h:'慢慢来',d:15},{t:'抬左手时抬右膝',   h:'',   d:15},{t:'加快速度交替',    h:'',   d:15},{t:'放慢最后5次',    h:'',   d:10}]},
-  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  dur:2,   type:'routine', cy:5, pt:5, tag:['🧩原始反射整合'],
+  {i:'starfish',n:'海星呼吸',    ic:'🦑',  t:'2min',  dur:2,   type:'routine', cy:5, pt:5,
     s:[{t:'仰卧躺平手脚展开',  h:'',   d:0},{t:'慢慢吸气手脚向外展开',h:'像海星张开', d:4},{t:'屏住呼吸保持展开',  h:'',   d:2},{t:'慢慢呼气手脚收回胸前',h:'抱胸弯腿', d:6},{t:'放松休息一下',     h:'',   d:3}]},
-  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['🧩原始反射整合'],
+  {i:'snow',    n:'雪天使',      ic:'❄️',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'仰卧手臂放两侧',   h:'脊椎贴地',d:0},{t:'呼气手臂滑向头顶',  h:'',   d:6},{t:'吸气手臂滑回',     h:'',   d:6},{t:'重复：呼上吸下',   h:'',   d:24},{t:'最后一次放松',    h:'',   d:6}]},
-  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  dur:2,   type:'routine', no:'需瑜伽球', pt:5, tag:['🌀前庭-小脑训练'],
+  {i:'ball',    n:'球上平衡',    ic:'🏐',  t:'2min',  dur:2,   type:'routine', no:'需瑜伽球', pt:5,
     s:[{t:'趴在球上手脚撑地', h:'',   d:0},{t:'轻轻前后滚',        h:'',   d:20},{t:'试着举手平衡',     h:'',   d:16},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['🌀前庭-小脑训练'],
+  {i:'spin',    n:'旋转脱敏',    ic:'🌀',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'闭眼原地转3圈',   h:'',   d:12},{t:'停下来看固定点',     h:'',   d:8},{t:'再闭眼转3圈',    h:'',   d:10},{t:'看固定点',         h:'',   d:8},{t:'深呼吸2次',        h:'',   d:6}]},
-  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['🌀前庭-小脑训练'],
+  {i:'oneLeg',  n:'单脚站',      ic:'🦩',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'叉腰左脚抬起',     h:'',   d:15},{t:'换右脚',            h:'',   d:15},{t:'左脚闭眼试试',     h:'',   d:10},{t:'右脚闭眼',         h:'',   d:10},{t:'放松抖抖腿',       h:'',   d:6}]},
-  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  dur:2,   type:'routine', no:'有蹦床更佳', pt:5, tag:['🌀前庭-小脑训练'],
+  {i:'bounce',  n:'弹跳训练',    ic:'🏀',  t:'2min',  dur:2,   type:'routine', no:'有蹦床更佳', pt:5,
     s:[{t:'原地自由弹跳',     h:'',   d:20},{t:'跳高摸墙',          h:'',   d:20},{t:'边跳边拍手',       h:'',   d:15},{t:'慢慢停下深呼吸',   h:'',   d:8}]},
-  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   dur:0.5, type:'routine', pt:5, tag:['🌬️自主神经调节'],
+  {i:'yawn',    n:'打哈欠激活',  ic:'🥱',  t:'30s',   dur:0.5, type:'routine', pt:5,
     s:[{t:'用力打一个真正的哈欠',h:'假打也能变成真打',d:0},{t:'捏住鼻子闭嘴呼气',h:'不出气', d:8},{t:'松开深呼吸一次',   h:'',   d:6},{t:'最后一次深呼吸',   h:'',   d:6}]},
-  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   dur:0.5, type:'routine', pt:5, tag:['🌬️自主神经调节'],
+  {i:'ear',     n:'耳朵拉拽',    ic:'👂',  t:'30s',   dur:0.5, type:'routine', pt:5,
     s:[{t:'从耳朵上端向下轻拉',h:'',   d:8},{t:'换另一只耳朵',      h:'',   d:8},{t:'两只耳朵同时拉',   h:'',   d:6},{t:'揉一揉放松',       h:'',   d:4}]},
-  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  dur:1,   type:'routine', pt:5, tag:['🧘姿势与本体感觉'],
+  {i:'shake',   n:'全身抖动',    ic:'💃',  t:'1min',  dur:1,   type:'routine', pt:5,
     s:[{t:'站起来从手开始甩', h:'',   d:8},{t:'手臂一起甩',        h:'',   d:8},{t:'全身都抖起来',     h:'',   d:12},{t:'慢慢停下深呼吸',   h:'',   d:6}]},
-  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  dur:1,   type:'routine', pt:5, tag:['🌬️自主神经调节'],
+  {i:'yawn2',   n:'哈欠深呼吸',  ic:'😮',  t:'1min',  dur:1,   type:'routine', pt:5,
     s:[{t:'张嘴打一个大哈欠', h:'',   d:6},{t:'用力吞咽口水',       h:'',   d:4},{t:'伸个懒腰',         h:'',   d:6},{t:'再打哈欠再吞咽',   h:'',   d:6},{t:'深呼吸放松',       h:'',   d:6}]},
-  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  dur:2,   type:'routine', pt:5, tag:['✋精细运动'],
+  {i:'finger',  n:'指尖对碰',    ic:'🤏',  t:'2min',  dur:2,   type:'routine', pt:5,
     s:[{t:'拇指依次碰食中无名小指',h:'右手先做', d:12},{t:'换左手',            h:'',   d:12},{t:'左右手同时',       h:'',   d:12},{t:'闭眼再做',         h:'',   d:12},{t:'抖抖手放松',       h:'',   d:4}]},
-  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  dur:2,   type:'routine', no:'需橡皮筋', pt:5, tag:['✋精细运动'],
+  {i:'rubber',  n:'橡皮筋拉伸',  ic:'🪢',  t:'2min',  dur:2,   type:'routine', no:'需橡皮筋', pt:5,
     s:[{t:'指尖套橡皮筋',     h:'',   d:0},{t:'拇指食指撑开',       h:'',   d:12},{t:'拇指中指撑开',     h:'',   d:12},{t:'拇指无名指撑开',   h:'',   d:12},{t:'拇指小指撑开',     h:'',   d:12},{t:'换左手重复',       h:'',   d:20}]},
-
-  // --- 跟练型新增（6个） ---
-  {i:'rock1', n:'摇篮式摇摆', ic:'🛞', t:'3min', dur:3, type:'routine', pt:5, tag:['🧩原始反射整合','🌀前庭-小脑训练'],
-    s:[{t:'仰卧抱膝蜷成球',h:'',d:0},{t:'慢慢前后滚动',h:'',d:20},{t:'加大幅度滚动',h:'',d:20},{t:'侧向轻轻摇摆',h:'',d:20},{t:'慢慢停下深呼吸',h:'',d:8}]},
-  {i:'rock2', n:'四点跪姿摇摆', ic:'🐱', t:'3min', dur:3, type:'routine', pt:5, tag:['🧩原始反射整合','🧘姿势与本体感觉'],
-    s:[{t:'手膝着地四点跪姿',h:'',d:0},{t:'慢慢前后摇摆',h:'',d:20},{t:'加大幅度前后',h:'',d:20},{t:'试试左右轻摇',h:'',d:20},{t:'慢慢坐下放松',h:'',d:8}]},
-  {i:'legcurl', n:'仰卧腿弯曲伸展', ic:'🦿', t:'3min', dur:3, type:'routine', pt:5, tag:['🧩原始反射整合'],
-    s:[{t:'仰卧伸直双腿',h:'',d:0},{t:'慢慢弯曲双腿',h:'',d:12},{t:'慢慢伸直双腿',h:'',d:12},{t:'重复弯曲伸展',h:'',d:30},{t:'放松深呼吸',h:'',d:8}]},
-  {i:'sideneck', n:'侧躺头部转向', ic:'😴', t:'2min', dur:2, type:'routine', pt:5, tag:['🧩原始反射整合','🧘姿势与本体感觉'],
-    s:[{t:'侧躺手臂放松',h:'',d:0},{t:'慢慢转头看肩',h:'',d:8},{t:'换另一侧转头',h:'',d:8},{t:'交替两侧转头',h:'',d:20},{t:'放松深呼吸',h:'',d:8}]},
-  {i:'sitsway', n:'坐姿前后摆动', ic:'🪑', t:'2min', dur:2, type:'routine', pt:5, tag:['🌀前庭-小脑训练'],
-    s:[{t:'坐姿伸直腿',h:'',d:0},{t:'慢慢前倾摆动',h:'',d:10},{t:'慢慢后仰摆动',h:'',d:10},{t:'交替前后摆动',h:'',d:20},{t:'停下深呼吸',h:'',d:8}]},
-  {i:'highlow', n:'高低位交替', ic:'⬆️⬇️', t:'2min', dur:2, type:'routine', pt:5, tag:['🧘姿势与本体感觉','🌀前庭-小脑训练'],
-    s:[{t:'站直双手上举',h:'',d:0},{t:'慢慢蹲下抱膝',h:'',d:8},{t:'站起来举手',h:'',d:8},{t:'重复交替',h:'',d:20},{t:'慢慢停下放松',h:'',d:8}]},
-
-  // --- 跟练型：中线性训练（2个） ---
-  {i:'crossknee', n:'坐姿交叉触膝', ic:'✖️', t:'2min', dur:2, type:'routine', pt:5, tag:['🧩原始反射整合','⚡节奏与时序'],
-    s:[{t:'坐直双腿伸直',h:'',d:0},{t:'右手碰左膝',h:'',d:8},{t:'左手碰右膝',h:'',d:8},{t:'交替加快速度',h:'',d:20},{t:'慢慢停下放松',h:'',d:8}]},
-  {i:'crosslift', n:'四点跪姿交叉抬起', ic:'🐕', t:'2min', dur:2, type:'routine', pt:5, tag:['🧩原始反射整合','🧘姿势与本体感觉'],
-    s:[{t:'手膝着地',h:'',d:0},{t:'抬右手左腿保持',h:'',d:6},{t:'换左手右腿保持',h:'',d:6},{t:'交替抬起',h:'',d:20},{t:'慢慢坐下放松',h:'',d:8}]},
-
-  // --- 工具型：节拍器（5个） ---
-  {i:'metro54', n:'节拍器踏步 54BPM', ic:'🎵', t:'5min', dur:5, type:'tool', toolType:'metronome', bpm:54, pt:5, tag:['⚡节奏与时序','🌀前庭-小脑训练']},
-  {i:'metro72', n:'节拍器踏步进阶', ic:'🎵', t:'5min', dur:5, type:'tool', toolType:'metronome', bpm:60, pt:5, tag:['⚡节奏与时序','🌀前庭-小脑训练']},
-  {i:'metro60', n:'节拍拍手同步', ic:'👏', t:'3min', dur:3, type:'tool', toolType:'metronome', bpm:60, pt:5, tag:['⚡节奏与时序']},
-  {i:'tap54', n:'手指敲击节拍', ic:'🖐️', t:'3min', dur:3, type:'tool', toolType:'metronome', bpm:54, pt:5, tag:['⚡节奏与时序','✋精细运动']},
-  {i:'stepclap', n:'踏步拍手组合', ic:'🦶👏', t:'5min', dur:5, type:'tool', toolType:'metronome', bpm:54, pt:5, tag:['⚡节奏与时序']},
-
-  // --- 工具型：数字盘（1个） ---
-  {i:'npad', n:'数字盘单脚点', ic:'🔢', t:'10min', dur:10, type:'tool', toolType:'numberpad', pt:10, tag:['✋精细运动','🌀前庭-小脑训练']},
-
-  // --- 自助打卡：视觉训练（5个） ---
-  {i:'pencilpu', n:'Pencil Push-ups', ic:'✏️', t:'5min', dur:5, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'铅笔一支（带字母贴纸）',
-    desc:'1. 坐直，铅笔握在一臂距离，笔尖朝上\n2. 双眼聚焦笔尖上的字母\n3. 慢慢将铅笔移向鼻尖，保持字母清晰\n4. 当字母模糊或变双时停住，保持3秒\n5. 慢慢退回原位\n6. 重复10次'},
-  {i:'brock', n:'Brock String', ic:'🧵', t:'5min', dur:5, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'1-2米绳子 + 3颗彩色珠子',
-    desc:'1. 将绳子一端固定在门把手上\n2. 另一端拉至鼻尖高度\n3. 三颗珠子分别放在30cm/60cm/90cm处\n4. 先看最近的珠子，应看到绳子呈X交叉\n5. 依次看向三颗珠子，每次都确认看到X\n6. 重复3轮'},
-  {i:'nearfar', n:'远近聚焦切换', ic:'🔭', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'两张写字纸',
-    desc:'1. 手持一张纸在阅读距离\n2. 第二张纸贴在2-3米远的墙上\n3. 先读近处文字5秒\n4. 快速切换到远处文字5秒\n5. 交替20次，保持每次清晰聚焦'},
-  {i:'saccade2', n:'双目标Saccade练习', ic:'👀', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'两张纸各画一个圆点',
-    desc:'1. 将两张纸分开60cm贴在墙上\n2. 站在1米外，头不动\n3. 快速移动目光从左到右\n4. 每次在目标停留半秒\n5. 做20次来回'},
-  {i:'saccades', n:'序列Saccade练习', ic:'🔴🟢', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'白纸 + 彩色笔',
-    desc:'1. 在白纸上画5-8个不同颜色的圆点\n2. 贴在墙上，头不动\n3. 按颜色顺序快速移动目光\n4. 每点停留半秒\n5. 正向+反向各做3轮'},
-
-  // --- 自助打卡：ATM姿势训练（3个） ---
-  {i:'atmneck', n:'ATM肩颈放松', ic:'💆', t:'5min', dur:5, type:'self', pt:5, tag:['🧘姿势与本体感觉','🌬️自主神经调节'],
-    desc:'1. 仰卧，膝盖弯曲，脚平踩地上\n2. 慢慢转头向左，眼睛也看向左\n3. 感觉左肩和颈部的连接\n4. 回到中间，转到右边\n5. 交替10次，动作越慢越好\n6. 完成后平躺感受1分钟'},
-  {i:'atmpelv', n:'ATM骨盆稳定', ic:'🦴', t:'5min', dur:5, type:'self', pt:5, tag:['🧘姿势与本体感觉'],
-    desc:'1. 仰卧，膝盖弯曲\n2. 慢慢将骨盆前后倾斜\n3. 感觉腰椎与地面的接触变化\n4. 找到最舒适的中立位\n5. 在中立位保持呼吸5次\n6. 重复倾斜-回中5次'},
-  {i:'atmthor', n:'ATM胸椎伸展', ic:'🫁', t:'5min', dur:5, type:'self', pt:5, tag:['🧘姿势与本体感觉'],
-    desc:'1. 坐直，双手交叉放胸前\n2. 慢慢向右旋转上半身\n3. 头跟着身体转，眼睛看右后方\n4. 保持5秒，回到中间\n5. 换左边\n6. 交替各做5次'},
-
-  // --- 自助打卡：感觉刺激（3个） ---
-  {i:'tempalt', n:'交替温度刺激', ic:'🌡️', t:'3min', dur:3, type:'self', pt:5, tag:['🌬️自主神经调节'],
-    props:'温水 + 凉水（两个盆）',
-    desc:'1. 准备一盆温水和一盆凉水\n2. 双手放入温水30秒\n3. 取出擦干，放入凉水15秒\n4. 交替3轮\n5. 结束在温水中'},
-  {i:'brush', n:'刷子刺激', ic:'🪥', t:'3min', dur:3, type:'self', pt:5, tag:['🌬️自主神经调节'],
-    props:'软刷或粗糙毛巾',
-    desc:'1. 用软刷从手掌向手臂方向轻刷\n2. 每侧手臂刷30秒\n3. 换小腿，从脚踝向膝盖方向\n4. 感觉刷过的皮肤区域\n5. 每侧重复一次'},
-  {i:'vibrate', n:'震动刺激', ic:'📳', t:'3min', dur:3, type:'self', pt:5, tag:['🌬️自主神经调节'],
-    props:'按摩器或震动玩具',
-    desc:'1. 从手掌开始，轻震10秒\n2. 移到前臂10秒\n3. 上臂10秒\n4. 换另一只手重复\n5. 最后轻轻抖动手臂放松'},
-
-  // --- 自助打卡：前庭-视觉整合（5个） ---
-  {i:'vorhead', n:'前庭-眼球整合（头固定）', ic:'👁️‍🗨️', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练','🌀前庭-小脑训练'],
-    props:'移动目标（手指或笔）',
-    desc:'1. 头保持不动\n2. 手指在眼前30cm处左右移动\n3. 眼睛追随手指\n4. 移动速度由慢到快\n5. 再做上下移动\n6. 每种方向做10次来回'},
-  {i:'voreye', n:'VOR训练（眼固定-头动）', ic:'🧿', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练','🌀前庭-小脑训练'],
-    props:'墙上贴一个目标',
-    desc:'1. 墙上贴一个X或字母\n2. 站在1米外，眼睛盯住目标\n3. 头慢慢左右转动，眼睛不动\n4. 保持目标始终清晰\n5. 再做上下点头\n6. 每种做20次'},
-  {i:'bodyeye', n:'身体运动-眼球固定', ic:'🏃', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练','🌀前庭-小脑训练'],
-    props:'一个注视目标',
-    desc:'1. 墙上贴目标，站2米外\n2. 眼睛盯住目标不离开\n3. 身体慢慢左右移动\n4. 保持眼睛锁定目标\n5. 再做前后移动\n6. 各做10次'},
-  {i:'okn', n:'视动性眼震（OKN）训练', ic:'📊', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练'],
-    props:'条纹纸或OKN视频',
-    desc:'1. 准备黑白条纹纸或OKN视频\n2. 手持条纹在眼前30cm\n3. 条纹从左向右慢慢移动\n4. 眼睛追随但不追出视野\n5. 换方向从右到左\n6. 每种方向做1分钟'},
-  {i:'rainbow', n:'彩虹绳训练', ic:'🌈', t:'3min', dur:3, type:'self', pt:5, tag:['👁️视觉训练','✋精细运动'],
-    props:'彩带或绳子',
-    desc:'1. 手持彩绳两端\n2. 眼睛追踪绳子的波浪运动\n3. 改变波浪的幅度和速度\n4. 换手重复\n5. 尝试闭眼凭手感做波浪'},
-
-  // --- 自助打卡（纯打卡型） ---
-  {i:'linearacc', n:'直线加速（秋千/滑板车）', ic:'🛴', t:'10min', dur:10, type:'self', pt:10, tag:['🌀前庭-小脑训练']},
-  {i:'linearosc', n:'线性振荡（毯子摇摆）', ic:'🛏️', t:'5min', dur:5, type:'self', pt:5, tag:['🌀前庭-小脑训练'], props:'毯子 + 另一人协助',
-    desc:'1. 躺在毯子上\n2. 另一人轻轻摇晃毯子\n3. 左右方向，匀速轻柔\n4. 每分钟换方向\n5. 全程闭眼效果更佳'},
-  {i:'outdoor', n:'户外运动', ic:'🏃', t:'20min', dur:20, type:'self', pt:20, tag:['🌀前庭-小脑训练'],
-    desc:'跑步/骑车/跳绳/球类均可'},
-  {i:'478breath', n:'4-7-8呼吸法', ic:'💨', t:'3min', dur:3, type:'self', pt:5, tag:['🌬️自主神经调节'],
-    desc:'1. 鼻子吸气4秒\n2. 屏住呼吸7秒\n3. 嘴巴呼气8秒\n4. 重复4轮'},
-  {i:'wallcross', n:'交叉模式墙体', ic:'🧱', t:'3min', dur:3, type:'self', pt:5, tag:['🧩原始反射整合','⚡节奏与时序'], props:'一面墙壁',
-    desc:'1. 面对墙站立，一臂距离\n2. 右手触摸左肩高度墙壁位置\n3. 左手触摸右肩高度墙壁位置\n4. 交替60秒，节奏均匀\n5. 休息30秒\n6. 再交替60秒'},
 ];
 
 const DEF_SLOTS = [
-  { i:'morning', ic:'☀️', n:'上午', ids:['cold','bee','crawl','starfish','oneLeg','finger','rock1','metro54','478breath'] },
-  { i:'afternoon', ic:'🌤️', n:'下午', ids:['snow','ball','spin','bounce','metro72','pencilpu','brock','linearacc','outdoor'] },
-  { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish','metro60','atmneck','npad','nearfar'] }
+  { i:'morning', ic:'☀️', n:'上午', ids:['cold','bee','crawl','starfish','oneLeg','finger'] },
+  { i:'afternoon', ic:'🌤️', n:'下午', ids:['snow','ball','spin','bounce'] },
+  { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish'] }
 ];
 
 // ===== 用户系统 =====
@@ -1903,11 +1749,9 @@ function rH(){
     const done = Dn.includes(x.i);
     const pt = x.pt || 5;
     const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
-    const tagHtml = (x.tag||[]).map(t => `<span class="tag tg-label" style="background:${(getTagInfo(t)||{}).color||'#90a4ae'}20;color:${(getTagInfo(t)||{}).color||'#90a4ae'}">${t}</span>`).join('');
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
-      ${tagHtml}
       <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
       ${x.type === 'tool' ? 
         `<span class="tag tool">${x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 '+(x.bpm||54)+' BPM'}</span>` : 
@@ -2191,7 +2035,6 @@ function goH(){
   document.getElementById('pNumberPad').classList.remove('active');
   document.getElementById('pBag').classList.remove('active');
   document.getElementById('pSelf').classList.remove('active');
-  document.getElementById('pStat').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
   document.getElementById('pExtraBtns').style.display = 'flex';
@@ -2814,110 +2657,6 @@ function doLogout(){
   showLogin();
 }
 
-// ===== 训练统计 =====
-let statSource = 'home';
-
-function openStat(src){
-  statSource = src || 'home';
-  if(statSource === 'home'){
-    document.getElementById('pH').classList.remove('active');
-  } else {
-    document.getElementById('pS').classList.remove('active');
-  }
-  document.getElementById('pStat').classList.add('active');
-  rStat();
-}
-
-function closeStat(){
-  document.getElementById('pStat').classList.remove('active');
-  if(statSource === 'home'){
-    document.getElementById('pH').classList.add('active');
-  } else {
-    document.getElementById('pS').classList.add('active');
-  }
-}
-
-function rStat(){
-  // 获取本周范围（周一到周日）
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=周日, 1=周一, ...
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
-  monday.setHours(0,0,0,0);
-  const weekStart = monday.getTime();
-  
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23,59,59,999);
-  const weekEnd = sunday.getTime();
-
-  // 筛选本周的 earn 记录
-  const pointLog = (PS && PS.pointLog) ? PS.pointLog : [];
-  const weekEarns = pointLog.filter(p => p.type === 'earn' && p.time >= weekStart && p.time <= weekEnd);
-  
-  // 按 itemName 分组，每天内同一项目只计1次
-  const weekItems = {}; // itemName -> Set of date strings
-  weekEarns.forEach(p => {
-    const d = new Date(p.time);
-    const dateStr = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
-    if(!weekItems[p.itemName]) weekItems[p.itemName] = new Set();
-    weekItems[p.itemName].add(dateStr);
-  });
-
-  // 计算每项目完成次数
-  const itemCounts = {}; // itemName -> count
-  Object.keys(weekItems).forEach(name => {
-    itemCounts[name] = weekItems[name].size;
-  });
-
-  // 按标签聚合
-  const tagCounts = {};
-  const items = DC.items || [];
-  items.forEach(x => {
-    const cnt = itemCounts[x.i] || 0;
-    if(cnt === 0) return;
-    const tags = (x.tag && x.tag.length) ? x.tag : ['📋自建项目'];
-    tags.forEach(t => {
-      if(!tagCounts[t]) tagCounts[t] = 0;
-      tagCounts[t] += cnt;
-    });
-  });
-
-  // 总的周完成数
-  let totalCount = 0;
-  Object.keys(tagCounts).forEach(t => { totalCount += tagCounts[t]; });
-  document.getElementById('statTotal').textContent = totalCount + '次';
-
-  // 渲染条形图
-  const l = document.getElementById('statList');
-  const maxCount = Math.max(1, ...Object.values(tagCounts));
-  
-  // 按标签定义顺序排列
-  const orderedTags = TAG_DEFS.map(t => t.emoji + t.name).filter(t => tagCounts[t]);
-  const otherTags = Object.keys(tagCounts).filter(t => !orderedTags.includes(t));
-  const allTags = [...orderedTags, ...otherTags];
-
-  if(allTags.length === 0){
-    l.innerHTML = '<div class="empty-state" style="padding:2rem 0;color:#9aa8b8;">本周暂无完成记录</div>';
-    return;
-  }
-
-  l.innerHTML = allTags.map(t => {
-    const info = getTagInfo(t);
-    const count = tagCounts[t];
-    const pct = (count / maxCount * 100).toFixed(1);
-    return `<div class="stat-bar">
-      <span class="stat-bar-emoji">${info ? info.emoji : '📋'}</span>
-      <span class="stat-bar-name">${info ? info.name : '自建项目'}</span>
-      <div style="flex:1;background:#e0e6ed;border-radius:.3125rem;height:.625rem;overflow:hidden;">
-        <div class="stat-bar-fill" style="width:${pct}%;background:${info ? info.color : '#90a4ae'};"></div>
-      </div>
-      <span class="stat-bar-count">${count}</span>
-    </div>`;
-  }).join('');
-}
-
 // ===== 设置页 =====
 function openSet(){
   document.getElementById('pH').classList.remove('active');
@@ -3104,12 +2843,6 @@ function openEditor(id){
   const el = document.getElementById('meTitle');
   el.textContent = id ? '编辑打卡项目' : '新建打卡项目';
 
-  // 渲染标签选择器
-  const meTags = document.getElementById('meTags');
-  meTags.innerHTML = TAG_DEFS.map(t =>
-    `<span class="me-tag-btn" data-tag="${t.emoji}${t.name}" style="border-color:${t.color}40;color:${t.color}" onclick="this.classList.toggle('ac');this.style.background=this.classList.contains('ac')?'${t.color}':'#fff';this.style.color=this.classList.contains('ac')?'#fff':'${t.color}'">${t.emoji} ${t.name}</span>`
-  ).join('');
-
   if(id){
     const x = getItem(id);
     if(x){
@@ -3134,17 +2867,6 @@ function openEditor(id){
       document.getElementById('meProps').value = x.props || '';
       
       renderSteps(x.s || []);
-      
-      // 恢复标签选中状态
-      if(x.tag && x.tag.length){
-        meTags.querySelectorAll('.me-tag-btn').forEach(btn => {
-          if(x.tag.includes(btn.dataset.tag)){
-            btn.classList.add('ac');
-            btn.style.background = getTagInfo(btn.dataset.tag).color;
-            btn.style.color = '#fff';
-          }
-        });
-      }
       
       // 工具型：默认选中节拍器
       if(effectiveType === 'tool'){
@@ -3268,12 +2990,6 @@ function saveItem(){
     target.dur = dur;
     target.no = no;
     target.type = type;
-    // 保存标签
-    const selectedTags = [];
-    document.querySelectorAll('#meTags .me-tag-btn.ac').forEach(btn => {
-      selectedTags.push(btn.dataset.tag);
-    });
-    target.tag = selectedTags;
     if(type === 'routine'){
       target.cy = cy;
       target.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
