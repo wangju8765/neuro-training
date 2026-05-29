@@ -281,10 +281,7 @@ select.me-input{appearance:auto;}
 .tag.tool{font-size:.6875rem;background:#fff3e0;color:#e65100;padding:.125rem .5rem;border-radius:.25rem;flex-shrink:0;}
 
 /* 节拍器页面 */
-.beat-grid{display:flex;gap:.5rem;margin-bottom:1.5rem;justify-content:center;}
-.beat-dot{width:1.5rem;height:1.5rem;border-radius:50%;background:#d0d8e0;transition:.1s;flex-shrink:0;}
-.beat-dot.ac{background:#4fc3f7;transform:scale(1.2);}
-.beat-dot.first{width:1.75rem;height:1.75rem;}
+/* 节拍器视觉提示已替换为文字指示 */
 .metro-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
 .metro-btn{cursor:pointer;}
 .metro-btn:disabled{opacity:.5;}
@@ -439,18 +436,26 @@ select.me-input{appearance:auto;}
     <span class="ri"></span>
   </div>
   <div class="metro-content">
-    <div style="font-size:.8125rem;color:#7a8a9a;margin-bottom:.5rem;">🎵 节拍器</div>
-    <div style="font-size:5rem;font-weight:200;color:#4fc3f7;line-height:1;" id="metroBpmDisplay">54</div>
-    <div style="font-size:.9375rem;color:#7a8a9a;margin-top:-.25rem;">BPM</div>
-    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;" id="metroBpmPresets">
+    <div style="font-size:.8125rem;color:#7a8a9a;margin-bottom:.25rem;">🎵 节拍器</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.25rem;">
+      <input type="number" id="metroBpmInput" min="20" max="200" value="54" style="width:5rem;font-size:3rem;font-weight:200;color:#4fc3f7;text-align:center;border:none;background:transparent;outline:none;" onchange="updateMetroBpm()">
+    </div>
+    <div style="font-size:.75rem;color:#9aa8b8;margin-top:-.25rem;margin-bottom:.5rem;" id="metroBeatHint">● 强 · ● 弱 · ● 强 · ● 弱</div>
+    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-top:.25rem;" id="metroBpmPresets">
       <button class="bpm-preset" data-bpm="40" onclick="setBpm(40)">40 摇篮</button>
       <button class="bpm-preset" data-bpm="50" onclick="setBpm(50)">50 摇摆</button>
       <button class="bpm-preset ac" data-bpm="54" onclick="setBpm(54)">54 标准</button>
       <button class="bpm-preset" data-bpm="60" onclick="setBpm(60)">60 拍手</button>
       <button class="bpm-preset" data-bpm="72" onclick="setBpm(72)">72 进阶</button>
     </div>
-    <div style="font-size:2.5rem;font-weight:200;color:#2c3e50;margin:1rem 0;" id="metroTimeDisplay">5:00</div>
-    <div class="beat-grid" id="metroBeatGrid"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin:.75rem 0 .5rem;">
+      <span style="font-size:2.5rem;font-weight:200;color:#2c3e50;" id="metroTimeDisplay">5:00</span>
+      <div style="display:flex;align-items:center;gap:.25rem;font-size:.8125rem;color:#7a8a9a;">
+        <span>时长</span>
+        <input type="number" id="metroDurInput" min="0.5" step="0.5" value="5" style="width:2.5rem;font-size:.8125rem;font-weight:500;color:#2c3e50;text-align:center;border:1px solid #d0d8e0;border-radius:.25rem;background:#f8f9fb;outline:none;padding:.125rem;" onchange="updateMetroDur()">
+        <span>分</span>
+      </div>
+    </div>
     <div class="metro-btns" style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
       <button class="metro-btn" id="metroPauseBtn" onclick="pauseMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">▶ 开始</button>
       <button class="metro-btn" onclick="stopMetronome()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
@@ -2045,20 +2050,55 @@ function doExit(){clCf();goH();}
 // ===== 节拍器 =====
 let metroState = null;
 
+function updateMetroBpm(){
+  const input = document.getElementById('metroBpmInput');
+  let bpm = parseInt(input.value);
+  if(isNaN(bpm) || bpm < 20) bpm = 20;
+  if(bpm > 200) bpm = 200;
+  input.value = bpm;
+  setBpm(bpm);
+}
+
+function updateMetroDur(){
+  const input = document.getElementById('metroDurInput');
+  let dur = parseFloat(input.value);
+  if(isNaN(dur) || dur < 0.5) dur = 0.5;
+  input.value = dur;
+  if(!metroState) return;
+  // 保持已用时间不变，更新总时长和剩余时间
+  const elapsedSec = metroState.elapsed;
+  const newTotalSec = dur * 60;
+  if(newTotalSec < elapsedSec){
+    // 新时长小于已用时间，重置已用时间为0
+    metroState.elapsed = 0;
+    metroState.beatCount = 0;
+  }
+  metroState.totalSec = newTotalSec;
+  const remainingSec = Math.max(0, newTotalSec - elapsedSec);
+  const min = Math.floor(remainingSec / 60);
+  const sec = Math.floor(remainingSec % 60);
+  document.getElementById('metroTimeDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
 function setBpm(bpm){
   document.querySelectorAll('.bpm-preset').forEach(b => b.classList.toggle('ac', parseInt(b.dataset.bpm)===bpm));
   metroState.bpm = bpm;
   startMetronome(); // 重启节拍器以应用新BPM
-  document.getElementById('metroBpmDisplay').textContent = bpm;
+  document.getElementById('metroBpmInput').value = bpm;
 }
 
 function openMetronome(item){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pMetronome').classList.add('active');
   document.getElementById('metroTitle').textContent = item.n || '节拍器';
-  document.getElementById('metroBpmDisplay').textContent = item.bpm || 54;
+  
+  const bpm = item.bpm || 54;
+  const dur = item.dur || 5;
+  document.getElementById('metroBpmInput').value = bpm;
+  document.getElementById('metroDurInput').value = dur;
+  
   // 显示剩余时间
-  const totalSec = (item.dur || 5) * 60;
+  const totalSec = dur * 60;
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   document.getElementById('metroTimeDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
@@ -2070,8 +2110,8 @@ function openMetronome(item){
   }
   metroState = {
     item: item,
-    bpm: item.bpm || 54,
-    totalSec: (item.dur || 5) * 60,
+    bpm: bpm,
+    totalSec: totalSec,
     elapsed: 0,
     beatCount: 0,
     paused: true,
@@ -2082,15 +2122,12 @@ function openMetronome(item){
     lastPauseTime: 0
   };
   
-  // 渲染节拍网格（4拍一组）
-  const grid = document.getElementById('metroBeatGrid');
-  grid.innerHTML = [0,1,2,3].map((_,i) => 
-    `<div class="beat-dot ${i===0?'first':''}" id="beatDot${i}"></div>`
-  ).join('');
+  // 节奏提示重置
+  document.getElementById('metroBeatHint').textContent = '● 强 · ● 弱 · ● 强 · ● 弱';
   
   // 设置BPM预设按钮高亮
   document.querySelectorAll('.bpm-preset').forEach(b => {
-    b.classList.toggle('ac', parseInt(b.dataset.bpm) === (item.bpm || 54));
+    b.classList.toggle('ac', parseInt(b.dataset.bpm) === bpm);
   });
   
   document.getElementById('metroPauseBtn').textContent = '▶ 开始';
@@ -2113,10 +2150,12 @@ function startMetronome(){
     if(metroState.paused) return;
     
     const beatIdx = metroState.beatCount % 2; // 两拍一组：0=强 1=弱
-    // 更新视觉——两拍圆点交替高亮
-    document.querySelectorAll('.beat-dot').forEach((el, i) => {
-      el.classList.toggle('ac', i === beatIdx);
-    });
+    // 更新节奏提示文字——高亮当前拍
+    const beatSymbols = ['○ 强', '○ 弱', '○ 强', '○ 弱'];
+    const highlightSymbols = ['● 强', '● 弱', '● 强', '● 弱'];
+    const beatPattern = metroState.beatCount % 4;
+    const hintText = beatSymbols.map((s, i) => i === beatPattern ? highlightSymbols[i] : s).join(' · ');
+    document.getElementById('metroBeatHint').textContent = hintText;
     
     // 播放音效：强拍(beatIdx===0)用高音+大音量，弱拍用低音+小音量
     playMetronomeBeat(beatIdx === 0);
@@ -2126,6 +2165,7 @@ function startMetronome(){
     // 更新倒计时
     const elapsedBeats = metroState.beatCount;
     const elapsedSec = elapsedBeats * (60000 / metroState.bpm) / 1000;
+    metroState.elapsed = elapsedSec;
     const remainingSec = Math.max(0, metroState.totalSec - elapsedSec);
     const min = Math.floor(remainingSec / 60);
     const sec = Math.floor(remainingSec % 60);
