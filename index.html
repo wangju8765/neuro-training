@@ -587,14 +587,6 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">📋 打卡项目</div>
       <div class="set-card">
-        <div class="set-row" onclick="openStat('setting')">
-          <span class="ic">📊</span>
-          <div class="inf">
-            <div class="n">训练统计</div>
-            <div class="d">查看本周各标签训练完成情况</div>
-          </div>
-          <span class="arr">›</span>
-        </div>
         <div class="set-row" onclick="openMg()">
           <span class="ic">📝</span>
           <div class="inf">
@@ -611,26 +603,11 @@ select.me-input{appearance:auto;}
           </div>
           <span class="arr">›</span>
         </div>
-      </div>
-    </div>
-
-    <!-- 工具 -->
-    <div class="set-section">
-      <div class="set-sec-title">🧰 工具</div>
-      <div class="set-card">
-        <div class="set-row" onclick="openStandaloneTool('metronome')">
-          <span class="ic">🎵</span>
+        <div class="set-row" onclick="openStat('setting')">
+          <span class="ic">📊</span>
           <div class="inf">
-            <div class="n">节拍器</div>
-            <div class="d">独立使用节拍器，不打卡不记分</div>
-          </div>
-          <span class="arr">›</span>
-        </div>
-        <div class="set-row" onclick="openStandaloneTool('numberpad')">
-          <span class="ic">🔢</span>
-          <div class="inf">
-            <div class="n">数字盘</div>
-            <div class="d">独立使用数字盘练习，不打卡不记分</div>
+            <div class="n">训练统计</div>
+            <div class="d">查看本周各标签训练完成情况</div>
           </div>
           <span class="arr">›</span>
         </div>
@@ -685,6 +662,29 @@ select.me-input{appearance:auto;}
           <div class="inf">
             <div class="n">背包管理</div>
             <div class="d">查看已购买的金币奖励卡片</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工具 -->
+    <div class="set-section">
+      <div class="set-sec-title">🧰 工具</div>
+      <div class="set-card">
+        <div class="set-row" onclick="openStandaloneTool('metronome')">
+          <span class="ic">🎵</span>
+          <div class="inf">
+            <div class="n">节拍器</div>
+            <div class="d">独立使用节拍器，不打卡不记分</div>
+          </div>
+          <span class="arr">›</span>
+        </div>
+        <div class="set-row" onclick="openStandaloneTool('numberpad')">
+          <span class="ic">🔢</span>
+          <div class="inf">
+            <div class="n">数字盘</div>
+            <div class="d">独立使用数字盘练习，不打卡不记分</div>
           </div>
           <span class="arr">›</span>
         </div>
@@ -763,10 +763,6 @@ select.me-input{appearance:auto;}
           <span class="me-type-btn ac" data-tl="" onclick="swToolLink('')">无</span>
           <span class="me-type-btn" data-tl="metronome" onclick="swToolLink('metronome')">🎵节拍器</span>
           <span class="me-type-btn" data-tl="numberpad" onclick="swToolLink('numberpad')">🦩数字盘</span>
-        </div>
-        <div id="meToolLinkBpm" style="display:none;margin-top:.5rem;">
-          <label>BPM</label>
-          <input class="me-input" id="meToolLinkBpmInput" type="number" min="20" max="200" placeholder="54" value="54" style="flex:1;width:4rem;">
         </div>
       </div>
       <div class="me-row" id="meTagRow">
@@ -3285,9 +3281,6 @@ function openEditor(id){
       const tl = x.toolLink || null;
       if(tl){
         swToolLink(tl.type);
-        if(tl.type === 'metronome'){
-          document.getElementById('meToolLinkBpmInput').value = tl.bpm || 54;
-        }
       } else {
         swToolLink('');
       }
@@ -3325,7 +3318,6 @@ function swType(type){
 
 function swToolLink(tt){
   document.querySelectorAll('#meToolLinkSelect .me-type-btn').forEach(b => b.classList.toggle('ac', b.dataset.tl===tt));
-  document.getElementById('meToolLinkBpm').style.display = tt === 'metronome' ? 'block' : 'none';
 }
 
 // ===== 步骤编辑器 =====
@@ -3409,9 +3401,6 @@ function saveItem(){
     const tlType = document.querySelector('#meToolLinkSelect .me-type-btn.ac')?.dataset.tl || '';
     if(tlType){
       target.toolLink = { type: tlType };
-      if(tlType === 'metronome'){
-        target.toolLink.bpm = parseInt(document.getElementById('meToolLinkBpmInput').value) || 54;
-      }
     } else {
       delete target.toolLink;
     }
