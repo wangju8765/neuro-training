@@ -325,6 +325,21 @@ select.me-input{appearance:auto;}
 
 .add-step-btn{width:100%;padding:.6875rem;border:1px dashed #c8d6e0;background:transparent;border-radius:.5rem;color:#7a8a9a;font-size:.8125rem;cursor:pointer;transition:.12s;}
 .add-step-btn:active{background:#f0f4f8;color:#5a7a98;}
+.bpm-preset{
+  padding:.375rem .75rem;
+  border:1px solid #d0d8e0;
+  border-radius:1.25rem;
+  background:#fff;
+  color:#5a7a98;
+  font-size:.75rem;
+  cursor:pointer;
+}
+.bpm-preset.ac{
+  background:#e3f2fd;
+  border-color:#4fc3f7;
+  color:#4fc3f7;
+  font-weight:600;
+}
 </style>
 </head>
 <body>
@@ -378,7 +393,7 @@ select.me-input{appearance:auto;}
 
     <div class="us">
       <div class="ut">💡 小提示</div>
-      点击项目开始跟练，做完会自动标记。纯打卡项目一键完成。
+      点击项目开始跟练，做完会自动标记。自助打卡项目点击查看详情一键完成。
     </div>
     <button onclick="testNumberPad()" style="margin-top:.5rem;padding:.5rem 1rem;border:1px solid #e0e6ed;border-radius:.5rem;font-size:.75rem;color:#999;background:transparent;cursor:pointer;width:100%;">🔬 测试数字盘</button>
   </div>
@@ -427,6 +442,13 @@ select.me-input{appearance:auto;}
     <div style="font-size:.8125rem;color:#7a8a9a;margin-bottom:.5rem;">🎵 节拍器</div>
     <div style="font-size:5rem;font-weight:200;color:#4fc3f7;line-height:1;" id="metroBpmDisplay">54</div>
     <div style="font-size:.9375rem;color:#7a8a9a;margin-top:-.25rem;">BPM</div>
+    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;" id="metroBpmPresets">
+      <button class="bpm-preset" data-bpm="40" onclick="setBpm(40)">40 摇篮</button>
+      <button class="bpm-preset" data-bpm="50" onclick="setBpm(50)">50 摇摆</button>
+      <button class="bpm-preset ac" data-bpm="54" onclick="setBpm(54)">54 标准</button>
+      <button class="bpm-preset" data-bpm="60" onclick="setBpm(60)">60 拍手</button>
+      <button class="bpm-preset" data-bpm="72" onclick="setBpm(72)">72 进阶</button>
+    </div>
     <div style="font-size:2.5rem;font-weight:200;color:#2c3e50;margin:1rem 0;" id="metroTimeDisplay">5:00</div>
     <div class="beat-grid" id="metroBeatGrid"></div>
     <div class="metro-btns" style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
@@ -494,20 +516,29 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 纯打卡详情页 ========== -->
-<div class="page" id="pSimple">
+<!-- ========== 自助打卡详情页 ========== -->
+<div class="page" id="pSelf">
   <div class="top">
-    <span class="bk" onclick="closeSimple()">✕</span>
-    <span class="mi" id="simpleTitle">详情</span>
+    <span class="bk" onclick="closeSelf()">✕</span>
+    <span class="mi" id="selfTitle">详情</span>
     <span class="ri"></span>
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:2rem 2rem 2.5rem;">
-    <div style="font-size:3.5rem;margin-bottom:1rem;" id="simpleIcon">✅</div>
-    <div style="font-size:1.5rem;font-weight:700;margin-bottom:.375rem;" id="simpleName">项目名</div>
-    <div style="font-size:.875rem;color:#7a8a9a;margin-bottom:1rem;" id="simpleMeta">时段 · 💰 5</div>
-    <div style="font-size:.8125rem;color:#5a7a98;background:#f0f8ff;padding:.625rem 1rem;border-radius:.625rem;margin-bottom:2rem;width:100%;max-width:18rem;text-align:center;display:none;" id="simpleNote"></div>
-    <button onclick="doSimple()" style="width:100%;max-width:18rem;padding:1rem;border:none;border-radius:.875rem;font-size:1.125rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;box-shadow:0 4px 12px rgba(79,195,247,.3);">✅ 完成打卡</button>
-    <button onclick="closeSimple()" style="padding:.625rem;border:none;background:transparent;font-size:.8125rem;color:#aaa;cursor:pointer;margin-top:.75rem;">以后再完善</button>
+  <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding:1rem;">
+    <div style="font-size:3rem;margin-bottom:.5rem;" id="selfIcon">✅</div>
+    <div style="font-size:1.3rem;font-weight:700;margin-bottom:.25rem;" id="selfName">项目名</div>
+    <div style="font-size:.8rem;color:#7a8a9a;margin-bottom:.75rem;" id="selfMeta">时段 · 💰 5</div>
+    <!-- 道具 -->
+    <div id="selfPropsBox" style="display:none;width:100%;max-width:20rem;background:#f0f8ff;padding:.625rem 1rem;border-radius:.625rem;margin-bottom:.75rem;font-size:.8125rem;color:#5a7a98;">
+      <span style="font-weight:600;">📦 道具：</span><span id="selfPropsText"></span>
+    </div>
+    <!-- 备注 -->
+    <div id="selfNoteBox" style="display:none;width:100%;max-width:20rem;background:#f5f5f5;padding:.5rem 1rem;border-radius:.625rem;margin-bottom:.75rem;font-size:.8125rem;color:#666;">
+      <span id="selfNoteText"></span>
+    </div>
+    <!-- 步骤说明 -->
+    <div id="selfDescBox" style="display:none;width:100%;max-width:20rem;background:#ffffff;border:1px solid #e2e8f0;padding:.75rem 1rem;border-radius:.625rem;margin-bottom:1rem;font-size:.8125rem;line-height:1.8;color:#2d3748;white-space:pre-wrap;text-align:left;"></div>
+    <!-- 完成按钮 -->
+    <button onclick="doSelf()" style="width:100%;max-width:18rem;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:#4fc3f7;color:white;">✅ 完成练习</button>
   </div>
 </div>
 
@@ -659,8 +690,8 @@ select.me-input{appearance:auto;}
         <label>类型</label>
         <div class="me-type">
           <span class="me-type-btn" data-t="routine" onclick="swType('routine')">跟练型</span>
-          <span class="me-type-btn ac" data-t="simple" onclick="swType('simple')">纯打卡</span>
-          <span class="me-type-btn" data-t="metronome" onclick="swType('metronome')">🎵 节拍器</span>
+          <span class="me-type-btn ac" data-t="tool" onclick="swType('tool')">工具型</span>
+          <span class="me-type-btn" data-t="self" onclick="swType('self')">自助打卡</span>
         </div>
       </div>
       <div class="me-row">
@@ -693,6 +724,25 @@ select.me-input{appearance:auto;}
         <div class="me-row">
           <label>时长（分钟）</label>
           <input class="me-input" id="meMetDur" type="number" min="0.5" step="0.5" placeholder="5" value="5">
+        </div>
+      </div>
+      <div id="meSelfParams" style="display:none;">
+        <div class="me-row" style="flex-direction:column;align-items:stretch;">
+          <label>步骤说明</label>
+          <textarea class="me-input" id="meDesc" placeholder="1. 坐直，铅笔握在一臂距离&#10;2. 聚焦铅笔上的字母&#10;3. 缓慢向鼻尖移动..." style="min-height:6rem;resize:vertical;font-size:.8125rem;line-height:1.6;"></textarea>
+        </div>
+        <div class="me-row">
+          <label>道具清单</label>
+          <input class="me-input" id="meProps" placeholder="如：铅笔一支, 贴纸（逗号分隔）">
+        </div>
+      </div>
+      <div id="meToolParams" style="display:none;">
+        <div class="me-row">
+          <label>工具类型</label>
+          <div class="me-type">
+            <span class="me-type-btn ac" data-tt="metronome" onclick="swToolType('metronome')">🎵 节拍器</span>
+            <span class="me-type-btn" data-tt="numberpad" onclick="swToolType('numberpad')">🦩 数字盘</span>
+          </div>
         </div>
       </div>
       <div id="meSteps">
@@ -1698,7 +1748,9 @@ function rH(){
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
       <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
-      ${x.type === 'metronome' ? `<span class="tag tool">🎵 ${x.bpm||54} BPM</span>` : ''}
+      ${x.type === 'tool' ? 
+        `<span class="tag tool">${x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 '+(x.bpm||54)+' BPM'}</span>` : 
+        (x.type === 'metronome' ? `<span class="tag tool">🎵 ${x.bpm||54} BPM</span>` : '')}
       <div class="tm ${done?'done':''}"></div></div>`;
   }).join('');
   if(items.length===0){
@@ -1750,12 +1802,12 @@ function sX(id){
   const x = getItem(id);
   if(!x) return;
 
-  if(x.type === 'simple'){
-    openSimple(x);
+  if(x.type === 'self' || x.type === 'simple'){
+    openSelf(x);
     return;
   }
 
-  if(x.type === 'metronome'){
+  if(x.type === 'metronome' || (x.type === 'tool' && x.toolType === 'metronome')){
     openMetronome(x);
     return;
   }
@@ -1892,41 +1944,61 @@ function resetP(){
 
 // ===== 弹窗控制 =====
 function clOl(){document.getElementById('ol').classList.remove('show');}
-function closeSimple(){
-  document.getElementById('pSimple').classList.remove('active');
+function closeSelf(){
+  document.getElementById('pSelf').classList.remove('active');
   document.getElementById('pH').classList.add('active');
 }
 
-function openSimple(x){
-  document.getElementById('simpleIcon').textContent = x.ic || '✅';
-  document.getElementById('simpleName').textContent = x.n;
-  document.getElementById('simpleTitle').textContent = (x.ic||'✅') + ' ' + x.n;
-  // 构建元信息
+function openSelf(x){
+  document.getElementById('selfIcon').textContent = x.ic || '✅';
+  document.getElementById('selfName').textContent = x.n;
+  document.getElementById('selfTitle').textContent = (x.ic||'✅') + ' ' + x.n;
   const slotMap = {morning:'☀️ 上午', afternoon:'🌤 下午', evening:'🌙 晚上'};
   const slotName = slotMap[findItemSlot(x.i)] || '';
-  document.getElementById('simpleMeta').textContent = (slotName?slotName+' · ':'') + '💰 ' + (x.pt||5);
+  document.getElementById('selfMeta').textContent = (slotName?slotName+' · ':'') + '💰 ' + (x.pt||5);
+  
   // 备注
-  const noteEl = document.getElementById('simpleNote');
+  const noteBox = document.getElementById('selfNoteBox');
+  const noteText = document.getElementById('selfNoteText');
   if(x.no){
-    noteEl.textContent = '📎 ' + x.no;
-    noteEl.style.display = 'block';
+    noteText.textContent = '📎 ' + x.no;
+    noteBox.style.display = 'block';
   } else {
-    noteEl.style.display = 'none';
+    noteBox.style.display = 'none';
   }
-  // 存储当前项目ID
+  
+  // 道具
+  const propsBox = document.getElementById('selfPropsBox');
+  const propsText = document.getElementById('selfPropsText');
+  if(x.props){
+    propsText.textContent = x.props;
+    propsBox.style.display = 'block';
+  } else {
+    propsBox.style.display = 'none';
+  }
+  
+  // 步骤说明
+  const descBox = document.getElementById('selfDescBox');
+  if(x.desc){
+    descBox.textContent = x.desc;
+    descBox.style.display = 'block';
+  } else {
+    descBox.style.display = 'none';
+  }
+  
   simplePendingId = x.i;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('pSimple').classList.add('active');
+  document.getElementById('pSelf').classList.add('active');
 }
 
 let simplePendingId = null;
 
-function doSimple(){
+function doSelf(){
   const id = simplePendingId;
   if(!id) return;
   const x = getItem(id);
   if(!x || Dn.includes(id)){
-    closeSimple();
+    closeSelf();
     return;
   }
   Dn.push(id);
@@ -1935,7 +2007,7 @@ function doSimple(){
   if(PS) addPoints(pt, x.n);
   SFX.play('complete');
   SFX.play('coin');
-  closeSimple();
+  closeSelf();
   document.getElementById('ol').classList.add('show');
   document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
 }
@@ -1957,6 +2029,7 @@ function goH(){
   document.getElementById('pRm').classList.remove('active');
   document.getElementById('pNumberPad').classList.remove('active');
   document.getElementById('pBag').classList.remove('active');
+  document.getElementById('pSelf').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
   document.getElementById('pExtraBtns').style.display = 'flex';
@@ -1972,10 +2045,17 @@ function doExit(){clCf();goH();}
 // ===== 节拍器 =====
 let metroState = null;
 
+function setBpm(bpm){
+  document.querySelectorAll('.bpm-preset').forEach(b => b.classList.toggle('ac', parseInt(b.dataset.bpm)===bpm));
+  metroState.bpm = bpm;
+  startMetronome(); // 重启节拍器以应用新BPM
+  document.getElementById('metroBpmDisplay').textContent = bpm;
+}
+
 function openMetronome(item){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pMetronome').classList.add('active');
-  document.getElementById('metroTitle').textContent = item.ic + ' ' + item.n;
+  document.getElementById('metroTitle').textContent = item.n || '节拍器';
   document.getElementById('metroBpmDisplay').textContent = item.bpm || 54;
   // 显示剩余时间
   const totalSec = (item.dur || 5) * 60;
@@ -2007,6 +2087,11 @@ function openMetronome(item){
   grid.innerHTML = [0,1,2,3].map((_,i) => 
     `<div class="beat-dot ${i===0?'first':''}" id="beatDot${i}"></div>`
   ).join('');
+  
+  // 设置BPM预设按钮高亮
+  document.querySelectorAll('.bpm-preset').forEach(b => {
+    b.classList.toggle('ac', parseInt(b.dataset.bpm) === (item.bpm || 54));
+  });
   
   document.getElementById('metroPauseBtn').textContent = '▶ 开始';
 }
@@ -2133,7 +2218,7 @@ function closeMetronome(showComplete, completedItem){
     metroState = null;
   }
   document.getElementById('pMetronome').classList.remove('active');
-  document.getElementById('pSimple').classList.remove('active');
+  document.getElementById('pSelf').classList.remove('active');
   document.getElementById('pH').classList.add('active');
   rH();
   
@@ -2545,7 +2630,9 @@ function clMg(){
 function rMg(){
   const l = document.getElementById('mgList');
   l.innerHTML = DC.items.map(x => {
-    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
+    const tp = x.type === 'tool' ? 
+      (x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 节拍器') : 
+      (x.type === 'self' || x.type === 'simple' ? '📝 自助打卡' : '🎧 跟练型');
     return `<div class="mg-item">
       <div class="ic">${x.ic}</div>
       <div class="inf">
@@ -2620,7 +2707,9 @@ function rTr(){
   }
   l.innerHTML = DC.trash.map((t, idx) => {
     const x = t.item;
-    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
+    const tp = x.type === 'tool' ? 
+      (x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 节拍器') : 
+      (x.type === 'self' || x.type === 'simple' ? '📝 自助打卡' : '🎧 跟练型');
     return `<div class="si">
       <span class="ic">${x.ic}</span>
       <span class="nn">${x.n}</span>
@@ -2663,7 +2752,9 @@ function renderSE(){
   if(!slot) return;
   l.innerHTML = DC.items.map(x => {
     const chk = slot.ids.includes(x.i);
-    const tp = x.type === 'metronome' ? '🎵 节拍器' : (x.type === 'simple' ? '纯打卡' : '跟练型');
+    const tp = x.type === 'tool' ? 
+      (x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 节拍器') : 
+      (x.type === 'self' || x.type === 'simple' ? '📝 自助打卡' : '🎧 跟练型');
     return `<div class="si ${chk?'chk':''}" onclick="tgSE('${x.i}')">
       <div class="cb">${chk?'✓':''}</div>
       <div class="ic">${x.ic}</div>
@@ -2708,25 +2799,47 @@ function openEditor(id){
     if(x){
       document.getElementById('meIc').value = x.ic || '';
       document.getElementById('meN').value = x.n || '';
-      swType(x.type || 'simple');
+      
+      // 兼容旧数据类型
+      let effectiveType = x.type;
+      if(effectiveType === 'simple') effectiveType = 'self';
+      if(effectiveType === 'metronome') effectiveType = 'tool';
+      
+      swType(effectiveType);
       document.getElementById('mePt').value = x.pt || '';
       document.getElementById('meT').value = x.dur != null ? x.dur : '';
       document.getElementById('meNo').value = x.no || '';
       document.getElementById('meCy').value = x.cy || 1;
       document.getElementById('meBpm').value = x.bpm || 54;
       document.getElementById('meMetDur').value = x.dur != null ? x.dur : 5;
+      
+      // 自助打卡字段
+      document.getElementById('meDesc').value = x.desc || '';
+      document.getElementById('meProps').value = x.props || '';
+      
       renderSteps(x.s || []);
+      
+      // 工具型：默认选中节拍器
+      if(effectiveType === 'tool'){
+        if(x.toolType === 'metronome' || x.type === 'metronome'){
+          swToolType('metronome');
+        } else {
+          swToolType(x.toolType || 'metronome');
+        }
+      }
     }
   } else {
     document.getElementById('meIc').value = '';
     document.getElementById('meN').value = '';
-    swType('simple');
+    swType('self'); // 默认自助打卡
     document.getElementById('mePt').value = '';
     document.getElementById('meT').value = '';
     document.getElementById('meNo').value = '';
     document.getElementById('meCy').value = 1;
     document.getElementById('meBpm').value = 54;
     document.getElementById('meMetDur').value = 5;
+    document.getElementById('meDesc').value = '';
+    document.getElementById('meProps').value = '';
     renderSteps([]);
   }
 
@@ -2742,11 +2855,17 @@ function closeEditor(){
 
 function swType(type){
   document.querySelectorAll('.me-type-btn').forEach(b => b.classList.toggle('ac', b.dataset.t===type));
-  const showSteps = type === 'routine';
-  document.getElementById('meSteps').style.display = showSteps ? 'block' : 'none';
-  document.getElementById('meCy').parentElement.style.display = showSteps ? 'flex' : 'none';
-  const showMetro = type === 'metronome';
-  document.getElementById('meMetronomeParams').style.display = showMetro ? 'block' : 'none';
+  document.getElementById('meSteps').style.display = type === 'routine' ? 'block' : 'none';
+  document.getElementById('meCy').parentElement.style.display = type === 'routine' ? 'flex' : 'none';
+  document.getElementById('meMetronomeParams').style.display = 'none';
+  document.getElementById('meSelfParams').style.display = type === 'self' ? 'block' : 'none';
+  document.getElementById('meToolParams').style.display = type === 'tool' ? 'block' : 'none';
+  if(type === 'tool') swToolType('metronome'); // 默认选中节拍器
+}
+
+function swToolType(tt){
+  document.querySelectorAll('#meToolParams .me-type-btn').forEach(b => b.classList.toggle('ac', b.dataset.tt===tt));
+  document.getElementById('meMetronomeParams').style.display = tt === 'metronome' ? 'block' : 'none';
 }
 
 // ===== 步骤编辑器 =====
@@ -2803,59 +2922,63 @@ function saveItem(){
   const t = dur + '分钟';
   const no = document.getElementById('meNo').value.trim();
   const cy = parseInt(document.getElementById('meCy').value) || 1;
-  const type = document.querySelector('.me-type-btn.ac').dataset.t;
+  const rawType = document.querySelector('.me-type-btn.ac').dataset.t;
   const bpm = parseInt(document.getElementById('meBpm').value) || 54;
   const metDur = parseFloat(document.getElementById('meMetDur').value) || 5;
 
+  // 标准化类型
+  let type = rawType;
+  if(type === 'simple') type = 'self';
+  if(type === 'metronome') type = 'tool';
+
   if(!n){ alert('请输入名称'); return; }
+
+  function makeItemData(target){
+    target.ic = ic || '✅';
+    target.n = n;
+    target.pt = pt;
+    target.t = t;
+    target.dur = dur;
+    target.no = no;
+    target.type = type;
+    if(type === 'routine'){
+      target.cy = cy;
+      target.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
+      delete target.bpm;
+      delete target.toolType;
+      delete target.desc;
+      delete target.props;
+    } else if(type === 'tool'){
+      const tt = document.querySelector('#meToolParams .me-type-btn.ac')?.dataset.tt || 'metronome';
+      target.toolType = tt;
+      target.s = [];
+      delete target.cy;
+      delete target.desc;
+      delete target.props;
+      if(tt === 'metronome'){
+        target.bpm = bpm;
+        target.dur = metDur;
+        target.t = metDur + '分钟';
+      } else {
+        delete target.bpm;
+      }
+    } else if(type === 'self'){
+      target.s = [];
+      target.desc = document.getElementById('meDesc').value;
+      target.props = document.getElementById('meProps').value.trim();
+      delete target.cy;
+      delete target.bpm;
+      delete target.toolType;
+    }
+  }
 
   if(editingId){
     const x = getItem(editingId);
-    if(x){
-      x.ic = ic || '✅';
-      x.n = n;
-      x.pt = pt;
-      x.t = t;
-      x.dur = dur;
-      x.no = no;
-      x.cy = type==='routine' ? cy : undefined;
-      x.type = type;
-      if(type==='routine'){
-        x.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
-      } else if(type==='metronome'){
-        x.bpm = bpm;
-        x.dur = metDur;
-        x.t = metDur + '分钟';
-        x.s = [];
-        delete x.cy;
-      } else {
-        x.s = [];
-        delete x.cy;
-      }
-    }
+    if(x) makeItemData(x);
   } else {
     const id = 'item_'+Date.now();
-    const item = {
-      i: id,
-      ic: ic || '✅',
-      n: n,
-      pt: pt,
-      t: t,
-      dur: dur,
-      no: no,
-      type: type
-    };
-    if(type==='routine'){
-      item.cy = cy;
-      item.s = stepData.map(s => ({t:s.t, h:s.h||'', d:Number(s.d)||0}));
-    } else if(type==='metronome'){
-      item.bpm = bpm;
-      item.dur = metDur;
-      item.t = metDur + '分钟';
-      item.s = [];
-    } else {
-      item.s = [];
-    }
+    const item = { i: id };
+    makeItemData(item);
     DC.items.push(item);
   }
 
