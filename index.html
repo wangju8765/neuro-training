@@ -2368,9 +2368,12 @@ function playMetronomeBeat(isStrong){
 function pauseMetronome(){
   if(!metroState) return;
   if(metroState.paused){
-    // 继续
+    // 继续或首次启动
     metroState.paused = false;
     document.getElementById('metroPauseBtn').textContent = '⏸ 暂停';
+    if(!metroState.beatTimer){
+      startMetronome();
+    }
   } else {
     // 暂停
     metroState.paused = true;
