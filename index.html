@@ -1973,7 +1973,7 @@ function sX(id){
     return;
   }
 
-  if(x.type === 'numberpad'){
+  if(x.type === 'numberpad' || (x.type === 'tool' && x.toolType === 'numberpad')){
     openNumberPad(x);
     return;
   }
@@ -2591,17 +2591,44 @@ function startNumberPadPractice(){
   document.getElementById('npSwitchFoot').style.display = 'none';
   
   npUpdateDisplay();
-  npSpeakAndDisplay();
+  // 开场引导语 → 说完后开始报第一个数字
+  npSpeakText("小朋友请你准备好，现在我们用左脚单脚站", function(){
+    npSpeakAndDisplay();
+  });
 }
 
+// 播报引导语（带完成后回调）
+function npSpeakText(text, callback){
+  TTS._cancel();
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.9;
+    if(callback) u.onend = callback;
+    window.speechSynthesis.speak(u);
+  } catch(e) { if(callback) setTimeout(callback, 500); }
+}
+
+// 逐个数字单独报：619 → "六 一 九"（不是"六百一十九"）
 function npSpeakDigit(digit){
   TTS._cancel();
   try {
-    const u = new SpeechSynthesisUtterance(String(digit));
+    // 每个数字空格分隔，TTS会逐个单独读
+    const spacedDigits = String(digit).split('').join(' ');
+    const u = new SpeechSynthesisUtterance(spacedDigits);
     u.lang = 'zh-CN';
     u.rate = 0.9;
     window.speechSynthesis.speak(u);
   } catch(e) { }
+}
+
+// 先播引导语，播完后再报数字+倒计时
+function npSpeakGuideThenDigit(guideText){
+  if(!npState || npState.paused) return;
+  document.getElementById('npStatus').textContent = '🎵 ' + guideText;
+  npSpeakText(guideText, function(){
+    npSpeakAndDisplay();
+  });
 }
 
 function npSpeakAndDisplay(){
@@ -2618,7 +2645,7 @@ function npSpeakAndDisplay(){
   
   const digit = seq[npState.currentDigitIndex];
   document.getElementById('npCurrentDigit').textContent = digit;
-  document.getElementById('npStatus').textContent = '🎵 请听语音...';
+  document.getElementById('npStatus').textContent = '🎵 请听数字...';
   
   npSpeakDigit(digit);
   npUpdateDisplay();
@@ -2660,11 +2687,17 @@ function npNextGroup(){
       document.getElementById('npPractice').style.display = 'none';
       document.getElementById('npSwitchFoot').style.display = 'block';
       if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+      npSpeakText("左脚练习全部完成，休息一下，等下我们换右脚继续", null);
     } else {
       npFinish();
     }
   } else {
-    npSpeakAndDisplay();
+    // 每组过渡：先播引导语，然后开始新一组
+    const guideText = "好，我们现在完成了一组，接下来下一组难度要升级了哟";
+    document.getElementById('npStatus').textContent = '🎵 ' + guideText;
+    npSpeakText(guideText, function(){
+      npSpeakAndDisplay();
+    });
   }
 }
 
@@ -2679,7 +2712,10 @@ function npSwitchToRight(){
   document.getElementById('npPractice').style.display = 'block';
   
   npUpdateDisplay();
-  npSpeakAndDisplay();
+  // 换脚引导语
+  npSpeakText("现在换右脚单脚站，请准备好", function(){
+    npSpeakAndDisplay();
+  });
 }
 
 function npUpdateDisplay(){
@@ -2749,6 +2785,9 @@ function npStop(){
 function npFinish(){
   if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
   TTS._cancel();
+  
+  // 完成引导语（fire-and-forget，说完后对话框自然出现）
+  npSpeakText("全部完成！太棒了！今天的数字盘练习结束了", null);
   
   const item = npState?.item;
   if(item && !Dn.includes(item.i)){
