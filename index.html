@@ -2428,12 +2428,13 @@ function playMetronomeBeat(isStrong){
 function pauseMetronome(){
   if(!metroState) return;
   if(metroState.paused){
-    // 继续或首次启动
-    metroState.paused = false;
-    document.getElementById('metroPauseBtn').textContent = '⏸ 暂停';
+    // 继续或首次启动：先创建定时器再设状态
     if(!metroState.beatTimer){
-      startMetronome();
+      startMetronome(); // startMetronome 内部会设 paused=false
+    } else {
+      metroState.paused = false;
     }
+    document.getElementById('metroPauseBtn').textContent = '⏸ 暂停';
   } else {
     // 暂停
     metroState.paused = true;
