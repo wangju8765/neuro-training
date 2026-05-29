@@ -1949,15 +1949,10 @@ function rH(){
     const done = Dn.includes(x.i + '_' + St.pi);
     const pt = x.pt || 5;
     const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
-    const tagHtml = (x.tag||[]).map(t => `<span class="tag tg-label" style="background:${(getTagInfo(t)||{}).color||'#90a4ae'}20;color:${(getTagInfo(t)||{}).color||'#90a4ae'}">${t}</span>`).join('');
     return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}','${St.pi}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
-      ${tagHtml}
       <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
-      ${x.toolLink && x.toolLink.type === 'metronome' ? `<span class="tag tool">🎵 ${x.toolLink.bpm||54} BPM</span>` : ''}
-      ${x.toolLink && x.toolLink.type === 'numberpad' ? `<span class="tag tool">🦩 数字盘</span>` : ''}
-      ${!x.toolLink || !x.toolLink.type ? (x.type === 'tool' ? `<span class="tag tool">${x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 '+(x.bpm||54)+' BPM'}</span>` : '') : ''}
       <div class="tm ${done?'done':''}"></div></div>`;
   }).join('');
   if(items.length===0){
