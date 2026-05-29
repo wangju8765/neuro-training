@@ -1576,6 +1576,7 @@ async function loadUserDataFromSupabase(user){
     } else {
       Dn = [];
     }
+    migrateDn();
     localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
 
     // ---- PS 加载：localStorage 是基线，Supabase 只覆盖非空数据 ----
@@ -1811,12 +1812,37 @@ function dk(){
 
 let Dn = [];
 
+// 迁移旧格式 Dn（仅项目ID → 项目ID_时段ID）
+function migrateDn(){
+  const newDn = [];
+  for(const entry of (Dn||[])){
+    if(entry.includes('_')){
+      newDn.push(entry); // 已新格式
+    } else {
+      // 旧格式：找该项目所在的第一个时段
+      let found = false;
+      for(const slot of DC.slots){
+        if(slot.ids && slot.ids.includes(entry)){
+          newDn.push(entry + '_' + slot.i);
+          found = true;
+          break;
+        }
+      }
+      if(!found){
+        newDn.push(entry + '_' + St.pi); // 兜底用当前时段
+      }
+    }
+  }
+  Dn = newDn;
+}
+
 function loadDn(){
   try{
     const r = localStorage.getItem('dc_'+dk());
     if(r) Dn = JSON.parse(r);
     else Dn = [];
   }catch(e){ Dn = []; }
+  migrateDn();
 }
 
 function svDn(){
@@ -1924,11 +1950,11 @@ function rH(){
   const l = document.getElementById('exL');
   l.innerHTML = items.map(x => {
     if(!x) return '';
-    const done = Dn.includes(x.i);
+    const done = Dn.includes(x.i + '_' + St.pi);
     const pt = x.pt || 5;
     const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
     const tagHtml = (x.tag||[]).map(t => `<span class="tag tg-label" style="background:${(getTagInfo(t)||{}).color||'#90a4ae'}20;color:${(getTagInfo(t)||{}).color||'#90a4ae'}">${t}</span>`).join('');
-    return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}')">
+    return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}','${St.pi}')">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
       ${tagHtml}
@@ -1969,10 +1995,10 @@ function updateHeader(){
 function upPr(){
   const items = getSlotItems(St.pi);
   const t = items.length;
-  const d = items.filter(x => x && Dn.includes(x.i)).length;
+  const d = items.filter(x => x && Dn.includes(x.i + '_' + St.pi)).length;
   document.getElementById('pgN').textContent = `${d} / ${t}`;
   document.getElementById('pgB').style.width = `${t>0 ? d/t*100 : 0}%`;
-  const doneItems = items.filter(x => x && Dn.includes(x.i)).map(x => x.ic + x.n).join(' · ');
+  const doneItems = items.filter(x => x && Dn.includes(x.i + '_' + St.pi)).map(x => x.ic + x.n).join(' · ');
   document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
   if(PS){
     document.getElementById('pgPts').textContent = `💰 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
@@ -1982,8 +2008,9 @@ function upPr(){
 }
 
 // ===== 进入练习 =====
-function sX(id){
-  if(Dn.includes(id)) return;
+function sX(id, slot){
+  const dnKey = slot ? id + '_' + slot : id;
+  if(Dn.includes(dnKey)) return;
   const x = getItem(id);
   if(!x) return;
 
@@ -2040,7 +2067,7 @@ function sX(id){
 
 function uPpd(){
   const items = getSlotItems(St.pi);
-  const d = items.filter(it => it && Dn.includes(it.i)).length;
+  const d = items.filter(it => it && Dn.includes(it.i + '_' + St.pi)).length;
   document.getElementById('pPd').textContent = d+'/'+items.length;
 }
 
@@ -2108,8 +2135,9 @@ function doneP(){fEx();}
 // ===== 完成 =====
 function fEx(){
   const id = St.ex.i;
-  const wasDone = Dn.includes(id);
-  if(!wasDone) Dn.push(id);
+  const dnKey = id + '_' + (St.si || St.pi);
+  const wasDone = Dn.includes(dnKey);
+  if(!wasDone) Dn.push(dnKey);
   svDn();
   const pt = St.ex.pt || 5;
   if(PS && !wasDone) addPoints(pt, St.ex.n);
@@ -2192,11 +2220,12 @@ function doSelf(){
   const id = simplePendingId;
   if(!id) return;
   const x = getItem(id);
-  if(!x || Dn.includes(id)){
+  const dnKey = id + '_' + (St.si || St.pi);
+  if(!x || Dn.includes(dnKey)){
     closeSelf();
     return;
   }
-  Dn.push(id);
+  Dn.push(dnKey);
   svDn();
   const pt = x.pt || 5;
   if(PS) addPoints(pt, x.n);
@@ -2440,8 +2469,8 @@ function finishMetronome(){
   const x = metroState?.item;
   // 独立工具：不加金币不打卡
   if(x && !x.standalone){
-    if(!Dn.includes(x.i)){
-      Dn.push(x.i);
+    if(!Dn.includes(x.i + '_' + (St.si || St.pi))){
+      Dn.push(x.i + '_' + (St.si || St.pi));
       svDn();
       const pt = x.pt || 5;
       if(PS) addPoints(pt, x.n);
@@ -2828,8 +2857,8 @@ function npFinish(){
   
   const item = npState?.item;
   // 独立工具：不加金币不打卡
-  if(item && !item.standalone && !Dn.includes(item.i)){
-    Dn.push(item.i);
+  if(item && !item.standalone && !Dn.includes(item.i + '_' + (St.si || St.pi))){
+    Dn.push(item.i + '_' + (St.si || St.pi));
     svDn();
     if(PS) addPoints(item.pt || 10, item.n);
   }
