@@ -1324,6 +1324,10 @@ async function syncItems(){
         cycle_count: x.cy || null,
         note: x.no || '',
         steps: x.s || [],
+        tags: x.tag || [],
+        tool_link: x.toolLink || null,
+        description: x.desc || '',
+        props: x.props || '',
         deleted: false
       })), 'user_id,item_id'
     );
@@ -1520,7 +1524,11 @@ async function loadUserDataFromSupabase(user){
         type: r.type || 'simple',
         pt: r.points || 5,
         cy: r.cycle_count || undefined,
-        s: r.steps || []
+        s: r.steps || [],
+        tag: r.tags || [],
+        toolLink: r.tool_link || undefined,
+        desc: r.description || '',
+        props: r.props || ''
       }));
     } else {
       DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
@@ -1557,7 +1565,11 @@ async function loadUserDataFromSupabase(user){
           type: r.type || 'simple',
           pt: r.points || 5,
           cy: r.cycle_count || undefined,
-          s: r.steps || []
+          s: r.steps || [],
+          tag: r.tags || [],
+          toolLink: r.tool_link || undefined,
+          desc: r.description || '',
+          props: r.props || ''
         },
         deletedAt: r.deleted_at ? new Date(r.deleted_at).getTime() : Date.now()
       }));
