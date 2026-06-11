@@ -280,6 +280,13 @@ select.me-input{appearance:auto;}
 /* 节拍器工具标记 */
 .tag.tool{font-size:.6875rem;background:#fff3e0;color:#e65100;padding:.125rem .5rem;border-radius:.25rem;flex-shrink:0;}
 
+/* 进度环 */
+.pr-ring{width:8rem;height:8rem;border-radius:50%;position:relative;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;}
+.pr-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(#4fc3f7 var(--pct,0%),#e0e6ed var(--pct,0%));mask:radial-gradient(transparent 62%,#000 64%);-webkit-mask:radial-gradient(transparent 62%,#000 64%);transition:--pct .3s;}
+.pr-center{text-align:center;z-index:1;}
+.pr-timer{font-size:2rem;font-weight:200;color:#2c3e50;line-height:1.2;}
+.pr-step{font-size:.6875rem;color:#7a8a9a;}
+
 /* 标签 */
 .tg-label{font-size:.6875rem;padding:.0625rem .375rem;border-radius:.25rem;margin-right:.25rem;}
 .me-tags{display:flex;flex-wrap:wrap;gap:.375rem;}
@@ -297,6 +304,41 @@ select.me-input{appearance:auto;}
 .metro-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
 .metro-btn{cursor:pointer;}
 .metro-btn:disabled{opacity:.5;}
+
+/* Toast */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120%);z-index:200;background:#4caf50;color:#fff;padding:.625rem 1.125rem;border-radius:2rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.375rem;box-shadow:0 4px 12px rgba(76,175,80,.3);transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+/* 卡片详情箭头 */
+.ex .det-arr{font-size:.75rem;color:#9aabba;padding:.25rem .375rem;flex-shrink:0;cursor:pointer;transition:.12s;border-radius:.25rem;}
+.ex .det-arr:active{background:#e3f2fd;color:#4fc3f7;}
+
+/* FAB 浮动按钮 */
+.fab{position:fixed;bottom:1.5rem;right:1.25rem;width:3.25rem;height:3.25rem;border-radius:50%;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;font-size:1.5rem;border:none;cursor:pointer;z-index:50;box-shadow:0 4px 16px rgba(79,195,247,.35);display:flex;align-items:center;justify-content:center;transition:.2s;}
+.fab:active{transform:scale(.9);box-shadow:0 2px 8px rgba(79,195,247,.25);}
+
+/* 快速记录弹窗 */
+.ql-overlay{display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.3);align-items:flex-end;justify-content:center;}
+.ql-overlay.show{display:flex;}
+.ql-panel{background:#fff;border-radius:1rem 1rem 0 0;width:100%;max-height:80dvh;padding:1rem 1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem;box-shadow:0 -4px 16px rgba(0,0,0,.1);}
+.ql-panel .ql-hdr{display:flex;align-items:center;justify-content:space-between;}
+.ql-panel .ql-hdr .ql-title{font-size:1.0625rem;font-weight:700;color:#2c3e50;}
+.ql-panel .ql-hdr .ql-close{font-size:1.25rem;color:#9aabba;cursor:pointer;padding:.25rem;}
+.ql-panel .ql-textarea{width:100%;min-height:5rem;padding:.625rem .75rem;border-radius:.5rem;border:1px solid #d0d8e0;background:#f8f9fb;font-size:.875rem;line-height:1.6;resize:vertical;outline:none;font-family:inherit;color:#2c3e50;}
+.ql-panel .ql-textarea:focus{border-color:#4fc3f7;}
+.ql-panel .ql-textarea::placeholder{color:#9aabba;}
+.ql-panel .ql-search{width:100%;padding:.5625rem .75rem;border-radius:.5rem;border:1px solid #d0d8e0;background:#f8f9fb;font-size:.8125rem;outline:none;color:#2c3e50;}
+.ql-panel .ql-search:focus{border-color:#4fc3f7;}
+.ql-panel .ql-search::placeholder{color:#9aabba;}
+.ql-results{max-height:8rem;overflow-y:auto;border-radius:.5rem;border:1px solid #e0e6ed;background:#fff;}
+.ql-results .ql-ri{padding:.5625rem .75rem;cursor:pointer;font-size:.8125rem;border-bottom:1px solid #f0f4f8;display:flex;align-items:center;gap:.5rem;transition:.12s;}
+.ql-results .ql-ri:last-child{border-bottom:none;}
+.ql-results .ql-ri:active{background:#f0f4f8;}
+.ql-results .ql-ri.sel{background:#e3f2fd;}
+.ql-linked{display:flex;flex-wrap:wrap;gap:.375rem;min-height:1.5rem;}
+.ql-linked .ql-tag{font-size:.75rem;background:#e3f2fd;color:#4fc3f7;padding:.1875rem .5rem;border-radius:.75rem;display:flex;align-items:center;gap:.25rem;cursor:pointer;}
+.ql-linked .ql-tag:active{background:#bbdefb;}
+.ql-submit{width:100%;padding:.9375rem;border:none;border-radius:.75rem;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:.12s;}
+.ql-submit:active{transform:scale(.98);}
 
 /* 数字盘 */
 .dial{width:15rem;height:15rem;border-radius:50%;border:2px solid #e0e6ed;position:relative;margin:0 auto .75rem;}
@@ -385,6 +427,7 @@ select.me-input{appearance:auto;}
       <button class="icon-btn" id="hdrGold" onclick="openPt()" style="font-size:.8125rem;width:auto;padding:0 .5rem;gap:.125rem;">💰0</button>
       <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
       <button class="icon-btn" id="sfxToggle" onclick="SFX.toggle()">🔊</button>
+      <button class="icon-btn" onclick="openStandaloneTool('metronome')" title="节拍器">🎵</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
   </div>
@@ -406,6 +449,7 @@ select.me-input{appearance:auto;}
     </div>
 
   </div>
+  <button class="fab" id="fabBtn" onclick="openQuickLog()">✏️</button>
 </div>
 
 <!-- ========== 跟练页 ========== -->
@@ -422,7 +466,13 @@ select.me-input{appearance:auto;}
       <div class="inf" id="pIf">反射整合 · 约2分钟</div>
     </div>
 
-    <div class="sn"><span id="pSn">准备</span> <span class="st" id="pSt"></span></div>
+    <div class="pr-ring" id="prRing" style="--pct:0%;">
+      <div class="pr-center">
+        <div class="pr-timer" id="prTimer">--</div>
+        <div class="pr-step" id="prStep">准备</div>
+      </div>
+    </div>
+    <div style="font-size:.75rem;color:#7a8a9a;text-align:center;margin-bottom:.25rem;" id="prHint"></div>
 
     <div class="dots" id="pDt"></div>
 
@@ -452,7 +502,13 @@ select.me-input{appearance:auto;}
     <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.25rem;">
       <input type="number" id="metroBpmInput" min="20" max="200" value="54" style="width:5rem;font-size:3rem;font-weight:200;color:#4fc3f7;text-align:center;border:none;background:transparent;outline:none;" onchange="updateMetroBpm()">
     </div>
-    <div style="font-size:.75rem;color:#9aa8b8;margin-top:-.25rem;margin-bottom:.5rem;" id="metroBeatHint">● 强 · ● 弱 · ● 强 · ● 弱</div>
+    <div class="metro-pulse" id="metroPulse" style="width:3.5rem;height:3.5rem;border-radius:50%;background:#e0e6ed;margin:.25rem auto;transition:transform .1s,background .1s;"></div>
+    <div style="font-size:.75rem;color:#9aa8b8;margin-bottom:.25rem;" id="metroBeatHint">准备开始</div>
+    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-bottom:.25rem;" id="metroBeatPatterns">
+      <button class="bpm-preset ac" data-pat="2" onclick="setBeatPattern(2)">2拍 ··</button>
+      <button class="bpm-preset" data-pat="3" onclick="setBeatPattern(3)">3拍 ···</button>
+      <button class="bpm-preset" data-pat="4" onclick="setBeatPattern(4)">4拍 ····</button>
+    </div>
     <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-top:.25rem;" id="metroBpmPresets">
       <button class="bpm-preset" data-bpm="40" onclick="setBpm(40)">40 摇篮</button>
       <button class="bpm-preset" data-bpm="50" onclick="setBpm(50)">50 摇摆</button>
@@ -865,6 +921,9 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
+<!-- ========== Toast 轻提示 ========== -->
+<div class="toast" id="toast"></div>
+
 <!-- ========== 完成弹窗 ========== -->
 <div class="ol" id="ol">
   <div class="oi">🎉</div>
@@ -934,6 +993,22 @@ select.me-input{appearance:auto;}
       <button class="b bs" onclick="closeLogout()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
       <button class="b bp" onclick="doLogout()" style="background:linear-gradient(135deg,#ef5350,#e53935);color:#fff;">退出</button>
     </div>
+  </div>
+</div>
+
+<!-- ========== 快速记录弹窗 ========== -->
+<div class="ql-overlay" id="qlOverlay" onclick="if(event.target===this)closeQuickLog()">
+  <div class="ql-panel" onclick="event.stopPropagation()">
+    <div class="ql-hdr">
+      <span class="ql-title">✏️ 快速记录</span>
+      <span class="ql-close" onclick="closeQuickLog()">✕</span>
+    </div>
+    <textarea class="ql-textarea" id="qlText" placeholder="今天做了什么…有什么效果/进展/数据…"></textarea>
+    <div style="font-size:.75rem;color:#7a8a9a;">关联项目（可选，标记完成+加金币）</div>
+    <input class="ql-search" id="qlSearch" placeholder="🔍 搜索项目…" oninput="searchJournalItems(this.value)" onfocus="searchJournalItems(this.value||'')">
+    <div class="ql-results" id="qlResults" style="display:none;"></div>
+    <div class="ql-linked" id="qlLinked"></div>
+    <button class="ql-submit" onclick="submitQuickLog()">💾 保存</button>
   </div>
 </div>
 
@@ -1961,10 +2036,14 @@ function rH(){
     const done = Dn.includes(x.i + '_' + St.pi);
     const pt = x.pt || 5;
     const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
-    return `<div class="ex ${done?'done':''}" onclick="sX('${x.i}','${St.pi}')">
+    const isSelf = (x.type === 'self' || x.type === 'simple') && !(x.toolLink && x.toolLink.type);
+    const clickHandler = (isSelf && !done) ? `completeItem('${x.i}','${St.pi}')` : `sX('${x.i}','${St.pi}')`;
+    const detArr = (isSelf && !done) ? `<span class="det-arr" onclick="event.stopPropagation();openSelfDetail('${x.i}','${St.pi}')">📋</span>` : '';
+    return `<div class="ex ${done?'done':''}" onclick="${clickHandler}">
       <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
       <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
       <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
+      ${detArr}
       <div class="tm ${done?'done':''}"></div></div>`;
   }).join('');
   if(items.length===0){
@@ -2036,9 +2115,9 @@ function sX(id, slot){
     return;
   }
 
-  // 自助打卡
+  // 自助打卡：无 toolLink → 一键完成
   if(x.type === 'self' || x.type === 'simple'){
-    openSelf(x);
+    completeItem(id, slot);
     return;
   }
 
@@ -2074,20 +2153,31 @@ function uPpd(){
   document.getElementById('pPd').textContent = d+'/'+items.length;
 }
 
-// ===== 跟练状态更新（无画布） =====
+// ===== 跟练状态更新 =====
 function uP(){
   if(!St.ex)return; const x=St.ex; const m=St.cs>1;
-  const sn=document.getElementById('pSn'),st=document.getElementById('pSt'),sc=document.getElementById('pSc');
+  const ring=document.getElementById('prRing'), timer=document.getElementById('prTimer'),
+        stepEl=document.getElementById('prStep'), hint=document.getElementById('prHint'),
+        sc=document.getElementById('pSc');
   if(St.st===-1){
-    sn.textContent='准备';st.innerHTML=''+(m?`第${St.cy}/${St.cs}轮 `:'')+St.ss[0].t;
+    // 准备状态
+    ring.style.setProperty('--pct','0%');
+    timer.textContent='--';
+    stepEl.textContent='准备';
+    hint.textContent='';
     sc.textContent=St.ss[0].h?'💡 '+St.ss[0].h:'';
     rD(1,0);return;
   }
   const s=St.ss[St.st];
-  sn.textContent=(m?`第${St.cy}轮·`:'')+'步'+(St.st+1)+'/'+St.ss.length;
-  st.innerHTML=s.t;
+  const totalSteps = m ? St.cs * St.ss.length : St.ss.length;
+  const doneSteps = m ? (St.cy-1) * St.ss.length + St.st : St.st;
+  const pct = Math.round(doneSteps / totalSteps * 100);
+
+  ring.style.setProperty('--pct', pct + '%');
+  timer.textContent = St.pl && St.rm > 0 ? '0:' + (St.rm < 10 ? '0' : '') + St.rm : '--';
+  stepEl.textContent = (m?`第${St.cy}轮·`:'') + '步' + (St.st+1) + '/' + St.ss.length;
+  hint.textContent = s.t;
   sc.innerHTML=(s.h?'💡 '+s.h:'')+(x.no&&St.st===0?`<br><span class="tg2">📌 ${x.no}</span>`:'');
-  // 倒计时文字已移除
   if(m)rD(St.cs,St.cy-1);else rD(St.ss.length,St.st);
 }
 
@@ -2175,6 +2265,105 @@ function closeSelf(){
   document.getElementById('pH').classList.add('active');
 }
 
+// ===== 快速记录 =====
+let qlLinkedItems = [];
+let qlSearchResults = [];
+
+function openQuickLog(){
+  qlLinkedItems = [];
+  qlSearchResults = [];
+  document.getElementById('qlText').value = '';
+  document.getElementById('qlSearch').value = '';
+  document.getElementById('qlResults').style.display = 'none';
+  document.getElementById('qlLinked').innerHTML = '';
+  document.getElementById('qlOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('qlText').focus(), 200);
+}
+
+function closeQuickLog(){
+  document.getElementById('qlOverlay').classList.remove('show');
+}
+
+function searchJournalItems(query){
+  if(!query || query.trim().length === 0){
+    document.getElementById('qlResults').style.display = 'none';
+    return;
+  }
+  const q = query.trim().toLowerCase();
+  qlSearchResults = DC.items.filter(x =>
+    !Dn.includes(x.i + '_' + St.pi) &&
+    (x.n.toLowerCase().includes(q) || (x.no||'').toLowerCase().includes(q))
+  ).slice(0, 8);
+  const ct = document.getElementById('qlResults');
+  if(qlSearchResults.length === 0){
+    ct.innerHTML = '<div style="padding:.5rem .75rem;font-size:.75rem;color:#9aabba;">未找到匹配项目</div>';
+    ct.style.display = 'block';
+    return;
+  }
+  ct.innerHTML = qlSearchResults.map(x =>
+    `<div class="ql-ri${qlLinkedItems.includes(x.i)?' sel':''}" onclick="toggleJournalItem('${x.i}')">
+      <span>${x.ic}</span><span>${x.n}</span><span style="color:#7a8a9a;font-size:.6875rem;margin-left:auto;">${x.pt||5}💰</span>
+    </div>`
+  ).join('');
+  ct.style.display = 'block';
+}
+
+function toggleJournalItem(itemId){
+  const idx = qlLinkedItems.indexOf(itemId);
+  if(idx >= 0){
+    qlLinkedItems.splice(idx, 1);
+  } else {
+    qlLinkedItems.push(itemId);
+  }
+  // Refresh linked tags
+  const ct = document.getElementById('qlLinked');
+  ct.innerHTML = qlLinkedItems.map(id => {
+    const x = DC.items.find(it => it.i === id);
+    return x ? `<span class="ql-tag" onclick="toggleJournalItem('${id}')">${x.ic} ${x.n} ✕</span>` : '';
+  }).join('');
+  // Refresh search results highlight
+  searchJournalItems(document.getElementById('qlSearch').value);
+}
+
+function submitQuickLog(){
+  const text = document.getElementById('qlText').value.trim();
+  const hasLinked = qlLinkedItems.length > 0;
+
+  if(!text && !hasLinked) return;
+
+  // Complete linked items
+  if(hasLinked){
+    qlLinkedItems.forEach(itemId => {
+      completeItem(itemId, St.pi);
+    });
+  }
+
+  // Save journal entry
+  const key = 'dc_journal_' + dk();
+  let entries = [];
+  try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  entries.unshift({
+    id: 'j_' + Date.now(),
+    text: text,
+    linkedItems: qlLinkedItems.slice(),
+    timestamp: Date.now()
+  });
+  // Keep last 50 entries per day
+  if(entries.length > 50) entries = entries.slice(0, 50);
+  localStorage.setItem(key, JSON.stringify(entries));
+
+  // Show feedback
+  const doneNames = qlLinkedItems.map(id => {
+    const x = DC.items.find(it => it.i === id);
+    return x ? x.ic + x.n : '';
+  }).filter(Boolean).join(' ');
+  const msg = doneNames ? `✅ 已记录 + 完成 ${doneNames}` : '✅ 已记录';
+  showToast(msg);
+
+  closeQuickLog();
+  rH();
+}
+
 function openSelf(x){
   document.getElementById('selfIcon').textContent = x.ic || '✅';
   document.getElementById('selfName').textContent = x.n;
@@ -2222,21 +2411,40 @@ let simplePendingId = null;
 function doSelf(){
   const id = simplePendingId;
   if(!id) return;
-  const x = getItem(id);
-  const dnKey = id + '_' + (St.si || St.pi);
-  if(!x || Dn.includes(dnKey)){
-    closeSelf();
-    return;
-  }
+  const slotId = St.si || St.pi;
+  completeItem(id, slotId);
+  closeSelf();
+}
+
+// ===== Toast 轻提示 =====
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ===== 共享完成逻辑（一键打卡 + 自助详情页共用） =====
+function completeItem(itemId, slotId){
+  const x = getItem(itemId);
+  const dnKey = itemId + '_' + slotId;
+  if(!x || Dn.includes(dnKey)) return;
   Dn.push(dnKey);
   svDn();
   const pt = x.pt || 5;
   if(PS) addPoints(pt, x.n);
   SFX.play('complete');
-  SFX.play('coin');
-  closeSelf();
-  document.getElementById('ol').classList.add('show');
-  document.getElementById('olT').textContent = `${x.ic} ${x.n} 完成！`;
+  showToast(`${x.ic} ${x.n} 完成！+${pt}💰`);
+  rH();
+}
+
+// 从卡片箭头打开自助详情页
+function openSelfDetail(itemId, slotId){
+  St.si = slotId;
+  const x = getItem(itemId);
+  if(x) openSelf(x);
 }
 
 function goH(){
@@ -2352,17 +2560,25 @@ function openMetronome(item){
     audioCtx: null,
     startTime: 0,
     pausedDuration: 0,
-    lastPauseTime: 0
+    lastPauseTime: 0,
+    beatPattern: 2
   };
-  
-  // 节奏提示重置
-  document.getElementById('metroBeatHint').textContent = '● 强 · ● 弱 · ● 强 · ● 弱';
-  
+
+  // 重置 pulse 和提示
+  document.getElementById('metroPulse').style.background = '#e0e6ed';
+  document.getElementById('metroPulse').style.transform = 'scale(1)';
+  document.getElementById('metroBeatHint').textContent = '准备开始';
+
+  // 设置拍子模式按钮高亮
+  document.querySelectorAll('#metroBeatPatterns .bpm-preset').forEach(b => {
+    b.classList.toggle('ac', parseInt(b.dataset.pat) === 2);
+  });
+
   // 设置BPM预设按钮高亮
-  document.querySelectorAll('.bpm-preset').forEach(b => {
+  document.querySelectorAll('#metroBpmPresets .bpm-preset').forEach(b => {
     b.classList.toggle('ac', parseInt(b.dataset.bpm) === bpm);
   });
-  
+
   document.getElementById('metroPauseBtn').textContent = '▶ 开始';
 }
 
@@ -2381,20 +2597,30 @@ function startMetronome(){
   
   metroState.beatTimer = setInterval(() => {
     if(metroState.paused) return;
-    
-    const beatIdx = metroState.beatCount % 2; // 两拍一组：0=强 1=弱
-    // 更新节奏提示文字——高亮当前拍
-    const beatSymbols = ['○ 强', '○ 弱', '○ 强', '○ 弱'];
-    const highlightSymbols = ['● 强', '● 弱', '● 强', '● 弱'];
-    const beatPattern = metroState.beatCount % 4;
-    const hintText = beatSymbols.map((s, i) => i === beatPattern ? highlightSymbols[i] : s).join(' · ');
-    document.getElementById('metroBeatHint').textContent = hintText;
-    
-    // 播放音效：强拍(beatIdx===0)用高音+大音量，弱拍用低音+小音量
-    playMetronomeBeat(beatIdx === 0);
-    
+
+    const pat = metroState.beatPattern || 2;
+    const patIdx = metroState.beatCount % pat; // 0=强拍, 1..pat-1=弱拍
+    const isStrong = patIdx === 0;
+
+    // 脉冲动画
+    const pulse = document.getElementById('metroPulse');
+    const strongColor = '#4fc3f7', weakColor = '#81d4fa';
+    pulse.style.background = isStrong ? strongColor : weakColor;
+    pulse.style.transform = isStrong ? 'scale(1.2)' : 'scale(0.85)';
+
+    // 提示文字
+    const labels = ['强','弱','次强','弱'];
+    const currentLabel = isStrong ? '强' : (patIdx === 2 && pat === 4 ? '次强' : '弱');
+    document.getElementById('metroBeatHint').textContent = `${pat}拍 · ${currentLabel}（${patIdx+1}/${pat}）`;
+
+    // 播放音效
+    let vol = 0.25;
+    if(isStrong) vol = 0.45;
+    else if(patIdx === 2 && pat === 4) vol = 0.32; // 4拍模式第3拍为次强
+    playMetronomeBeatVol(isStrong ? 1000 : (patIdx === 2 && pat === 4 ? 800 : 660), vol);
+
     metroState.beatCount++;
-    
+
     // 更新倒计时
     const elapsedBeats = metroState.beatCount;
     const elapsedSec = elapsedBeats * (60000 / metroState.bpm) / 1000;
@@ -2403,7 +2629,7 @@ function startMetronome(){
     const min = Math.floor(remainingSec / 60);
     const sec = Math.floor(remainingSec % 60);
     document.getElementById('metroTimeDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
-    
+
     // 结束条件
     if(elapsedSec >= metroState.totalSec){
       clearInterval(metroState.beatTimer);
@@ -2413,8 +2639,8 @@ function startMetronome(){
   }, intervalMs);
 }
 
-// 两拍一组：isStrong=true(强拍) 高音+大音量，isStrong=false(弱拍) 低音+小音量
-function playMetronomeBeat(isStrong){
+// 播放节拍音效（频率+音量参数化）
+function playMetronomeBeatVol(freq, vol){
   try{
     if(!metroState || !metroState.audioCtx) return;
     const ctx = metroState.audioCtx;
@@ -2422,14 +2648,24 @@ function playMetronomeBeat(isStrong){
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.frequency.value = isStrong ? 1000 : 660;
+    osc.frequency.value = freq;
     osc.type = 'sine';
-    const vol = isStrong ? 0.45 : 0.25;
     gain.gain.setValueAtTime(vol, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.08);
   }catch(e){ /* 静默降级 */ }
+}
+
+// 设置拍子模式
+function setBeatPattern(pat){
+  if(!metroState) return;
+  metroState.beatPattern = pat;
+  metroState.beatCount = 0;
+  document.querySelectorAll('#metroBeatPatterns .bpm-preset').forEach(b => {
+    b.classList.toggle('ac', parseInt(b.dataset.pat) === pat);
+  });
+  document.getElementById('metroBeatHint').textContent = pat + '拍 · 准备';
 }
 
 function pauseMetronome(){
@@ -2496,6 +2732,11 @@ function closeMetronome(showComplete, completedItem){
     }
     metroState = null;
   }
+  // 重置 pulse
+  try {
+    document.getElementById('metroPulse').style.background = '#e0e6ed';
+    document.getElementById('metroPulse').style.transform = 'scale(1)';
+  } catch(e) {}
   document.getElementById('pMetronome').classList.remove('active');
   document.getElementById('pSelf').classList.remove('active');
   document.getElementById('pH').classList.add('active');
