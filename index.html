@@ -306,8 +306,8 @@ select.me-input{appearance:auto;}
 .metro-btn:disabled{opacity:.5;}
 
 /* Toast */
-.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120%);z-index:200;background:#4caf50;color:#fff;padding:.625rem 1.125rem;border-radius:2rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.375rem;box-shadow:0 4px 12px rgba(76,175,80,.3);transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120%);z-index:200;background:#4caf50;color:#fff;padding:.625rem 1.125rem;border-radius:2rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.375rem;box-shadow:0 4px 12px rgba(76,175,80,.3);transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;opacity:0;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 /* 卡片详情箭头 */
 .ex .det-arr{font-size:.75rem;color:#9aabba;padding:.25rem .375rem;flex-shrink:0;cursor:pointer;transition:.12s;border-radius:.25rem;}
 .ex .det-arr:active{background:#e3f2fd;color:#4fc3f7;}
@@ -498,17 +498,22 @@ select.me-input{appearance:auto;}
     <span class="ri"></span>
   </div>
   <div class="metro-content">
-    <div style="font-size:.8125rem;color:#7a8a9a;margin-bottom:.25rem;">🎵 节拍器</div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.25rem;">
-      <input type="number" id="metroBpmInput" min="20" max="200" value="54" style="width:5rem;font-size:3rem;font-weight:200;color:#4fc3f7;text-align:center;border:none;background:transparent;outline:none;" onchange="updateMetroBpm()">
+    <!-- BPM —— 主控件，大字居中 -->
+    <div style="font-size:.75rem;color:#9aa8b8;margin-bottom:.125rem;">BPM · 每分钟拍数</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:.375rem;margin-bottom:.125rem;">
+      <input type="number" id="metroBpmInput" min="20" max="300" value="54" style="width:7rem;font-size:4rem;font-weight:200;color:#4fc3f7;text-align:center;border:none;background:transparent;outline:none;" onchange="updateMetroBpm()">
     </div>
-    <div class="metro-pulse" id="metroPulse" style="width:3.5rem;height:3.5rem;border-radius:50%;background:#e0e6ed;margin:.25rem auto;transition:transform .1s,background .1s;"></div>
-    <div style="font-size:.75rem;color:#9aa8b8;margin-bottom:.25rem;" id="metroBeatHint">准备开始</div>
-    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-bottom:.25rem;" id="metroBeatPatterns">
+    <!-- 拍子模式 + 脉冲 -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.25rem;">
+      <div class="metro-pulse" id="metroPulse" style="width:2.75rem;height:2.75rem;border-radius:50%;background:#e0e6ed;transition:transform .1s,background .1s;flex-shrink:0;"></div>
+      <span style="font-size:.75rem;color:#7a8a9a;" id="metroBeatHint">准备开始</span>
+    </div>
+    <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-bottom:.375rem;" id="metroBeatPatterns">
       <button class="bpm-preset ac" data-pat="2" onclick="setBeatPattern(2)">2拍 ··</button>
       <button class="bpm-preset" data-pat="3" onclick="setBeatPattern(3)">3拍 ···</button>
       <button class="bpm-preset" data-pat="4" onclick="setBeatPattern(4)">4拍 ····</button>
     </div>
+    <!-- 快捷 BPM -->
     <div style="display:flex;gap:.375rem;flex-wrap:wrap;justify-content:center;margin-top:.25rem;" id="metroBpmPresets">
       <button class="bpm-preset" data-bpm="40" onclick="setBpm(40)">40 摇篮</button>
       <button class="bpm-preset" data-bpm="50" onclick="setBpm(50)">50 摇摆</button>
