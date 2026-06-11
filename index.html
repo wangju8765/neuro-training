@@ -340,6 +340,16 @@ select.me-input{appearance:auto;}
 .ql-submit{width:100%;padding:.9375rem;border:none;border-radius:.75rem;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:.12s;}
 .ql-submit:active{transform:scale(.98);}
 
+/* 今日记录 */
+.jrn-section{margin-top:.875rem;}
+.jrn-section .jrn-title{font-size:.8125rem;font-weight:600;color:#5a7a98;margin-bottom:.5rem;}
+.jrn-entry{background:#fff;border-radius:.625rem;padding:.625rem .75rem;border:1px solid #e0e6ed;margin-bottom:.375rem;font-size:.8125rem;line-height:1.6;}
+.jrn-entry .jrn-text{color:#2c3e50;margin-bottom:.25rem;}
+.jrn-entry .jrn-meta{display:flex;align-items:center;gap:.375rem;flex-wrap:wrap;}
+.jrn-entry .jrn-meta .jrn-time{font-size:.6875rem;color:#9aabba;}
+.jrn-entry .jrn-meta .jrn-tag{font-size:.6875rem;background:#e8f0fe;color:#4a7a9a;padding:.0625rem .375rem;border-radius:.25rem;}
+.jrn-empty{text-align:center;padding:1rem 0;color:#9aabba;font-size:.75rem;}
+
 /* 数字盘 */
 .dial{width:15rem;height:15rem;border-radius:50%;border:2px solid #e0e6ed;position:relative;margin:0 auto .75rem;}
 .dial-num{position:absolute;width:2rem;height:2rem;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;transform:translate(-50%,-50%);line-height:1;}
@@ -442,6 +452,11 @@ select.me-input{appearance:auto;}
     <div class="tags" id="tgS"></div>
 
     <div class="el" id="exL"></div>
+
+    <div class="jrn-section" id="jrnSection">
+      <div class="jrn-title">📝 今日记录</div>
+      <div id="jrnList"></div>
+    </div>
 
     <div class="us">
       <div class="ut">💡 小提示</div>
@@ -2054,6 +2069,7 @@ function rH(){
   if(items.length===0){
     l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
   }
+  renderJournal();
   upPr();
 }
 
@@ -2367,6 +2383,38 @@ function submitQuickLog(){
 
   closeQuickLog();
   rH();
+}
+
+function renderJournal(){
+  const key = 'dc_journal_' + dk();
+  let entries = [];
+  try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  const ct = document.getElementById('jrnList');
+  const section = document.getElementById('jrnSection');
+
+  if(entries.length === 0){
+    ct.innerHTML = '<div class="jrn-empty">暂无记录，点击右下角 ✏️ 快速记录</div>';
+    section.style.display = 'block';
+    return;
+  }
+
+  ct.innerHTML = entries.map(e => {
+    const time = new Date(e.timestamp);
+    const timeStr = time.getHours().toString().padStart(2,'0') + ':' + time.getMinutes().toString().padStart(2,'0');
+    const linkedTags = (e.linkedItems || []).map(id => {
+      const x = DC.items.find(it => it.i === id);
+      return x ? `<span class="jrn-tag">${x.ic} ${x.n}</span>` : '';
+    }).filter(Boolean).join('');
+
+    return `<div class="jrn-entry">
+      ${e.text ? `<div class="jrn-text">${e.text}</div>` : ''}
+      <div class="jrn-meta">
+        <span class="jrn-time">${timeStr}</span>
+        ${linkedTags}
+      </div>
+    </div>`;
+  }).join('');
+  section.style.display = 'block';
 }
 
 function openSelf(x){
