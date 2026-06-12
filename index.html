@@ -646,8 +646,6 @@ select.me-input{appearance:auto;}
     <div id="selfDescBox" style="display:none;width:100%;max-width:20rem;background:#ffffff;border:1px solid #e2e8f0;padding:.75rem 1rem;border-radius:.625rem;margin-bottom:1rem;font-size:.8125rem;line-height:1.8;color:#2d3748;white-space:pre-wrap;text-align:left;"></div>
     <!-- 操作按钮组 -->
     <div id="selfActions" style="width:100%;max-width:18rem;display:flex;flex-direction:column;gap:.5rem;"></div>
-    <!-- 收藏/取消 -->
-    <div id="selfFav" style="margin-top:.75rem;font-size:.8125rem;cursor:pointer;color:#aaa;text-align:center;" onclick="toggleFavoriteInDetail()"></div>
   </div>
 </div>
 
@@ -1901,8 +1899,9 @@ function rH(){
   } else {
     l.innerHTML = favItems.map(function(x, idx){
       // 拖拽手柄（排序模式时才显示）
-      var dragHandle = reorderMode ? '<span class="drag-handle" data-idx="' + idx + '" style="cursor:grab;padding:0 .25rem;font-size:1rem;color:#ccc;user-select:none;">⋮⋮</span>' : '';
-      return '<div class="ex" onclick="openItemDetail(\'' + x.i + '\')" data-id="' + x.i + '" draggable="' + (reorderMode?'true':'false') + '">'
+      var dragHandle = reorderMode ? '<span class="drag-handle" data-idx="' + idx + '" style="cursor:grab;padding:.5rem .625rem;margin:-.5rem 0;font-size:1.25rem;color:#aaa;user-select:none;touch-action:none;flex-shrink:0;">⋮⋮</span>' : '';
+      var clickAction = reorderMode ? '' : 'onclick="openItemDetail(\'' + x.i + '\')"';
+      return '<div class="ex" ' + clickAction + ' data-id="' + x.i + '" draggable="' + (reorderMode?'true':'false') + '">'
         + dragHandle
         + '<div class="ic">' + x.ic + '</div>'
         + '<div class="inf">' + x.n + ' <span class="s">' + (x.no||'') + '</span></div>'
@@ -2304,10 +2303,6 @@ function openItemDetail(itemId){
   html += '<button onclick="doCompleteFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:#4fc3f7;color:white;">✅ 完成 +' + (x.pt||5) + '💰</button>';
   actions.innerHTML = html;
 
-  // 收藏状态
-  var favEl = document.getElementById('selfFav');
-  favEl.textContent = isFavorited(x.i) ? '⭐ 已收藏（点击取消）' : '☆ 加入收藏';
-
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.getElementById('pSelf').classList.add('active');
 }
@@ -2331,19 +2326,6 @@ function openToolFromDetail(){
   toolReturnToDetail = true;
   if(x.toolLink && x.toolLink.type === 'metronome') openMetronome(x);
   else if(x.toolLink && x.toolLink.type === 'numberpad') openNumberPad(x);
-}
-
-function toggleFavoriteInDetail(){
-  if(!detailPendingItem) return;
-  if(isFavorited(detailPendingItem.i)){
-    removeFavorite(detailPendingItem.i);
-    document.getElementById('selfFav').textContent = '☆ 加入收藏';
-    rH();
-  } else {
-    addFavorite(detailPendingItem.i);
-    document.getElementById('selfFav').textContent = '⭐ 已收藏（点击取消）';
-    rH();
-  }
 }
 
 // ===== Toast 轻提示 =====
@@ -2658,10 +2640,12 @@ function closeMetronome(showComplete, completedItem){
   document.getElementById('pMetronome').classList.remove('active');
   document.getElementById('pSelf').classList.remove('active');
 
-  if(toolReturnToDetail && detailPendingItem){
+  // 自然完成（showComplete=true）直接回首页，不跳回详情页
+  if(toolReturnToDetail && detailPendingItem && !showComplete){
     toolReturnToDetail = false;
     openItemDetail(detailPendingItem.i);
   } else {
+    toolReturnToDetail = false;
     document.getElementById('pH').classList.add('active');
     rH();
     if(showComplete && completedItem && !completedItem.standalone){
@@ -3033,27 +3017,22 @@ function npFinish(){
 
   // 独立工具：不加金币不打卡
   if(item && !item.standalone){
-    // v4: completion logged to Supabase via logCompletion()
     if(PS) addPoints(item.pt || 10, item.n);
+    logCompletion(item.i, item.n, item.pt || 10);
   }
-  
+
   var completedItem = item;
   npState = null;
+  toolReturnToDetail = false;
   document.getElementById('pNumberPad').classList.remove('active');
 
-  if(toolReturnToDetail && detailPendingItem){
-    // 从详情页打开的工具 → 返回详情页让用户手动点完成
-    toolReturnToDetail = false;
-    openItemDetail(detailPendingItem.i);
-  } else {
-    document.getElementById('pH').classList.add('active');
-    rH();
-    // 非独立工具弹完成框
-    if(!completedItem?.standalone){
-      SFX.play('complete');
-      document.getElementById('ol').classList.add('show');
-      document.getElementById('olT').textContent = (completedItem?.ic||'✅') + ' ' + (completedItem?.n||'练习') + ' 完成！';
-    }
+  // 自然完成直接回首页（不从详情页来的也回首页）
+  document.getElementById('pH').classList.add('active');
+  rH();
+  if(!completedItem?.standalone){
+    SFX.play('complete');
+    document.getElementById('ol').classList.add('show');
+    document.getElementById('olT').textContent = (completedItem?.ic||'✅') + ' ' + (completedItem?.n||'练习') + ' 完成！';
   }
 }
 
@@ -3116,8 +3095,33 @@ function closeLogout(){
 }
 function doLogout(){
   closeLogout();
+  // 停止所有计时器和音频
+  if(St.ti){ clearInterval(St.ti); St.ti = null; }
+  if(St.audioPoll){ clearInterval(St.audioPoll); St.audioPoll = null; }
+  if(St.audioTimeout){ clearTimeout(St.audioTimeout); St.audioTimeout = null; }
+  TTS._cancel();
+  // 重置全部内存状态
   clearCurrentUser();
-  PS_clear && PS_clear();
+  userFavorites = [];
+  DC = {};
+  PS = null;
+  Dn = [];
+  todayLogs = [];
+  reorderMode = false;
+  toolReturnToDetail = false;
+  detailPendingItem = null;
+  // 清除 localStorage 中的旧用户数据
+  localStorage.removeItem('dc_points_state');
+  localStorage.removeItem('dc_items');
+  localStorage.removeItem('dc_slots');
+  localStorage.removeItem('dc_settings');
+  localStorage.removeItem('dc_trash');
+  // 清除收藏缓存（用 pin 定位）
+  try { var favKey = localStorage.getItem('dc_current_user_pin'); if(favKey) localStorage.removeItem('dc_fav_' + favKey); } catch(e) {}
+  // 保存当前 pin 以便清除后仍能定位
+  var oldPin = currentUser ? currentUser.pin : null;
+  if(oldPin) localStorage.setItem('dc_current_user_pin', oldPin);
+  // 显示登录页
   showLogin();
 }
 
@@ -4318,10 +4322,22 @@ function toggleReorder(){
 
 // ---- 拖拽排序 ----
 var dragSrcIdx = -1;
+var dragCurrentOver = null;
+
 function bindDragEvents(){
   var list = document.getElementById('exL');
   var cards = list.querySelectorAll('.ex[draggable="true"]');
+
+  // 清除旧事件（通过克隆节点）
   cards.forEach(function(card, idx){
+    var newCard = card.cloneNode(true);
+    card.parentNode.replaceChild(newCard, card);
+  });
+  // 重新获取
+  cards = list.querySelectorAll('.ex[draggable="true"]');
+
+  cards.forEach(function(card, idx){
+    // -- 桌面端拖拽 --
     card.addEventListener('dragstart', function(e){
       dragSrcIdx = idx;
       card.style.opacity = '0.5';
@@ -4330,6 +4346,7 @@ function bindDragEvents(){
     card.addEventListener('dragend', function(e){
       card.style.opacity = '1';
       cards.forEach(function(c){ c.style.borderTop = ''; });
+      dragSrcIdx = -1;
     });
     card.addEventListener('dragover', function(e){
       e.preventDefault();
@@ -4347,20 +4364,61 @@ function bindDragEvents(){
       }
       dragSrcIdx = -1;
     });
-    // Touch support
-    card.addEventListener('touchstart', function(e){ dragSrcIdx = idx; });
+
+    // -- 移动端触摸拖拽 --
+    card.addEventListener('touchstart', function(e){
+      dragSrcIdx = idx;
+      card.style.opacity = '0.7';
+      card.style.transform = 'scale(1.02)';
+      e.preventDefault(); // 阻止页面滚动
+    }, {passive: false});
+
+    card.addEventListener('touchmove', function(e){
+      if(dragSrcIdx < 0) return;
+      e.preventDefault(); // 阻止页面滚动
+      var touch = e.touches[0];
+      var target = document.elementFromPoint(touch.clientX, touch.clientY);
+      // 清除之前的高亮
+      if(dragCurrentOver && dragCurrentOver !== target){
+        var prevCard = dragCurrentOver.closest ? dragCurrentOver.closest('.ex') : null;
+        if(prevCard) prevCard.style.borderTop = '';
+      }
+      dragCurrentOver = target;
+      // 高亮当前悬停目标
+      var dropCard = target ? (target.closest ? target.closest('.ex') : null) : null;
+      if(!dropCard) dropCard = target;
+      cards.forEach(function(c){ c.style.borderTop = ''; });
+      if(dropCard && dropCard !== card){
+        dropCard.style.borderTop = '2px solid #4fc3f7';
+      }
+    }, {passive: false});
+
     card.addEventListener('touchend', function(e){
+      card.style.opacity = '1';
+      card.style.transform = '';
+      cards.forEach(function(c){ c.style.borderTop = ''; });
+      if(dragSrcIdx < 0){ dragCurrentOver = null; return; }
       var touch = e.changedTouches[0];
       var target = document.elementFromPoint(touch.clientX, touch.clientY);
-      var dropCard = target ? target.closest('.ex') : null;
+      var dropCard = target ? (target.closest ? target.closest('.ex') : null) : null;
+      if(!dropCard) dropCard = target;
       if(dropCard){
         var allCards = list.querySelectorAll('.ex');
         var dropIdx = Array.prototype.indexOf.call(allCards, dropCard);
-        if(dragSrcIdx >= 0 && dragSrcIdx !== dropIdx){
+        if(dragSrcIdx >= 0 && dropIdx >= 0 && dragSrcIdx !== dropIdx){
           reorderFavorites(dragSrcIdx, dropIdx);
         }
       }
       dragSrcIdx = -1;
+      dragCurrentOver = null;
+    });
+
+    card.addEventListener('touchcancel', function(e){
+      card.style.opacity = '1';
+      card.style.transform = '';
+      cards.forEach(function(c){ c.style.borderTop = ''; });
+      dragSrcIdx = -1;
+      dragCurrentOver = null;
     });
   });
 }
