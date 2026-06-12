@@ -451,7 +451,7 @@ select.me-input{appearance:auto;}
         <span class="arr" style="font-size:.75rem;color:#aaa;transition:.2s;">▲</span>
       </div>
       <div id="kanbanBody">
-        <div id="kanbanList" style="font-size:.75rem;color:#666;max-height:12rem;overflow-y:auto;"></div>
+        <div id="kanbanList" style="font-size:.75rem;color:#666;max-height:8rem;overflow-y:auto;"></div>
         <div id="kanbanSummary" style="font-size:.75rem;color:#4fc3f7;font-weight:600;margin-top:.375rem;border-top:1px solid #eef2f6;padding-top:.375rem;"></div>
       </div>
     </div>
@@ -629,7 +629,7 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
-<!-- ========== 自助打卡详情页 ========== -->
+<!-- ========== 项目详情页（通用） ========== -->
 <div class="page" id="pSelf">
   <div class="top">
     <span class="bk" onclick="closeSelf()">✕</span>
@@ -639,7 +639,7 @@ select.me-input{appearance:auto;}
   <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding:1rem;">
     <div style="font-size:3rem;margin-bottom:.5rem;" id="selfIcon">✅</div>
     <div style="font-size:1.3rem;font-weight:700;margin-bottom:.25rem;" id="selfName">项目名</div>
-    <div style="font-size:.8rem;color:#7a8a9a;margin-bottom:.75rem;" id="selfMeta"></div>
+    <div style="font-size:.75rem;color:#aaa;margin-bottom:.75rem;" id="selfMeta"></div>
     <!-- 道具 -->
     <div id="selfPropsBox" style="display:none;width:100%;max-width:20rem;background:#f0f8ff;padding:.625rem 1rem;border-radius:.625rem;margin-bottom:.75rem;font-size:.8125rem;color:#5a7a98;">
       <span style="font-weight:600;">📦 道具：</span><span id="selfPropsText"></span>
@@ -650,8 +650,10 @@ select.me-input{appearance:auto;}
     </div>
     <!-- 步骤说明 -->
     <div id="selfDescBox" style="display:none;width:100%;max-width:20rem;background:#ffffff;border:1px solid #e2e8f0;padding:.75rem 1rem;border-radius:.625rem;margin-bottom:1rem;font-size:.8125rem;line-height:1.8;color:#2d3748;white-space:pre-wrap;text-align:left;"></div>
-    <!-- 完成按钮 -->
-    <button onclick="doSelf()" style="width:100%;max-width:18rem;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:#4fc3f7;color:white;">✅ 完成练习</button>
+    <!-- 操作按钮组 -->
+    <div id="selfActions" style="width:100%;max-width:18rem;display:flex;flex-direction:column;gap:.5rem;"></div>
+    <!-- 收藏/取消 -->
+    <div id="selfFav" style="margin-top:.75rem;font-size:.8125rem;cursor:pointer;color:#aaa;text-align:center;" onclick="toggleFavoriteInDetail()"></div>
   </div>
 </div>
 
@@ -1904,25 +1906,19 @@ function rH(){
     l.innerHTML = '<div class="empty-state">还没有收藏项目<br><span style="font-size:.75rem;">去📚项目库 ⭐ 挑选喜欢的项目</span></div>';
   } else {
     l.innerHTML = favItems.map(function(x, idx){
-      var isSelf = (x.type === 'self' || x.type === 'simple') && !(x.toolLink && x.toolLink.type);
-      var clickHandler = isSelf ? 'completeItem(\'' + x.i + '\')' : 'sX(\'' + x.i + '\')';
-
-      // 排序模式
-      var reorderBtns = '';
-      if(reorderMode){
-        reorderBtns = '<span style="display:flex;flex-direction:column;gap:.125rem;margin-left:auto;">'
-          + '<span onclick="event.stopPropagation();moveFavoriteUp(\'' + x.i + '\')" style="cursor:pointer;font-size:.625rem;line-height:1;color:#4fc3f7;">▲</span>'
-          + '<span onclick="event.stopPropagation();moveFavoriteDn(\'' + x.i + '\')" style="cursor:pointer;font-size:.625rem;line-height:1;color:#4fc3f7;">▼</span>'
-          + '</span>';
-      }
-
-      return '<div class="ex" onclick="' + clickHandler + '">'
+      // 拖拽手柄（排序模式时才显示）
+      var dragHandle = reorderMode ? '<span class="drag-handle" data-idx="' + idx + '" style="cursor:grab;padding:0 .25rem;font-size:1rem;color:#ccc;user-select:none;">⋮⋮</span>' : '';
+      return '<div class="ex" onclick="openItemDetail(\'' + x.i + '\')" data-id="' + x.i + '" draggable="' + (reorderMode?'true':'false') + '">'
+        + dragHandle
         + '<div class="ic">' + x.ic + '</div>'
         + '<div class="inf">' + x.n + ' <span class="s">' + (x.no||'') + '</span></div>'
-        + reorderBtns
-        + '<span onclick="event.stopPropagation();removeFavorite(\'' + x.i + '\');rH();" style="margin-left:auto;cursor:pointer;font-size:.75rem;opacity:.4;padding:.125rem .375rem;">✕</span>'
         + '</div>';
     }).join('');
+
+    // 拖拽事件绑定（排序模式时）
+    if(reorderMode){
+      setTimeout(bindDragEvents, 50);
+    }
   }
 
   // 排序按钮
@@ -1934,7 +1930,7 @@ function rH(){
     sortBtn.onclick = toggleReorder;
     l.parentNode.insertBefore(sortBtn, l);
   }
-  sortBtn.textContent = reorderMode ? '✅ 完成排序' : '📐 调整顺序';
+  sortBtn.textContent = reorderMode ? '✅ 完成排序' : '⋮⋮ 调整顺序';
   sortBtn.style.display = favItems.length > 1 ? '' : 'none';
 
   renderJournal();
@@ -2269,53 +2265,99 @@ function renderJournal(){
   section.style.display = 'block';
 }
 
-function openSelf(x){
+// 通用详情页（所有项目类型）
+var detailPendingItem = null;
+function openItemDetail(itemId){
+  var x = getItem(itemId);
+  if(!x) return;
+  detailPendingItem = x;
+
   document.getElementById('selfIcon').textContent = x.ic || '✅';
   document.getElementById('selfName').textContent = x.n;
   document.getElementById('selfTitle').textContent = (x.ic||'✅') + ' ' + x.n;
-  document.getElementById('selfMeta').textContent = '💰 ' + (x.pt||5);
-  
+
+  // 类型标记
+  var typeLabel = x.type === 'routine' ? '🎧 跟练型' : '📝 自助打卡';
+  if(x.toolLink) typeLabel += ' · 🔧' + (x.toolLink.type==='numberpad'?'数字盘':'节拍器');
+  document.getElementById('selfMeta').textContent = typeLabel + ' · 💰' + (x.pt||5);
+
   // 备注
-  const noteBox = document.getElementById('selfNoteBox');
-  const noteText = document.getElementById('selfNoteText');
-  if(x.no){
-    noteText.textContent = '📎 ' + x.no;
-    noteBox.style.display = 'block';
-  } else {
-    noteBox.style.display = 'none';
-  }
-  
+  var noteBox = document.getElementById('selfNoteBox'), noteText = document.getElementById('selfNoteText');
+  if(x.no){ noteText.textContent = '📎 ' + x.no; noteBox.style.display = 'block'; }
+  else { noteBox.style.display = 'none'; }
+
   // 道具
-  const propsBox = document.getElementById('selfPropsBox');
-  const propsText = document.getElementById('selfPropsText');
-  if(x.props){
-    propsText.textContent = x.props;
-    propsBox.style.display = 'block';
-  } else {
-    propsBox.style.display = 'none';
-  }
-  
+  var propsBox = document.getElementById('selfPropsBox'), propsText = document.getElementById('selfPropsText');
+  if(x.props){ propsText.textContent = x.props; propsBox.style.display = 'block'; }
+  else { propsBox.style.display = 'none'; }
+
   // 步骤说明
-  const descBox = document.getElementById('selfDescBox');
-  if(x.desc){
-    descBox.textContent = x.desc;
-    descBox.style.display = 'block';
-  } else {
-    descBox.style.display = 'none';
+  var descBox = document.getElementById('selfDescBox');
+  if(x.desc){ descBox.textContent = x.desc; descBox.style.display = 'block'; }
+  else { descBox.style.display = 'none'; }
+
+  // 操作按钮
+  var actions = document.getElementById('selfActions');
+  var html = '';
+  var isRoutine = x.type === 'routine' || (x.s && x.s.length > 0);
+  if(isRoutine){
+    html += '<button onclick="startRoutineFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;">▶ 开始跟练</button>';
   }
-  
-  simplePendingId = x.i;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if(x.toolLink){
+    var toolLabel = x.toolLink.type === 'numberpad' ? '🦩 打开数字盘' : '🎵 打开节拍器';
+    html += '<button onclick="openToolFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#81c784,#66bb6a);color:#fff;">' + toolLabel + '</button>';
+  }
+  html += '<button onclick="doCompleteFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:#4fc3f7;color:white;">✅ 完成 +' + (x.pt||5) + '💰</button>';
+  if(isAdmin()){
+    html += '<button onclick="editItemFromDetail()" style="width:100%;padding:.625rem;border:1px dashed #ccc;border-radius:.75rem;font-size:.8125rem;cursor:pointer;background:transparent;color:#888;">✏️ 编辑</button>';
+  }
+  actions.innerHTML = html;
+
+  // 收藏状态
+  var favEl = document.getElementById('selfFav');
+  favEl.textContent = isFavorited(x.i) ? '⭐ 已收藏（点击取消）' : '☆ 加入收藏';
+
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.getElementById('pSelf').classList.add('active');
 }
 
-let simplePendingId = null;
-
-function doSelf(){
-  const id = simplePendingId;
-  if(!id) return;
-  completeItem(id);
+function doCompleteFromDetail(){
+  if(!detailPendingItem) return;
+  completeItem(detailPendingItem.i);
   closeSelf();
+}
+
+function startRoutineFromDetail(){
+  if(!detailPendingItem) return;
+  closeSelf();
+  sX(detailPendingItem.i);
+}
+
+function openToolFromDetail(){
+  if(!detailPendingItem) return;
+  var x = detailPendingItem;
+  if(x.toolLink && x.toolLink.type === 'metronome') openMetronome(x);
+  else if(x.toolLink && x.toolLink.type === 'numberpad') openNumberPad(x);
+}
+
+function editItemFromDetail(){
+  if(!detailPendingItem || !isAdmin()) return;
+  var id = detailPendingItem.i;
+  closeSelf();
+  openEditor(id);
+}
+
+function toggleFavoriteInDetail(){
+  if(!detailPendingItem) return;
+  if(isFavorited(detailPendingItem.i)){
+    removeFavorite(detailPendingItem.i);
+    document.getElementById('selfFav').textContent = '☆ 加入收藏';
+    rH();
+  } else {
+    addFavorite(detailPendingItem.i);
+    document.getElementById('selfFav').textContent = '⭐ 已收藏（点击取消）';
+    rH();
+  }
 }
 
 // ===== Toast 轻提示 =====
@@ -2338,12 +2380,6 @@ function completeItem(itemId){
   SFX.play('complete');
   showToast(x.ic + ' ' + x.n + ' 完成！+' + pt + '💰');
   rH();
-}
-
-// 打开自助详情页
-function openSelfDetail(itemId){
-  const x = getItem(itemId);
-  if(x) openSelf(x);
 }
 
 function goH(){
@@ -4083,7 +4119,7 @@ function applyAdminVisibility(){
   });
   var libBtns = document.getElementById('libAdminBtns');
   if(libBtns){
-    libBtns.innerHTML = isAdmin() ? '<button onclick="openEditor()" style="padding:.25rem .75rem;border:1px solid #4fc3f7;border-radius:1rem;background:#fff;color:#4fc3f7;font-size:.75rem;cursor:pointer;">+ 新建</button>' : '';
+    libBtns.innerHTML = isAdmin() ? '<button onclick="document.getElementById(\'pLib\').classList.remove(\'active\');openEditor();" style="padding:.25rem .75rem;border:1px solid #4fc3f7;border-radius:1rem;background:#fff;color:#4fc3f7;font-size:.75rem;cursor:pointer;">+ 新建</button>' : '';
   }
 }
 
@@ -4216,19 +4252,18 @@ function renderLibrary(){
   }
   list.innerHTML = items.map(function(x){
     var fav = isFavorited(x.i);
-    var favBtn = fav
-      ? '<span onclick="event.stopPropagation();removeFavorite(\'' + x.i + '\');renderLibrary();rH();" style="cursor:pointer;font-size:1.25rem;">⭐</span>'
-      : '<span onclick="event.stopPropagation();addFavorite(\'' + x.i + '\');renderLibrary();rH();" style="cursor:pointer;font-size:1.25rem;opacity:.4;">☆</span>';
+    // 圆圈+打勾设计，放最左边
+    var favBtn = '<span onclick="event.stopPropagation();' + (fav ? 'removeFavorite' : 'addFavorite') + '(\'' + x.i + '\');renderLibrary();rH();" style="cursor:pointer;width:1.5rem;height:1.5rem;border-radius:50%;border:2px solid ' + (fav ? '#4fc3f7' : '#ccc') + ';display:flex;align-items:center;justify-content:center;font-size:.75rem;color:' + (fav ? '#4fc3f7' : 'transparent') + ';flex-shrink:0;transition:.15s;">✓</span>';
     var adminBtns = '';
     if(isAdmin()){
-      adminBtns = '<span onclick="event.stopPropagation();editItem(\'' + x.i + '\')" style="cursor:pointer;font-size:.75rem;padding:.125rem .375rem;background:#e8f0fe;border-radius:.25rem;color:#4a7a8a;margin-left:.25rem;">✏️</span>'
+      adminBtns = '<span onclick="event.stopPropagation();editItem(\'' + x.i + '\')" style="cursor:pointer;font-size:.75rem;padding:.125rem .375rem;background:#e8f0fe;border-radius:.25rem;color:#4a7a8a;margin-left:auto;">✏️</span>'
         + '<span onclick="event.stopPropagation();deleteItem(\'' + x.i + '\')" style="cursor:pointer;font-size:.75rem;padding:.125rem .375rem;background:#fee8e8;border-radius:.25rem;color:#e53935;margin-left:.25rem;">🗑</span>';
     }
     return '<div style="display:flex;align-items:center;padding:.625rem .5rem;border-bottom:1px solid #f0f0f0;gap:.5rem;">'
+      + favBtn
       + '<span style="font-size:1.25rem;">' + x.ic + '</span>'
       + '<span style="flex:1;font-size:.875rem;">' + x.n + '</span>'
       + adminBtns
-      + favBtn
       + '</div>';
   }).join('');
 }
@@ -4249,8 +4284,11 @@ function closeLibrary(){
 function editItem(itemId){
   var x = getItem(itemId);
   if(!x || !isAdmin()) return;
-  openEditor(itemId);
   document.getElementById('pLib').classList.remove('active');
+  // 直接进入编辑器（不用经过管理页）
+  openEditor(itemId);
+  // openEditor 会 activate pME，但需要先确保正确跳转
+  document.getElementById('pME').classList.add('active');
 }
 
 async function deleteItem(itemId){
@@ -4272,31 +4310,65 @@ function toggleReorder(){
   rH();
 }
 
-async function moveFavoriteUp(itemId){
-  var idx = userFavorites.indexOf(itemId);
-  if(idx <= 0) return;
-  var tmp = userFavorites[idx-1];
-  userFavorites[idx-1] = userFavorites[idx];
-  userFavorites[idx] = tmp;
-  localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
-  try {
-    await SB.patch('user_favorites', { sort_order: idx-1 }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + itemId });
-    await SB.patch('user_favorites', { sort_order: idx }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + tmp });
-  } catch(e){ console.warn('moveFavoriteUp error:', e); }
-  rH();
+// ---- 拖拽排序 ----
+var dragSrcIdx = -1;
+function bindDragEvents(){
+  var list = document.getElementById('exL');
+  var cards = list.querySelectorAll('.ex[draggable="true"]');
+  cards.forEach(function(card, idx){
+    card.addEventListener('dragstart', function(e){
+      dragSrcIdx = idx;
+      card.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function(e){
+      card.style.opacity = '1';
+      cards.forEach(function(c){ c.style.borderTop = ''; });
+    });
+    card.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.style.borderTop = '2px solid #4fc3f7';
+    });
+    card.addEventListener('dragleave', function(e){
+      card.style.borderTop = '';
+    });
+    card.addEventListener('drop', function(e){
+      e.preventDefault();
+      card.style.borderTop = '';
+      if(dragSrcIdx >= 0 && dragSrcIdx !== idx){
+        reorderFavorites(dragSrcIdx, idx);
+      }
+      dragSrcIdx = -1;
+    });
+    // Touch support
+    card.addEventListener('touchstart', function(e){ dragSrcIdx = idx; });
+    card.addEventListener('touchend', function(e){
+      var touch = e.changedTouches[0];
+      var target = document.elementFromPoint(touch.clientX, touch.clientY);
+      var dropCard = target ? target.closest('.ex') : null;
+      if(dropCard){
+        var allCards = list.querySelectorAll('.ex');
+        var dropIdx = Array.prototype.indexOf.call(allCards, dropCard);
+        if(dragSrcIdx >= 0 && dragSrcIdx !== dropIdx){
+          reorderFavorites(dragSrcIdx, dropIdx);
+        }
+      }
+      dragSrcIdx = -1;
+    });
+  });
 }
 
-async function moveFavoriteDn(itemId){
-  var idx = userFavorites.indexOf(itemId);
-  if(idx < 0 || idx >= userFavorites.length-1) return;
-  var tmp = userFavorites[idx+1];
-  userFavorites[idx+1] = userFavorites[idx];
-  userFavorites[idx] = tmp;
+async function reorderFavorites(fromIdx, toIdx){
+  var item = userFavorites.splice(fromIdx, 1)[0];
+  userFavorites.splice(toIdx, 0, item);
   localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
+  // Persist all sort_orders
   try {
-    await SB.patch('user_favorites', { sort_order: idx+1 }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + itemId });
-    await SB.patch('user_favorites', { sort_order: idx }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + tmp });
-  } catch(e){ console.warn('moveFavoriteDn error:', e); }
+    for(var i = 0; i < userFavorites.length; i++){
+      await SB.patch('user_favorites', { sort_order: i }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + userFavorites[i] });
+    }
+  } catch(e){ console.warn('reorderFavorites error:', e); }
   rH();
 }
 </script>
