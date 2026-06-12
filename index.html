@@ -444,18 +444,12 @@ select.me-input{appearance:auto;}
     </div>
   </div>
   <div class="scroll">
-    <!-- 今日看板（可折叠） -->
-    <div id="npKanban" style="margin:0 .5rem .75rem;background:#f8fafc;border-radius:.75rem;padding:.5rem .75rem;display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="var b=document.getElementById('kanbanBody');b.classList.toggle('hidden');this.querySelector('.arr').classList.toggle('rot')">
-        <span style="font-size:.8125rem;font-weight:600;color:#5a7a98;">📋 今日看板</span>
-        <span class="arr" style="font-size:.75rem;color:#aaa;transition:.2s;">▲</span>
-      </div>
-      <div id="kanbanBody">
-        <div id="kanbanList" style="font-size:.75rem;color:#666;max-height:8rem;overflow-y:auto;"></div>
-        <div id="kanbanSummary" style="font-size:.75rem;color:#4fc3f7;font-weight:600;margin-top:.375rem;border-top:1px solid #eef2f6;padding-top:.375rem;"></div>
-      </div>
+    <!-- 今日看板（紧凑横条） -->
+    <div id="npKanban" style="margin:0 .5rem .5rem;display:none;align-items:center;gap:.5rem;background:#f8fafc;border-radius:.5rem;padding:.375rem .5rem;overflow:hidden;">
+      <span style="font-size:.75rem;font-weight:600;color:#5a7a98;white-space:nowrap;flex-shrink:0;">📋</span>
+      <div id="kanbanStrip" style="display:flex;gap:.375rem;overflow-x:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none;" onwheel="this.scrollLeft+=event.deltaY"></div>
+      <span id="kanbanSummary" style="font-size:.6875rem;color:#4fc3f7;font-weight:600;white-space:nowrap;flex-shrink:0;"></span>
     </div>
-    <style>#kanbanBody.hidden{display:none!important;}.arr.rot{transform:rotate(180deg);}</style>
 
     <div class="el" id="exL"></div>
 
@@ -466,7 +460,7 @@ select.me-input{appearance:auto;}
 
     <div class="us">
       <div class="ut">💡 小提示</div>
-      点击项目直接完成，可重复打卡。去项目库 ⭐ 挑选喜欢的项目。
+      点击项目进入详情，选择跟练或直接完成。📚 从项目库挑选收藏。
     </div>
 
   </div>
@@ -2308,9 +2302,6 @@ function openItemDetail(itemId){
     html += '<button onclick="openToolFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#81c784,#66bb6a);color:#fff;">' + toolLabel + '</button>';
   }
   html += '<button onclick="doCompleteFromDetail()" style="width:100%;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:600;cursor:pointer;background:#4fc3f7;color:white;">✅ 完成 +' + (x.pt||5) + '💰</button>';
-  if(isAdmin()){
-    html += '<button onclick="editItemFromDetail()" style="width:100%;padding:.625rem;border:1px dashed #ccc;border-radius:.75rem;font-size:.8125rem;cursor:pointer;background:transparent;color:#888;">✏️ 编辑</button>';
-  }
   actions.innerHTML = html;
 
   // 收藏状态
@@ -2333,18 +2324,13 @@ function startRoutineFromDetail(){
   sX(detailPendingItem.i);
 }
 
+var toolReturnToDetail = false;
 function openToolFromDetail(){
   if(!detailPendingItem) return;
   var x = detailPendingItem;
+  toolReturnToDetail = true;
   if(x.toolLink && x.toolLink.type === 'metronome') openMetronome(x);
   else if(x.toolLink && x.toolLink.type === 'numberpad') openNumberPad(x);
-}
-
-function editItemFromDetail(){
-  if(!detailPendingItem || !isAdmin()) return;
-  var id = detailPendingItem.i;
-  closeSelf();
-  openEditor(id);
 }
 
 function toggleFavoriteInDetail(){
@@ -2671,13 +2657,18 @@ function closeMetronome(showComplete, completedItem){
   } catch(e) {}
   document.getElementById('pMetronome').classList.remove('active');
   document.getElementById('pSelf').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
-  rH();
-  
-  if(showComplete && completedItem && !completedItem.standalone){
-    SFX.play('complete');
-    document.getElementById('ol').classList.add('show');
-    document.getElementById('olT').textContent = (completedItem.ic || '✅') + ' ' + (completedItem.n || '练习') + ' 完成！';
+
+  if(toolReturnToDetail && detailPendingItem){
+    toolReturnToDetail = false;
+    openItemDetail(detailPendingItem.i);
+  } else {
+    document.getElementById('pH').classList.add('active');
+    rH();
+    if(showComplete && completedItem && !completedItem.standalone){
+      SFX.play('complete');
+      document.getElementById('ol').classList.add('show');
+      document.getElementById('olT').textContent = (completedItem.ic || '✅') + ' ' + (completedItem.n || '练习') + ' 完成！';
+    }
   }
 }
 
@@ -2839,8 +2830,13 @@ function closeNumberPad(){
   TTS._cancel();
   npState = null;
   document.getElementById('pNumberPad').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
-  rH();
+  if(toolReturnToDetail && detailPendingItem){
+    toolReturnToDetail = false;
+    openItemDetail(detailPendingItem.i);
+  } else {
+    document.getElementById('pH').classList.add('active');
+    rH();
+  }
 }
 
 function startNumberPadPractice(){
@@ -3041,17 +3037,23 @@ function npFinish(){
     if(PS) addPoints(item.pt || 10, item.n);
   }
   
-  const completedItem = item;
+  var completedItem = item;
   npState = null;
   document.getElementById('pNumberPad').classList.remove('active');
-  document.getElementById('pH').classList.add('active');
-  rH();
-  
-  // 独立工具不弹完成框
-  if(!completedItem?.standalone){
-    SFX.play('complete');
-    document.getElementById('ol').classList.add('show');
-    document.getElementById('olT').textContent = (completedItem?.ic||'✅') + ' ' + (completedItem?.n||'练习') + ' 完成！';
+
+  if(toolReturnToDetail && detailPendingItem){
+    // 从详情页打开的工具 → 返回详情页让用户手动点完成
+    toolReturnToDetail = false;
+    openItemDetail(detailPendingItem.i);
+  } else {
+    document.getElementById('pH').classList.add('active');
+    rH();
+    // 非独立工具弹完成框
+    if(!completedItem?.standalone){
+      SFX.play('complete');
+      document.getElementById('ol').classList.add('show');
+      document.getElementById('olT').textContent = (completedItem?.ic||'✅') + ' ' + (completedItem?.n||'练习') + ' 完成！';
+    }
   }
 }
 
@@ -3397,10 +3399,16 @@ function openEditor(id){
   document.getElementById('pME').classList.add('active');
 }
 
+var editorSource = 'mgmt';
 function closeEditor(){
   document.getElementById('pME').classList.remove('active');
-  document.getElementById('pMg').classList.add('active');
-  rMg();
+  if(editorSource === 'library'){
+    document.getElementById('pLib').classList.add('active');
+    renderLibrary();
+  } else {
+    document.getElementById('pMg').classList.add('active');
+    rMg();
+  }
 }
 
 function swType(type){
@@ -4119,7 +4127,7 @@ function applyAdminVisibility(){
   });
   var libBtns = document.getElementById('libAdminBtns');
   if(libBtns){
-    libBtns.innerHTML = isAdmin() ? '<button onclick="document.getElementById(\'pLib\').classList.remove(\'active\');openEditor();" style="padding:.25rem .75rem;border:1px solid #4fc3f7;border-radius:1rem;background:#fff;color:#4fc3f7;font-size:.75rem;cursor:pointer;">+ 新建</button>' : '';
+    libBtns.innerHTML = isAdmin() ? '<button onclick="document.getElementById(\'pLib\').classList.remove(\'active\');editorSource=\'library\';openEditor();" style="padding:.25rem .75rem;border:1px solid #4fc3f7;border-radius:1rem;background:#fff;color:#4fc3f7;font-size:.75rem;cursor:pointer;">+ 新建</button>' : '';
   }
 }
 
@@ -4215,24 +4223,24 @@ function getTodayCount(){
   return todayLogs.length;
 }
 
-// ---- 今日看板 ----
+// ---- 今日看板（紧凑横条） ----
 function renderKanban(){
   var kanban = document.getElementById('npKanban');
-  var list = document.getElementById('kanbanList');
+  var strip = document.getElementById('kanbanStrip');
   var summary = document.getElementById('kanbanSummary');
-  if(!kanban || !list || !summary) return;
+  if(!kanban || !strip || !summary) return;
   if(todayLogs.length === 0){
     kanban.style.display = 'none';
     return;
   }
-  kanban.style.display = 'block';
-  var items = todayLogs.slice().reverse();
-  list.innerHTML = items.map(function(l){
-    var time = l.completedAt ? new Date(l.completedAt).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) : '';
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:.25rem 0;border-bottom:1px solid #f0f0f0;"><span>' + time + ' ' + (l.itemName || l.itemId) + '</span><span style="color:#4fc3f7;font-weight:600;">+' + l.points + '💰</span></div>';
+  kanban.style.display = 'flex';
+  // 每个完成项：emoji
+  strip.innerHTML = todayLogs.slice().reverse().map(function(l){
+    var item = getItem(l.itemId);
+    var emoji = item ? item.ic : '✅';
+    return '<span title="' + (l.itemName||'') + '" style="font-size:1rem;flex-shrink:0;">' + emoji + '</span>';
   }).join('');
-  summary.textContent = '共 ' + getTodayCount() + ' 次 · 💰 +' + getTodayTotal();
-  document.getElementById('kanbanBody').classList.remove('hidden');
+  summary.textContent = getTodayCount() + '次 💰+' + getTodayTotal();
 }
 
 // ---- 项目库 ----
@@ -4285,10 +4293,8 @@ function editItem(itemId){
   var x = getItem(itemId);
   if(!x || !isAdmin()) return;
   document.getElementById('pLib').classList.remove('active');
-  // 直接进入编辑器（不用经过管理页）
+  editorSource = 'library';
   openEditor(itemId);
-  // openEditor 会 activate pME，但需要先确保正确跳转
-  document.getElementById('pME').classList.add('active');
 }
 
 async function deleteItem(itemId){
