@@ -1351,27 +1351,37 @@ async function processSyncQueue(){
 
 // v4: items 是公共项目库，使用 item_id 作为主键，不再绑 user_id
 async function syncItems(){
-  if(!currentUser || !isAdmin()) return;
+  if(!currentUser) return;
   try {
+    // 管理员同步全部项目，普通用户只同步自己创建的项目
+    var itemsToSync = DC.items.filter(function(x){
+      if(DC.trash.find(function(t){ return t.item.i === x.i; })) return false;
+      if(isAdmin()) return true;
+      // 普通用户：只同步自己创建的（或旧数据没有 created_by 的也保留）
+      return !x._createdBy || x._createdBy === currentUser.pin;
+    });
+    if(itemsToSync.length === 0) return;
     await SB.upsert('items',
-      DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
-        item_id: x.i,
-        name: x.n,
-        icon: x.ic || '✅',
-        type: x.type || 'simple',
-        duration: x.dur || 1,
-        time_label: x.t || '1分钟',
-        points: x.pt || 5,
-        cycle_count: x.cy || null,
-        note: x.no || '',
-        steps: x.s || [],
-        tags: x.tag || [],
-        tool_link: x.toolLink || null,
-        description: x.desc || '',
-        props: x.props || '',
-        active: true,
-        created_by: currentUser.pin
-      })), 'item_id'
+      itemsToSync.map(function(x){
+        return {
+          item_id: x.i,
+          name: x.n,
+          icon: x.ic || '✅',
+          type: x.type || 'simple',
+          duration: x.dur || 1,
+          time_label: x.t || '1分钟',
+          points: x.pt || 5,
+          cycle_count: x.cy || null,
+          note: x.no || '',
+          steps: x.s || [],
+          tags: x.tag || [],
+          tool_link: x.toolLink || null,
+          description: x.desc || '',
+          props: x.props || '',
+          active: true,
+          created_by: x._createdBy || currentUser.pin
+        };
+      }), 'item_id'
     );
   } catch(e){ console.warn('syncItems error:', e); }
 }
@@ -1524,24 +1534,47 @@ async function loadUserDataFromSupabase(user){
 
     // Transform items（公共项目库）
     if(itemsData && itemsData.length > 0){
-      DC.items = itemsData.map(r => ({
-        i: r.item_id,
-        n: r.name,
-        ic: r.icon || '✅',
-        t: r.time_label || '1分钟',
-        dur: r.duration || 1,
-        no: r.note || '',
-        type: r.type || 'simple',
-        pt: r.points || 5,
-        cy: r.cycle_count || undefined,
-        s: r.steps || [],
-        tag: r.tags || [],
-        toolLink: r.tool_link || undefined,
-        desc: r.description || '',
-        props: r.props || ''
-      }));
+      var supabaseItems = itemsData.map(function(r){
+        return {
+          i: r.item_id,
+          n: r.name,
+          ic: r.icon || '✅',
+          t: r.time_label || '1分钟',
+          dur: r.duration || 1,
+          no: r.note || '',
+          type: r.type || 'simple',
+          pt: r.points || 5,
+          cy: r.cycle_count || undefined,
+          s: r.steps || [],
+          tag: r.tags || [],
+          toolLink: r.tool_link || undefined,
+          desc: r.description || '',
+          props: r.props || '',
+          _createdBy: r.created_by || ''
+        };
+      });
+      // 合并：Supabase 项目 + 本地独有项目（自建未同步的）
+      var supabaseIds = {};
+      supabaseItems.forEach(function(x){ supabaseIds[x.i] = true; });
+      var localItems = [];
+      try {
+        var localRaw = localStorage.getItem('dc_items');
+        if(localRaw) localItems = JSON.parse(localRaw);
+      } catch(e){}
+      localItems.forEach(function(x){
+        if(!supabaseIds[x.i]){
+          supabaseItems.push(x);
+        }
+      });
+      DC.items = supabaseItems;
     } else {
-      DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
+      // Supabase 无数据，保留本地项目
+      var localItems = [];
+      try {
+        var localRaw = localStorage.getItem('dc_items');
+        if(localRaw) localItems = JSON.parse(localRaw);
+      } catch(e){}
+      DC.items = localItems.length > 0 ? localItems : JSON.parse(JSON.stringify(DEF_ITEMS));
     }
 
     // v4: 公共项目库，不再加载 user-specific slots
@@ -3529,7 +3562,7 @@ function saveItem(){
     if(x) makeItemData(x);
   } else {
     const id = 'item_'+Date.now();
-    const item = { i: id };
+    const item = { i: id, _createdBy: currentUser ? currentUser.pin : '' };
     makeItemData(item);
     DC.items.push(item);
   }
@@ -3766,6 +3799,8 @@ async function startup(){
     currentUser = savedUser;
     initDC();
     initPS();
+    await loadFavorites();
+    await fetchTodayLogs();
     enterHome();
   } else {
     // Show login page
@@ -4146,7 +4181,15 @@ async function loadFavorites(){
       'user_pin': 'eq.' + currentUser.pin,
       order: 'sort_order.asc,added_at.asc'
     });
-    userFavorites = (data || []).map(function(r){ return r.item_id; });
+    // Supabase 有数据才用，否则保留 localStorage 缓存
+    if(data && data.length > 0){
+      userFavorites = data.map(function(r){ return r.item_id; });
+      localStorage.setItem('dc_fav_' + currentUser.pin, JSON.stringify(userFavorites));
+    } else {
+      // Supabase 空数据，从 localStorage 恢复
+      var r = localStorage.getItem('dc_fav_' + currentUser.pin);
+      userFavorites = r ? JSON.parse(r) : [];
+    }
   } catch(e){
     console.warn('loadFavorites error:', e);
     try {
@@ -4154,7 +4197,6 @@ async function loadFavorites(){
       userFavorites = r ? JSON.parse(r) : [];
     } catch(e2){ userFavorites = []; }
   }
-  localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
 }
 
 async function addFavorite(itemId){
