@@ -1553,20 +1553,20 @@ async function loadUserDataFromSupabase(user){
           _createdBy: r.created_by || ''
         };
       });
-      // 合并：Supabase 项目 + 本地独有项目（自建未同步的）
-      var supabaseIds = {};
-      supabaseItems.forEach(function(x){ supabaseIds[x.i] = true; });
+      // 合并：Supabase 项目 + 本地项目（本地编辑优先）
+      var merged = {};
+      // 先放 Supabase 数据
+      supabaseItems.forEach(function(x){ merged[x.i] = x; });
+      // 再放本地数据（覆盖同 ID 的 Supabase 版本，保留本地编辑）
       var localItems = [];
       try {
         var localRaw = localStorage.getItem('dc_items');
         if(localRaw) localItems = JSON.parse(localRaw);
       } catch(e){}
       localItems.forEach(function(x){
-        if(!supabaseIds[x.i]){
-          supabaseItems.push(x);
-        }
+        merged[x.i] = x; // 本地版本覆盖 Supabase
       });
-      DC.items = supabaseItems;
+      DC.items = Object.values(merged);
     } else {
       // Supabase 无数据，保留本地项目
       var localItems = [];
