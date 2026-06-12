@@ -3133,27 +3133,20 @@ function doLogout(){
   if(St.audioPoll){ clearInterval(St.audioPoll); St.audioPoll = null; }
   if(St.audioTimeout){ clearTimeout(St.audioTimeout); St.audioTimeout = null; }
   TTS._cancel();
-  // 重置全部内存状态
+  // 重置用户专属内存状态（项目库 DC 保留，是共享的）
+  var oldPin = currentUser ? currentUser.pin : null;
   clearCurrentUser();
   userFavorites = [];
-  DC = {};
   PS = null;
-  Dn = [];
   todayLogs = [];
   reorderMode = false;
   toolReturnToDetail = false;
   detailPendingItem = null;
-  // 清除 localStorage 中的旧用户数据
+  // 只清除用户专属的 localStorage（项目库 dc_items 是共享的，不清！）
   localStorage.removeItem('dc_points_state');
-  localStorage.removeItem('dc_items');
-  localStorage.removeItem('dc_slots');
   localStorage.removeItem('dc_settings');
-  localStorage.removeItem('dc_trash');
-  // 清除收藏缓存（用 pin 定位）
-  try { var favKey = localStorage.getItem('dc_current_user_pin'); if(favKey) localStorage.removeItem('dc_fav_' + favKey); } catch(e) {}
-  // 保存当前 pin 以便清除后仍能定位
-  var oldPin = currentUser ? currentUser.pin : null;
-  if(oldPin) localStorage.setItem('dc_current_user_pin', oldPin);
+  // 清除收藏缓存
+  if(oldPin) localStorage.removeItem('dc_fav_' + oldPin);
   // 显示登录页
   showLogin();
 }
@@ -3568,7 +3561,12 @@ function saveItem(){
   }
 
   flushDC();
-  enqueueSync(syncItems);
+  // 同步到 Supabase（等待完成再关闭编辑器）
+  syncItems().then(function(){
+    showToast('✅ 已保存并同步');
+  }).catch(function(){
+    showToast('⚠️ 已本地保存，同步失败');
+  });
   closeEditor();
   rH();
 }
