@@ -576,10 +576,10 @@ select.me-input{appearance:auto;}
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:.75rem;">
         <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">8组</div><div style="font-size:.6875rem;color:#7a8a9a;">总组数</div></div>
         <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#f5a623;">🦶×2</div><div style="font-size:.6875rem;color:#7a8a9a;">左+右</div></div>
-        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">66个</div><div style="font-size:.6875rem;color:#7a8a9a;">总数字</div></div>
-        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">~5s</div><div style="font-size:.6875rem;color:#7a8a9a;">间隔</div></div>
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">52个</div><div style="font-size:.6875rem;color:#7a8a9a;">总数字</div></div>
+        <div class="info-card" style="flex:1;min-width:4rem;background:#f8fafc;border:1px solid #eef2f6;border-radius:.625rem;padding:.5rem .625rem;"><div style="font-size:1.25rem;font-weight:700;color:#4fc3f7;">手动</div><div style="font-size:.6875rem;color:#7a8a9a;">间隔</div></div>
       </div>
-      <div style="font-size:.75rem;color:#555;background:#f8fafc;padding:.5rem .75rem;border-radius:.5rem;margin:0 1rem .75rem;text-align:left;">左脚：3位×5 → 4位×8 → 5位×10 → 6位×10<br>右脚：同上</div>
+      <div style="font-size:.75rem;color:#555;background:#f8fafc;padding:.5rem .75rem;border-radius:.5rem;margin:0 1rem .75rem;text-align:left;">左脚：3位×4 → 4位×6 → 5位×8 → 6位×8<br>右脚：同上</div>
       <button onclick="startNumberPadPractice()" style="width:calc(100% - 2rem);margin:0 1rem 1.5rem;padding:.9375rem;border:none;border-radius:.75rem;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;">▶ 开始练习（左脚先）</button>
     </div>
     
@@ -591,6 +591,7 @@ select.me-input{appearance:auto;}
         <div id="npCurrentDigit" style="font-size:6rem;font-weight:200;color:#2c3e50;line-height:1;margin-bottom:.5rem;">7</div>
         <div id="npStatus" style="font-size:.8125rem;color:#7a8a9a;margin-bottom:1rem;">🎵 请听语音...</div>
         <div id="npDots" style="display:flex;gap:.375rem;margin-bottom:1rem;"></div>
+        <button id="npNextBtn" onclick="npNextDigit()" style="width:100%;max-width:18rem;padding:1.125rem;border:none;border-radius:.75rem;font-size:1.125rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;margin-bottom:.75rem;box-shadow:0 4px 12px rgba(79,195,247,.35);">▶ 下一个数字</button>
         <div style="font-size:.75rem;color:#aaa;margin-bottom:1rem;" id="npOverallProgress">已完成：左 0/4组 · 右 0/4组</div>
         <div style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
           <button id="npPauseBtn" onclick="npPause()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">⏸ 暂停</button>
@@ -2805,68 +2806,95 @@ function closeMetronome(showComplete, completedItem){
 // ===== 数字盘 =====
 let npState = null;
 
-// 生成一个数字序列（遵守跨中线约束）
-function generateNumberPadSequence(length, digits){
-  const result = [];
-  const randomDigit = () => Math.floor(Math.random() * 10);
-  
-  function isAdjacentConflict(a, b){
-    const right = [1,2,3,4];
-    const left = [6,7,8,9];
-    if(right.includes(a) && right.includes(b) && Math.abs(a-b) === 1) return true;
-    if(left.includes(a) && left.includes(b) && Math.abs(a-b) === 1) return true;
-    return false;
-  }
-  
-  function generateMultiDigit(digits, prevLast){
-    let attempt = 0;
-    while(attempt < 100){
-      const str = [];
-      let prev = prevLast;
-      let valid = true;
-      for(let i = 0; i < digits; i++){
-        let d;
-        if(i === 0 && prev !== null){
-          let tries = 0;
-          do {
-            d = randomDigit();
-            tries++;
-          } while(tries < 20 && isAdjacentConflict(prev, d));
-          if(isAdjacentConflict(prev, d)) { valid = false; break; }
-        } else {
-          d = randomDigit();
-        }
-        if(i > 0 && isAdjacentConflict(str[i-1], d)) { valid = false; break; }
-        str.push(d);
-      }
-      if(valid) return { value: parseInt(str.join('')), lastDigit: str[str.length-1], digits: str };
-      attempt++;
-    }
-    const fallback = Array.from({length: digits}, () => randomDigit());
-    return { value: parseInt(fallback.join('')), lastDigit: fallback[fallback.length-1], digits: fallback };
-  }
-  
-  let lastDigit = null;
-  for(let i = 0; i < length; i++){
-    const num = generateMultiDigit(digits, lastDigit);
-    result.push(num.value);
-    lastDigit = num.lastDigit;
-  }
-  return result;
-}
+	// 生成一个数字序列（严格跨中线约束）
+	//   右侧 1-4：点完后必须跨到中线(0,5)或左侧(6-9)
+	//   左侧 6-9：点完后必须跨到中线(0,5)或右侧(1-4)
+	//   中线 0,5：可连任意数字（但不能同号连续）
+	function generateNumberPadSequence(length, digits){
+	  const RIGHT = [1,2,3,4];
+	  const LEFT = [6,7,8,9];
+	  const CENTER = [0,5];
+	  const ALL = [0,1,2,3,4,5,6,7,8,9];
 
-// 生成全部 8 组序列
-function generateAllSequences(){
-  const digitLengths = [3,4,5,6];
-  const groupLengths = [5,8,10,10];
-  const all = [];
-  for(let foot = 0; foot < 2; foot++){
-    for(let g = 0; g < 4; g++){
-      all.push(generateNumberPadSequence(groupLengths[g], digitLengths[g]));
-    }
-  }
-  return all;
-}
+	  function getSide(d){
+	    if(RIGHT.includes(d)) return 'right';
+	    if(LEFT.includes(d)) return 'left';
+	    return 'center';
+	  }
+
+	  // 上一个数字确定后，下一个数字只能从哪些里选
+	  function allowedDigits(prev){
+	    const side = getSide(prev);
+	    if(side === 'right') return [...CENTER, ...LEFT];           // 0,5,6,7,8,9
+	    if(side === 'left') return [...RIGHT, ...CENTER];           // 1,2,3,4,0,5
+	    // 中线：可连任意，但禁止同号
+	    return ALL.filter(d => d !== prev);
+	  }
+
+	  function randomFrom(arr){
+	    return arr[Math.floor(Math.random() * arr.length)];
+	  }
+
+	  // 生成一个多位数，内部跨中线 + 与上一个数字的末位跨中线
+	  function generateMultiDigit(digits, prevLast){
+	    let attempt = 0;
+	    while(attempt < 100){
+	      const str = [];
+	      let valid = true;
+	      for(let i = 0; i < digits; i++){
+	        let candidates;
+	        if(i === 0 && prevLast !== null){
+	          candidates = allowedDigits(prevLast);
+	        } else if(i > 0){
+	          candidates = allowedDigits(str[i-1]);
+	        } else {
+	          candidates = ALL;
+	        }
+	        if(candidates.length === 0){ valid = false; break; }
+	        str.push(randomFrom(candidates));
+	      }
+	      if(valid) return { value: parseInt(str.join('')), lastDigit: str[str.length-1], digits: str };
+	      attempt++;
+	    }
+	    // 兜底：放宽一位一位生成，但尽量守约束
+	    const fallback = [];
+	    for(let i = 0; i < digits; i++){
+	      let pool;
+	      if(i === 0 && prevLast !== null){
+	        pool = allowedDigits(prevLast);
+	        if(pool.length === 0) pool = ALL;
+	      } else if(i > 0){
+	        pool = allowedDigits(fallback[i-1]);
+	      } else {
+	        pool = ALL;
+	      }
+	      fallback.push(randomFrom(pool));
+	    }
+	    return { value: parseInt(fallback.join('')), lastDigit: fallback[fallback.length-1], digits: fallback };
+	  }
+
+	  const result = [];
+	  let lastDigit = null;
+	  for(let i = 0; i < length; i++){
+	    const num = generateMultiDigit(digits, lastDigit);
+	    result.push(num.value);
+	    lastDigit = num.lastDigit;
+	  }
+	  return result;
+	}
+
+	// 生成全部 8 组序列（每级比原来少 1-2 个，总数 52 而非 66）
+	function generateAllSequences(){
+	  const digitLengths = [3,4,5,6];
+	  const groupLengths = [4,6,8,8];
+	  const all = [];
+	  for(let foot = 0; foot < 2; foot++){
+	    for(let g = 0; g < 4; g++){
+	      all.push(generateNumberPadSequence(groupLengths[g], digitLengths[g]));
+	    }
+	  }
+	  return all;
+	}
 
 // 渲染数字盘布局
 function renderNumberPad(){
@@ -2945,9 +2973,9 @@ function startNumberPadPractice(){
   npState.sequences = sequences;
   npState.currentFoot = 'left';
   npState.currentGroup = 0;
-  npState.currentDigitIndex = 0;
+  npState.currentDigitIndex = -1;
   npState.digits = [3,4,5,6];
-  npState.lengths = [5,8,10,10];
+  npState.lengths = [4,6,8,8];
   npState.paused = false;
   npState.timer = null;
   npState.completedGroups = { left: 0, right: 0 };
@@ -2958,22 +2986,15 @@ function startNumberPadPractice(){
   document.getElementById('npSwitchFoot').style.display = 'none';
   
   npUpdateDisplay();
-  // 开场引导语 → 说完后开始报第一个数字
-  npSpeakText("小朋友请你准备好，现在我们用左脚单脚站", function(){
-    npSpeakAndDisplay();
-  });
+  // 开场引导语（阿里云音频）→ 说完后等待用户手动开始
+  document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
+  npSpeakGuide('numpad-left-intro', '小朋友请你准备好，现在我们用左脚单脚站', null);
 }
 
-// 播报引导语（带完成后回调）
-function npSpeakText(text, callback){
-  TTS._cancel();
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
-    u.rate = 0.9;
-    if(callback) u.onend = callback;
-    window.speechSynthesis.speak(u);
-  } catch(e) { if(callback) setTimeout(callback, 500); }
+// 播报引导语（阿里云 TTS 音频 + 浏览器兜底）
+// key: Supabase Storage 文件名前缀（不含 tts- 和 .mp3）
+function npSpeakGuide(key, fallbackText, callback){
+  TTS.play(key, fallbackText, callback);
 }
 
 // 逐个数字单独报：619 → "六 一 九"（不是"六百一十九"）
@@ -2989,15 +3010,6 @@ function npSpeakDigit(digit){
   } catch(e) { }
 }
 
-// 先播引导语，播完后再报数字+倒计时
-function npSpeakGuideThenDigit(guideText){
-  if(!npState || npState.paused) return;
-  document.getElementById('npStatus').textContent = '🎵 ' + guideText;
-  npSpeakText(guideText, function(){
-    npSpeakAndDisplay();
-  });
-}
-
 function npSpeakAndDisplay(){
   if(!npState || npState.paused) return;
   
@@ -3005,35 +3017,30 @@ function npSpeakAndDisplay(){
   const groupIdx = footIdx * 4 + npState.currentGroup;
   const seq = npState.sequences[groupIdx];
   
-  if(!seq || npState.currentDigitIndex >= seq.length){
+  if(!seq || npState.currentDigitIndex >= seq.length || npState.currentDigitIndex < 0){
     npNextGroup();
     return;
   }
   
   const digit = seq[npState.currentDigitIndex];
   document.getElementById('npCurrentDigit').textContent = digit;
-  document.getElementById('npStatus').textContent = '🎵 请听数字...';
-  
+  document.getElementById('npStatus').textContent = '👆 听完数字，用脚去点，然后点「下一个数字」';
+
   npSpeakDigit(digit);
   npUpdateDisplay();
-  
-  if(npState.timer) { clearTimeout(npState.timer); }
-  npState.timer = setTimeout(() => {
-    if(npState && !npState.paused){
-      npState.currentDigitIndex++;
-      npState.completedDigits++;
-      npNextDigit();
-    }
-  }, 5000);
 }
 
+// 用户按下「下一个数字」按钮时调用
 function npNextDigit(){
-  if(!npState) return;
-  
+  if(!npState || npState.paused) return;
+
+  npState.currentDigitIndex++;
+  npState.completedDigits++;
+
   const footIdx = npState.currentFoot === 'left' ? 0 : 1;
   const groupIdx = footIdx * 4 + npState.currentGroup;
   const seq = npState.sequences[groupIdx];
-  
+
   if(npState.currentDigitIndex < seq.length){
     npSpeakAndDisplay();
   } else {
@@ -3044,7 +3051,7 @@ function npNextDigit(){
 function npNextGroup(){
   if(!npState) return;
   
-  npState.currentDigitIndex = 0;
+  npState.currentDigitIndex = -1;
   npState.currentGroup++;
   
   if(npState.currentGroup >= 4){
@@ -3054,17 +3061,15 @@ function npNextGroup(){
       document.getElementById('npPractice').style.display = 'none';
       document.getElementById('npSwitchFoot').style.display = 'block';
       if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
-      npSpeakText("左脚练习全部完成，休息一下，等下我们换右脚继续", null);
+      npSpeakGuide('numpad-left-done', '左脚练习全部完成，休息一下，等下我们换右脚继续', null);
     } else {
       npFinish();
     }
   } else {
-    // 每组过渡：先播引导语，然后开始新一组
-    const guideText = "好，我们现在完成了一组，接下来下一组难度要升级了哟";
-    document.getElementById('npStatus').textContent = '🎵 ' + guideText;
-    npSpeakText(guideText, function(){
-      npSpeakAndDisplay();
-    });
+    // 每组过渡：阿里云引导语 → 等待用户手动开始新一组
+    document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
+    npUpdateDisplay();
+    npSpeakGuide('numpad-group-next', '好，我们现在完成了一组，接下来下一组难度要升级了哟', null);
   }
 }
 
@@ -3073,16 +3078,15 @@ function npSwitchToRight(){
   
   npState.currentFoot = 'right';
   npState.currentGroup = 0;
-  npState.currentDigitIndex = 0;
+  npState.currentDigitIndex = -1;
   
   document.getElementById('npSwitchFoot').style.display = 'none';
   document.getElementById('npPractice').style.display = 'block';
   
   npUpdateDisplay();
-  // 换脚引导语
-  npSpeakText("现在换右脚单脚站，请准备好", function(){
-    npSpeakAndDisplay();
-  });
+  // 换脚引导语（阿里云音频）→ 等待用户手动开始
+  document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
+  npSpeakGuide('numpad-right-intro', '现在换右脚单脚站，请准备好', null);
 }
 
 function npUpdateDisplay(){
@@ -3112,7 +3116,7 @@ function npUpdateDisplay(){
     dotsEl.innerHTML = seq.map(function(_, i){
       var cls = '';
       if(i < npState.currentDigitIndex) cls = 'dot dn';
-      else if(i === npState.currentDigitIndex) cls = 'dot act';
+      else if(i === npState.currentDigitIndex && npState.currentDigitIndex >= 0) cls = 'dot act';
       else cls = 'dot';
       return '<span class="' + cls + '"></span>';
     }).join('');
@@ -3131,8 +3135,7 @@ function npPause(){
   if(npState.paused){
     npState.paused = false;
     document.getElementById('npPauseBtn').textContent = '⏸ 暂停';
-    document.getElementById('npStatus').textContent = '🎵 请听语音...';
-    npSpeakAndDisplay();
+    document.getElementById('npStatus').textContent = '👆 点「下一个数字」继续';
   } else {
     npState.paused = true;
     document.getElementById('npPauseBtn').textContent = '▶ 继续';
@@ -3152,8 +3155,11 @@ function npStop(){
 function npFinish(){
   if(npState && npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
   TTS._cancel();
-  
+
   const item = npState?.item;
+  // 完成语音（阿里云音频）
+  npSpeakGuide('numpad-all-done', '太棒了！双脚练习全部完成！', null);
+
   // 独立工具：不加金币不打卡
   if(item && !item.standalone && !Dn.includes(item.i + '_' + (St.si || St.pi))){
     Dn.push(item.i + '_' + (St.si || St.pi));
