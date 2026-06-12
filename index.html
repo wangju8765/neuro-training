@@ -593,10 +593,7 @@ select.me-input{appearance:auto;}
         <div id="npDots" style="display:flex;gap:.375rem;margin-bottom:1rem;"></div>
         <button id="npNextBtn" onclick="npNextDigit()" style="width:100%;max-width:18rem;padding:1.125rem;border:none;border-radius:.75rem;font-size:1.125rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#fff;margin-bottom:.75rem;box-shadow:0 4px 12px rgba(79,195,247,.35);">▶ 下一个数字</button>
         <div style="font-size:.75rem;color:#aaa;margin-bottom:1rem;" id="npOverallProgress">已完成：左 0/4组 · 右 0/4组</div>
-        <div style="display:flex;gap:.75rem;width:100%;max-width:18rem;">
-          <button id="npPauseBtn" onclick="npPause()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#e8f0fe;color:#4a7a8a;">⏸ 暂停</button>
-          <button onclick="npStop()" style="flex:1;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
-        </div>
+        <button onclick="npStop()" style="width:100%;max-width:18rem;padding:.9375rem;border:none;border-radius:.75rem;font-size:.9375rem;font-weight:600;cursor:pointer;background:#fee8e8;color:#e53935;">⏹ 结束</button>
       </div>
     </div>
     
@@ -2976,7 +2973,6 @@ function startNumberPadPractice(){
   npState.currentDigitIndex = -1;
   npState.digits = [3,4,5,6];
   npState.lengths = [4,6,8,8];
-  npState.paused = false;
   npState.timer = null;
   npState.completedGroups = { left: 0, right: 0 };
   npState.completedDigits = 0;
@@ -2986,15 +2982,24 @@ function startNumberPadPractice(){
   document.getElementById('npSwitchFoot').style.display = 'none';
   
   npUpdateDisplay();
-  // 开场引导语（阿里云音频）→ 说完后等待用户手动开始
-  document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
-  npSpeakGuide('numpad-left-intro', '小朋友请你准备好，现在我们用左脚单脚站', null);
+  // 开场引导语（阿里云音频）→ 清数字，播语音
+  npShowGuidance('小朋友请准备好，左脚单脚站...');
+  npSpeakGuide('numpad-left-intro', '小朋友请你准备好，现在我们用左脚单脚站', function(){
+    document.getElementById('npStatus').textContent = '👆 点「下一个数字」开始';
+  });
 }
 
 // 播报引导语（阿里云 TTS 音频 + 浏览器兜底）
 // key: Supabase Storage 文件名前缀（不含 tts- 和 .mp3）
 function npSpeakGuide(key, fallbackText, callback){
   TTS.play(key, fallbackText, callback);
+}
+
+// 引导语播放期间：清空数字显示，展示引导文字
+function npShowGuidance(text){
+  document.getElementById('npCurrentDigit').textContent = '';
+  document.getElementById('npStatus').textContent = '🎵 ' + text;
+  document.getElementById('npDots').innerHTML = '';
 }
 
 // 逐个数字单独报：619 → "六 一 九"（不是"六百一十九"）
@@ -3011,7 +3016,7 @@ function npSpeakDigit(digit){
 }
 
 function npSpeakAndDisplay(){
-  if(!npState || npState.paused) return;
+  if(!npState) return;
   
   const footIdx = npState.currentFoot === 'left' ? 0 : 1;
   const groupIdx = footIdx * 4 + npState.currentGroup;
@@ -3032,7 +3037,7 @@ function npSpeakAndDisplay(){
 
 // 用户按下「下一个数字」按钮时调用
 function npNextDigit(){
-  if(!npState || npState.paused) return;
+  if(!npState) return;
 
   npState.currentDigitIndex++;
   npState.completedDigits++;
@@ -3061,15 +3066,18 @@ function npNextGroup(){
       document.getElementById('npPractice').style.display = 'none';
       document.getElementById('npSwitchFoot').style.display = 'block';
       if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
+      document.getElementById('npCurrentDigit').textContent = '';
       npSpeakGuide('numpad-left-done', '左脚练习全部完成，休息一下，等下我们换右脚继续', null);
     } else {
       npFinish();
     }
   } else {
-    // 每组过渡：阿里云引导语 → 等待用户手动开始新一组
-    document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
+    // 每组过渡：阿里云引导语 → 清数字，播语音
     npUpdateDisplay();
-    npSpeakGuide('numpad-group-next', '好，我们现在完成了一组，接下来下一组难度要升级了哟', null);
+    npShowGuidance('难度要升级了哟...');
+    npSpeakGuide('numpad-group-next', '好，我们现在完成了一组，接下来下一组难度要升级了哟', function(){
+      document.getElementById('npStatus').textContent = '👆 点「下一个数字」继续';
+    });
   }
 }
 
@@ -3084,9 +3092,11 @@ function npSwitchToRight(){
   document.getElementById('npPractice').style.display = 'block';
   
   npUpdateDisplay();
-  // 换脚引导语（阿里云音频）→ 等待用户手动开始
-  document.getElementById('npStatus').textContent = '🎵 准备好了就点「下一个数字」';
-  npSpeakGuide('numpad-right-intro', '现在换右脚单脚站，请准备好', null);
+  // 换脚引导语（阿里云音频）→ 清数字，播语音
+  npShowGuidance('换右脚单脚站，请准备好...');
+  npSpeakGuide('numpad-right-intro', '现在换右脚单脚站，请准备好', function(){
+    document.getElementById('npStatus').textContent = '👆 点「下一个数字」开始';
+  });
 }
 
 function npUpdateDisplay(){
@@ -3127,22 +3137,6 @@ function npUpdateDisplay(){
   const leftDone = npState.completedGroups.left;
   const rightDone = npState.completedGroups.right;
   document.getElementById('npOverallProgress').textContent = '已完成：左 ' + leftDone + '/4组 · 右 ' + rightDone + '/4组';
-}
-
-function npPause(){
-  if(!npState) return;
-  
-  if(npState.paused){
-    npState.paused = false;
-    document.getElementById('npPauseBtn').textContent = '⏸ 暂停';
-    document.getElementById('npStatus').textContent = '👆 点「下一个数字」继续';
-  } else {
-    npState.paused = true;
-    document.getElementById('npPauseBtn').textContent = '▶ 继续';
-    document.getElementById('npStatus').textContent = '⏸ 已暂停';
-    if(npState.timer) { clearTimeout(npState.timer); npState.timer = null; }
-    TTS._cancel();
-  }
 }
 
 function npStop(){
