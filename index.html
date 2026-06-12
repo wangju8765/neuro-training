@@ -194,9 +194,10 @@ body{font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;backgroun
 .tr .bx .cr .b{flex:1;padding:.75rem;border:none;border-radius:.625rem;font-size:.9375rem;font-weight:600;cursor:pointer;}
 .tr .bx .sl .empty-state{text-align:center;padding:2rem 0;color:#6a7a90;font-size:.875rem;}
 
-/* ===== 时段安排编辑弹窗 ===== */
-.se{display:none;position:fixed;inset:0;z-index:115;align-items:center;justify-content:center;background:rgba(245,247,250,.92);}
-.se.show{display:flex;}
+/* v4: 时段弹窗已移除 */
+
+/* 管理员专属元素默认隐藏 */
+.admin-only{display:none;}
 .se .bx{background:#ffffff;border-radius:1rem;padding:1.5rem;border:1px solid #e0e6ed;max-width:20rem;width:90%;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:85dvh;display:flex;flex-direction:column;}
 .se .bx .st{font-size:1.125rem;font-weight:600;margin-bottom:.5rem;text-align:center;flex-shrink:0;}
 .se .bx .ss{font-size:.8125rem;color:#6a7a90;margin-bottom:.75rem;text-align:center;flex-shrink:0;}
@@ -438,18 +439,23 @@ select.me-input{appearance:auto;}
       <button class="icon-btn" id="hdrBag" onclick="openBag()">🎒</button>
       <button class="icon-btn" id="sfxToggle" onclick="SFX.toggle()">🔊</button>
       <button class="icon-btn" onclick="openStandaloneTool('metronome')" title="节拍器">🎵</button>
+      <button class="icon-btn" onclick="openLibrary()" title="项目库">📚</button>
       <button class="icon-btn" onclick="openSet()">⚙️</button>
     </div>
   </div>
   <div class="scroll">
-    <div class="pc" onclick="openStat('home')" style="cursor:pointer;">
-      <div class="r"><span>今日完成</span><span class="n" id="pgN">0 / 0</span></div>
-      <div class="pb"><div class="f" id="pgB" style="width:0%"></div></div>
-      <div class="sub" id="pgT">点击打卡项开始</div>
-      <div class="pc-pts" id="pgPts">💰 今日 +0 · 总计 0</div>
+    <!-- 今日看板（可折叠） -->
+    <div id="npKanban" style="margin:0 .5rem .75rem;background:#f8fafc;border-radius:.75rem;padding:.5rem .75rem;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="var b=document.getElementById('kanbanBody');b.classList.toggle('hidden');this.querySelector('.arr').classList.toggle('rot')">
+        <span style="font-size:.8125rem;font-weight:600;color:#5a7a98;">📋 今日看板</span>
+        <span class="arr" style="font-size:.75rem;color:#aaa;transition:.2s;">▲</span>
+      </div>
+      <div id="kanbanBody">
+        <div id="kanbanList" style="font-size:.75rem;color:#666;max-height:12rem;overflow-y:auto;"></div>
+        <div id="kanbanSummary" style="font-size:.75rem;color:#4fc3f7;font-weight:600;margin-top:.375rem;border-top:1px solid #eef2f6;padding-top:.375rem;"></div>
+      </div>
     </div>
-
-    <div class="tags" id="tgS"></div>
+    <style>#kanbanBody.hidden{display:none!important;}.arr.rot{transform:rotate(180deg);}</style>
 
     <div class="el" id="exL"></div>
 
@@ -460,7 +466,7 @@ select.me-input{appearance:auto;}
 
     <div class="us">
       <div class="ut">💡 小提示</div>
-      点击项目开始跟练，做完会自动标记。自助打卡项目点击查看详情一键完成。
+      点击项目直接完成，可重复打卡。去项目库 ⭐ 挑选喜欢的项目。
     </div>
 
   </div>
@@ -633,7 +639,7 @@ select.me-input{appearance:auto;}
   <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding:1rem;">
     <div style="font-size:3rem;margin-bottom:.5rem;" id="selfIcon">✅</div>
     <div style="font-size:1.3rem;font-weight:700;margin-bottom:.25rem;" id="selfName">项目名</div>
-    <div style="font-size:.8rem;color:#7a8a9a;margin-bottom:.75rem;" id="selfMeta">时段 · 💰 5</div>
+    <div style="font-size:.8rem;color:#7a8a9a;margin-bottom:.75rem;" id="selfMeta"></div>
     <!-- 道具 -->
     <div id="selfPropsBox" style="display:none;width:100%;max-width:20rem;background:#f0f8ff;padding:.625rem 1rem;border-radius:.625rem;margin-bottom:.75rem;font-size:.8125rem;color:#5a7a98;">
       <span style="font-weight:600;">📦 道具：</span><span id="selfPropsText"></span>
@@ -661,7 +667,7 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">📋 打卡项目</div>
       <div class="set-card">
-        <div class="set-row" onclick="openMg()">
+        <div class="set-row admin-only" onclick="openMg()">
           <span class="ic">📝</span>
           <div class="inf">
             <div class="n">管理项目</div>
@@ -669,7 +675,7 @@ select.me-input{appearance:auto;}
           </div>
           <span class="arr">›</span>
         </div>
-        <div class="set-row" onclick="openTr()">
+        <div class="set-row admin-only" onclick="openTr()">
           <span class="ic">🗑️</span>
           <div class="inf">
             <div class="n">最近删除</div>
@@ -692,14 +698,6 @@ select.me-input{appearance:auto;}
     <div class="set-section">
       <div class="set-sec-title">⚙️ 每日设定</div>
       <div class="set-card">
-        <div class="set-row" onclick="openSl()">
-          <span class="ic">📅</span>
-          <div class="inf">
-            <div class="n">时段安排</div>
-            <div class="d">将项目分配到上午/下午/晚上</div>
-          </div>
-          <span class="arr">›</span>
-        </div>
         <div class="set-row" onclick="openNE()">
           <span class="ic">✏️</span>
           <div class="inf">
@@ -723,7 +721,7 @@ select.me-input{appearance:auto;}
           </div>
           <span class="arr">›</span>
         </div>
-        <div class="set-row" onclick="openRm()">
+        <div class="set-row admin-only" onclick="openRm()">
           <span class="ic">⚙️</span>
           <div class="inf">
             <div class="n">管理奖励</div>
@@ -782,6 +780,22 @@ select.me-input{appearance:auto;}
   </div>
 </div>
 
+<!-- ========== 项目库 ========== -->
+<div class="page" id="pLib">
+  <div class="top">
+    <span class="bk" onclick="closeLibrary()">✕</span>
+    <span class="mi">📚 项目库</span>
+    <span class="ri" id="libAdminBtns"></span>
+  </div>
+  <div class="scroll">
+    <div style="padding:0 1rem .75rem;display:flex;gap:.5rem;">
+      <input id="libSearch" placeholder="🔍 搜索项目..." oninput="renderLibrary()" style="flex:1;padding:.625rem .75rem;border:1px solid #d0d8e0;border-radius:.5rem;font-size:.8125rem;background:#f5f7fa;outline:none;">
+    </div>
+    <div id="libList" style="padding:0 1rem;"></div>
+    <div style="height:4rem;"></div>
+  </div>
+</div>
+
 <!-- ========== 项目管理页 ========== -->
 <div class="page" id="pMg">
   <div class="top">
@@ -794,19 +808,6 @@ select.me-input{appearance:auto;}
     <button class="bo" onclick="openEditor()">➕ 新建打卡项目</button>
   </div>
 </div>
-
-<!-- ========== 时段安排概览 ========== -->
-<div class="page" id="pSl">
-  <div class="top">
-    <span class="bk" onclick="clSl()">✕</span>
-    <span class="mi">📅 时段安排</span>
-    <span class="ri"></span>
-  </div>
-  <div class="scroll">
-    <div class="slots-overview" id="slotOverview"></div>
-  </div>
-</div>
-
 <!-- ========== 项目编辑器 ========== -->
 <div class="page" id="pME">
   <div class="top">
@@ -1053,20 +1054,6 @@ select.me-input{appearance:auto;}
     </div>
   </div>
 </div>
-
-<!-- ========== 时段安排弹窗 ========== -->
-<div class="se" id="se">
-  <div class="bx">
-    <div class="st" id="seT">☀️ 上午 · 安排项目</div>
-    <div class="ss">勾选要安排到此时段的项目</div>
-    <div class="sl" id="seL"></div>
-    <div class="cr">
-      <button class="b bs" onclick="clSE()" style="background:#e8f0fe;color:#4a6a8a;">取消</button>
-      <button class="b bp" onclick="svSE()" style="background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#ffffff;">保存</button>
-    </div>
-  </div>
-</div>
-
 <!-- ========== 最近删除弹窗 ========== -->
 <div class="tr" id="tr">
   <div class="bx">
@@ -1290,12 +1277,6 @@ const DEF_ITEMS = [
     desc:'1. 面对墙站立，一臂距离\n2. 右手触摸左肩高度墙壁位置\n3. 左手触摸右肩高度墙壁位置\n4. 交替60秒，节奏均匀\n5. 休息30秒\n6. 再交替60秒'},
 ];
 
-const DEF_SLOTS = [
-  { i:'morning', ic:'☀️', n:'上午', ids:['cold','bee','crawl','starfish','oneLeg','finger','rock1','metro54','478breath'] },
-  { i:'afternoon', ic:'🌤️', n:'下午', ids:['snow','ball','spin','bounce','metro72','pencilpu','brock','linearacc','outdoor'] },
-  { i:'evening', ic:'🌙', n:'晚上', ids:['yawn','ear','shake','yawn2','snow','starfish','metro60','atmneck','npad','nearfar'] }
-];
-
 // ===== 用户系统 =====
 let currentUser = null; // { id, name, avatar, settings, pin }
 
@@ -1318,12 +1299,11 @@ function clearCurrentUser(){
 }
 
 // ===== 数据管理 =====
-let DC = {}; // { slots: [], items: [], settings: {userName: ''}, trash: [] }
+let DC = {}; // { items: [], settings: {userName: ''}, trash: [] }
 
 function initDC(){
   const itemsRaw = localStorage.getItem('dc_items');
   if(!itemsRaw){
-    DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
     DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
     DC.settings = {userName: '小伙伴'};
     DC.trash = [];
@@ -1335,38 +1315,12 @@ function initDC(){
   DC.trash = trashRaw ? JSON.parse(trashRaw) : [];
   try{ DC.settings = JSON.parse(localStorage.getItem('dc_settings') || '{}'); }catch(e){ DC.settings = {}; }
   if(!DC.settings.userName) DC.settings.userName = '小伙伴';
-  const slotsRaw = localStorage.getItem('dc_slots');
-  if(slotsRaw){
-    try{ DC.slots = JSON.parse(slotsRaw); }catch(e){ DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS)); }
-  } else {
-    DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
-  }
 }
 
 function flushDC(){
   localStorage.setItem('dc_items', JSON.stringify(DC.items));
-  localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
   localStorage.setItem('dc_settings', JSON.stringify(DC.settings));
   localStorage.setItem('dc_trash', JSON.stringify(DC.trash));
-}
-
-function svSlots(){
-  localStorage.setItem('dc_slots', JSON.stringify(DC.slots));
-  syncSlots();
-}
-
-function getSlot(id){
-  return DC.slots.find(s => s.i === id);
-}
-
-function getSlotItems(slotId){
-  const slot = getSlot(slotId);
-  if(!slot) return [];
-  return slot.ids.map(id => DC.items.find(x => x.i === id)).filter(Boolean);
-}
-
-function findItemSlot(itemId){
-  return DC.slots.find(s => s.ids.includes(itemId))?.i || '';
 }
 
 function getItem(id){
@@ -1401,12 +1355,12 @@ async function processSyncQueue(){
   }
 }
 
+// v4: items 是公共项目库，使用 item_id 作为主键，不再绑 user_id
 async function syncItems(){
-  if(!currentUser) return;
+  if(!currentUser || !isAdmin()) return;
   try {
     await SB.upsert('items',
       DC.items.filter(x => !DC.trash.find(t => t.item.i === x.i)).map(x => ({
-        user_id: currentUser.id,
         item_id: x.i,
         name: x.n,
         icon: x.ic || '✅',
@@ -1421,26 +1375,13 @@ async function syncItems(){
         tool_link: x.toolLink || null,
         description: x.desc || '',
         props: x.props || '',
-        deleted: false
-      })), 'user_id,item_id'
+        active: true,
+        created_by: currentUser.pin
+      })), 'item_id'
     );
   } catch(e){ console.warn('syncItems error:', e); }
 }
 
-async function syncSlots(){
-  if(!currentUser) return;
-  try {
-    await SB.upsert('slots',
-      DC.slots.map(s => ({
-        user_id: currentUser.id,
-        slot_id: s.i,
-        icon: s.ic || '☀️',
-        name: s.n,
-        item_ids: s.ids
-      })), 'user_id,slot_id'
-    );
-  } catch(e){ console.warn('syncSlots error:', e); }
-}
 
 async function syncSettings(){
   if(!currentUser) return;
@@ -1452,18 +1393,8 @@ async function syncSettings(){
   } catch(e){ console.warn('syncSettings error:', e); }
 }
 
-async function syncDailyLog(){
-  if(!currentUser) return;
-  const key = dk();
-  try {
-    await SB.upsert('daily_logs', {
-      user_id: currentUser.id,
-      date_key: key,
-      completed_items: Dn,
-      earned_points: PS ? getTodayEarned() : 0
-    }, 'user_id,date_key');
-  } catch(e){ console.warn('syncDailyLog error:', e); }
-}
+// v4: daily_logs 已改为逐条记录，不再使用聚合 upsert
+// 每次完成通过 logCompletion() 实时写入，不再需要定时同步
 
 async function syncPointsState(){
   if(!currentUser || !PS) return;
@@ -1552,18 +1483,13 @@ async function syncPointLogs(){
 }
 
 async function syncDeletedItems(){
-  if(!currentUser) return;
-  // Mark items in trash as deleted in Supabase
-  const deletedIds = DC.trash.filter(t => t.item).map(t => t.item.i).filter(Boolean);
+  if(!currentUser || !isAdmin()) return;
+  // v4: 标记垃圾箱中的项目为 inactive
+  var deletedIds = DC.trash.filter(function(t){ return t.item; }).map(function(t){ return t.item.i; }).filter(Boolean);
   if(deletedIds.length > 0){
     try {
-      // Supabase REST: PATCH with individual updates since `in` filter isn't directly supported
-      // Batch update via multiple patches or use a single request with or clause
-      for(const id of deletedIds) {
-        await SB.patch('items', {
-          deleted: true,
-          deleted_at: new Date().toISOString()
-        }, { 'user_id': `eq.${currentUser.id}`, 'item_id': `eq.${id}` });
+      for(var i = 0; i < deletedIds.length; i++){
+        await SB.patch('items', { active: false }, { 'item_id': 'eq.' + deletedIds[i] });
       }
     } catch(e){ console.warn('syncDeletedItems error:', e); }
   }
@@ -1573,9 +1499,7 @@ async function syncAllToSupabase(){
   if(!currentUser) return;
   enqueueSync(async () => {
     await syncItems();
-    await syncSlots();
     await syncSettings();
-    await syncDailyLog();
     await syncPointsState();
     await syncRewards();
     await syncRedeemed();
@@ -1594,18 +1518,17 @@ async function loadUserDataFromSupabase(user){
     try{ if(localPS_json) localPS = JSON.parse(localPS_json); }catch(e){}
     const hasLocalPS = localPS && typeof localPS.points === 'number';
 
-    // Parallel load all data
-    const [itemsData, slotsData, dailyData, pointsData, rewardsData, redeemedData, logsData] = await Promise.all([
-      SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.false' }).catch(() => null),
-      SB.get('slots', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
-      SB.get('daily_logs', { select: '*', 'user_id': `eq.${user.id}`, 'date_key': `eq.${dk()}` }).catch(() => null),
+    // Parallel load all data（v4: items 公共，不再按 user_id 过滤）
+    const [itemsData, dailyData, pointsData, rewardsData, redeemedData, logsData] = await Promise.all([
+      SB.get('items', { select: '*', 'active': 'eq.true' }).catch(() => null),
+      SB.get('daily_logs', { select: '*', 'user_id': `eq.${user.id}`, 'date_key': `eq.${dk()}`, order: 'completed_at.asc' }).catch(() => null),
       SB.get('points_state', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
       SB.get('rewards', { select: '*', 'user_id': `eq.${user.id}`, order: 'sort_order.asc' }).catch(() => null),
       SB.get('redeemed', { select: '*', 'user_id': `eq.${user.id}` }).catch(() => null),
       SB.get('point_logs', { select: '*', 'user_id': `eq.${user.id}`, order: 'timestamp_ms.desc', limit: '100' }).catch(() => null)
     ]);
 
-    // Transform items
+    // Transform items（公共项目库）
     if(itemsData && itemsData.length > 0){
       DC.items = itemsData.map(r => ({
         i: r.item_id,
@@ -1627,58 +1550,31 @@ async function loadUserDataFromSupabase(user){
       DC.items = JSON.parse(JSON.stringify(DEF_ITEMS));
     }
 
-    // Transform slots
-    if(slotsData && slotsData.length > 0){
-      DC.slots = slotsData.map(r => ({
-        i: r.slot_id,
-        ic: r.icon || '☀️',
-        n: r.name,
-        ids: r.item_ids || []
-      }));
-    } else {
-      DC.slots = JSON.parse(JSON.stringify(DEF_SLOTS));
-    }
+    // v4: 公共项目库，不再加载 user-specific slots
+    // items 对所有用户共享
 
     // Load settings from user record
     DC.settings = user.settings || {userName: user.name || '小伙伴'};
     if(!DC.settings.userName) DC.settings.userName = user.name || '小伙伴';
 
-    // Trash: load from Supabase deleted items
-    const trashData = await SB.get('items', { select: '*', 'user_id': `eq.${user.id}`, 'deleted': 'eq.true' }).catch(() => null);
+    // v4: Trash 用本地管理，不从 Supabase 加载
     DC.trash = [];
-    if(trashData && trashData.length > 0){
-      DC.trash = trashData.map(r => ({
-        item: {
-          i: r.item_id,
-          n: r.name,
-          ic: r.icon || '✅',
-          t: r.time_label || '1分钟',
-          dur: r.duration || 1,
-          no: r.note || '',
-          type: r.type || 'simple',
-          pt: r.points || 5,
-          cy: r.cycle_count || undefined,
-          s: r.steps || [],
-          tag: r.tags || [],
-          toolLink: r.tool_link || undefined,
-          desc: r.description || '',
-          props: r.props || ''
-        },
-        deletedAt: r.deleted_at ? new Date(r.deleted_at).getTime() : Date.now()
-      }));
-    }
+    var trashRaw = localStorage.getItem('dc_trash');
+    if(trashRaw){ try { DC.trash = JSON.parse(trashRaw); } catch(e){} }
 
     // Write to localStorage
     flushDC();
 
-    // Load daily log
-    if(dailyData && dailyData.length > 0 && dailyData[0]){
-      Dn = dailyData[0].completed_items || [];
-    } else {
-      Dn = [];
+    // v4: daily log 从 Supabase daily_logs 表加载
+    todayLogs = [];
+    if(dailyData && dailyData.length > 0){
+      todayLogs = dailyData.map(function(r){
+        return { itemId: r.item_id, itemName: r.item_name, points: r.points || 0, completedAt: r.completed_at };
+      });
     }
-    migrateDn();
-    localStorage.setItem('dc_' + dk(), JSON.stringify(Dn));
+
+    // Load favorites
+    await loadFavorites();
 
     // ---- PS 加载：localStorage 是基线，Supabase 只覆盖非空数据 ----
     if(hasLocalPS){
@@ -1853,9 +1749,8 @@ async function createUser(){
     // Create default data for new user
     const user = data;
     const defaultItems = JSON.parse(JSON.stringify(DEF_ITEMS));
-    const defaultSlots = JSON.parse(JSON.stringify(DEF_SLOTS));
 
-    // Insert default items
+    // Insert default items（v4: 公共项目库，不再按用户隔离）
     const itemInserts = defaultItems.map(x => ({
       user_id: user.id,
       item_id: x.i,
@@ -1897,58 +1792,18 @@ async function createUser(){
   }
 }
 
-function enterHome(){
+async function enterHome(){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pH').classList.add('active');
-  // Ensure pi is valid
-  if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
+  await fetchTodayLogs();
+  applyAdminVisibility();
   rH();
 }
 
-// ===== 每日完成记录 =====
+// ===== 每日完成记录（Supabase 实时） =====
 function dk(){
   const d = new Date();
   return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-}
-
-let Dn = [];
-
-// 迁移旧格式 Dn（仅项目ID → 项目ID_时段ID）
-function migrateDn(){
-  const newDn = [];
-  for(const entry of (Dn||[])){
-    if(entry.includes('_')){
-      newDn.push(entry); // 已新格式
-    } else {
-      // 旧格式：找该项目所在的第一个时段
-      let found = false;
-      for(const slot of DC.slots){
-        if(slot.ids && slot.ids.includes(entry)){
-          newDn.push(entry + '_' + slot.i);
-          found = true;
-          break;
-        }
-      }
-      if(!found){
-        newDn.push(entry + '_' + St.pi); // 兜底用当前时段
-      }
-    }
-  }
-  Dn = newDn;
-}
-
-function loadDn(){
-  try{
-    const r = localStorage.getItem('dc_'+dk());
-    if(r) Dn = JSON.parse(r);
-    else Dn = [];
-  }catch(e){ Dn = []; }
-  migrateDn();
-}
-
-function svDn(){
-  localStorage.setItem('dc_'+dk(), JSON.stringify(Dn));
-  syncDailyLog();
 }
 
 // ===== 金币系统 =====
@@ -2013,7 +1868,7 @@ function addPoints(amount, itemName){
     timestamp: Date.now()
   });
   flushPS();
-  enqueueSync(async () => { await syncPointsState(); await syncDailyLog(); await syncPointLogs(); });
+  enqueueSync(async () => { await syncPointsState(); await syncPointLogs(); });
   return amount;
 }
 
@@ -2033,42 +1888,62 @@ function spendPoints(amount, rewardName){
 }
 
 // ===== 状态 =====
-let St={pi:'morning',dn:[],ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0,audioDone:true,audioPoll:null,audioTimeout:null};
+let St={ex:null,cy:1,cs:1,st:-1,ss:[],pl:false,ti:null,rm:0,audioDone:true,audioPoll:null,audioTimeout:null};
 
 // ===== 首页渲染 =====
-function swT(id){
-  St.pi = id;
-  rH();
-}
-
 function rH(){
   updateHeader();
-  const tgS = document.getElementById('tgS');
-  tgS.innerHTML = DC.slots.map(s =>
-    `<div class="tagb ${s.i===St.pi?'ac':''}" data-i="${s.i}" onclick="swT('${s.i}')">${s.ic} ${s.n}</div>`
-  ).join('');
-  const items = getSlotItems(St.pi);
-  const l = document.getElementById('exL');
-  l.innerHTML = items.map(x => {
-    if(!x) return '';
-    const done = Dn.includes(x.i + '_' + St.pi);
-    const pt = x.pt || 5;
-    const timeStr = x.dur != null ? x.dur+'分钟' : (x.t || '');
-    const isSelf = (x.type === 'self' || x.type === 'simple') && !(x.toolLink && x.toolLink.type);
-    const clickHandler = (isSelf && !done) ? `completeItem('${x.i}','${St.pi}')` : `sX('${x.i}','${St.pi}')`;
-    const detArr = (isSelf && !done) ? `<span class="det-arr" onclick="event.stopPropagation();openSelfDetail('${x.i}','${St.pi}')">📋</span>` : '';
-    return `<div class="ex ${done?'done':''}" onclick="${clickHandler}">
-      <div class="ck">${done?'✓':''}</div><div class="ic">${x.ic}</div>
-      <div class="inf">${x.n} <span class="s">${x.no||''}</span></div>
-      <span class="tp">${timeStr?timeStr + ' · ':''}${pt}💰</span>
-      ${detArr}
-      <div class="tm ${done?'done':''}"></div></div>`;
-  }).join('');
-  if(items.length===0){
-    l.innerHTML = '<div class="empty-state">此时段还没有安排项目<br><span style="font-size:.75rem;">去设置页的「时段安排」添加</span></div>';
+
+  // 获取收藏的项目
+  var favItems = userFavorites.map(function(id){
+    return DC.items.find(function(x){ return x && x.i === id; });
+  }).filter(Boolean);
+
+  var l = document.getElementById('exL');
+  if(favItems.length === 0){
+    l.innerHTML = '<div class="empty-state">还没有收藏项目<br><span style="font-size:.75rem;">去📚项目库 ⭐ 挑选喜欢的项目</span></div>';
+  } else {
+    l.innerHTML = favItems.map(function(x, idx){
+      var isSelf = (x.type === 'self' || x.type === 'simple') && !(x.toolLink && x.toolLink.type);
+      var clickHandler = isSelf ? 'completeItem(\'' + x.i + '\')' : 'sX(\'' + x.i + '\')';
+
+      // 排序模式
+      var reorderBtns = '';
+      if(reorderMode){
+        reorderBtns = '<span style="display:flex;flex-direction:column;gap:.125rem;margin-left:auto;">'
+          + '<span onclick="event.stopPropagation();moveFavoriteUp(\'' + x.i + '\')" style="cursor:pointer;font-size:.625rem;line-height:1;color:#4fc3f7;">▲</span>'
+          + '<span onclick="event.stopPropagation();moveFavoriteDn(\'' + x.i + '\')" style="cursor:pointer;font-size:.625rem;line-height:1;color:#4fc3f7;">▼</span>'
+          + '</span>';
+      }
+
+      return '<div class="ex" onclick="' + clickHandler + '">'
+        + '<div class="ic">' + x.ic + '</div>'
+        + '<div class="inf">' + x.n + ' <span class="s">' + (x.no||'') + '</span></div>'
+        + reorderBtns
+        + '<span onclick="event.stopPropagation();removeFavorite(\'' + x.i + '\');rH();" style="margin-left:auto;cursor:pointer;font-size:.75rem;opacity:.4;padding:.125rem .375rem;">✕</span>'
+        + '</div>';
+    }).join('');
   }
+
+  // 排序按钮
+  var sortBtn = document.getElementById('sortToggleBtn');
+  if(!sortBtn){
+    sortBtn = document.createElement('div');
+    sortBtn.id = 'sortToggleBtn';
+    sortBtn.style.cssText = 'text-align:right;padding:0 1rem .375rem;font-size:.6875rem;color:#aaa;cursor:pointer;';
+    sortBtn.onclick = toggleReorder;
+    l.parentNode.insertBefore(sortBtn, l);
+  }
+  sortBtn.textContent = reorderMode ? '✅ 完成排序' : '📐 调整顺序';
+  sortBtn.style.display = favItems.length > 1 ? '' : 'none';
+
   renderJournal();
-  upPr();
+  renderKanban();
+
+  // 更新金币显示
+  if(PS){
+    document.getElementById('hdrGold').textContent = '💰' + PS.points;
+  }
 }
 
 function updateHeader(){
@@ -2093,25 +1968,9 @@ function updateHeader(){
   document.getElementById('hdrHi').textContent = `${greetEmoji} ${greetWord} 👋`;
 }
 
-function upPr(){
-  const items = getSlotItems(St.pi);
-  const t = items.length;
-  const d = items.filter(x => x && Dn.includes(x.i + '_' + St.pi)).length;
-  document.getElementById('pgN').textContent = `${d} / ${t}`;
-  document.getElementById('pgB').style.width = `${t>0 ? d/t*100 : 0}%`;
-  const doneItems = items.filter(x => x && Dn.includes(x.i + '_' + St.pi)).map(x => x.ic + x.n).join(' · ');
-  document.getElementById('pgT').textContent = d === t && t > 0 ? '🎉 全部完成！' : (doneItems ? '✅ ' + doneItems : '点击打卡项开始');
-  if(PS){
-    document.getElementById('pgPts').textContent = `💰 今日 +${getTodayEarned()} · 总计 ${PS.points}`;
-    const hg = document.getElementById('hdrGold');
-    if(hg) hg.textContent = `💰${PS.points}`;
-  }
-}
 
 // ===== 进入练习 =====
-function sX(id, slot){
-  const dnKey = slot ? id + '_' + slot : id;
-  if(Dn.includes(dnKey)) return;
+function sX(id){
   const x = getItem(id);
   if(!x) return;
 
@@ -2136,7 +1995,7 @@ function sX(id, slot){
 
   // 自助打卡：无 toolLink → 一键完成
   if(x.type === 'self' || x.type === 'simple'){
-    completeItem(id, slot);
+    completeItem(id);
     return;
   }
 
@@ -2167,9 +2026,7 @@ function sX(id, slot){
 }
 
 function uPpd(){
-  const items = getSlotItems(St.pi);
-  const d = items.filter(it => it && Dn.includes(it.i + '_' + St.pi)).length;
-  document.getElementById('pPd').textContent = d+'/'+items.length;
+  document.getElementById('pPd').textContent = St.cs > 1 ? '第'+St.cy+'/'+St.cs+'轮' : '';
 }
 
 // ===== 跟练状态更新 =====
@@ -2247,16 +2104,13 @@ function doneP(){fEx();}
 // ===== 完成 =====
 function fEx(){
   const id = St.ex.i;
-  const dnKey = id + '_' + (St.si || St.pi);
-  const wasDone = Dn.includes(dnKey);
-  if(!wasDone) Dn.push(dnKey);
-  svDn();
   const pt = St.ex.pt || 5;
-  if(PS && !wasDone) addPoints(pt, St.ex.n);
+  if(PS) addPoints(pt, St.ex.n);
+  logCompletion(id, St.ex.n, pt);
   SFX.play('complete');
   SFX.play('coin');
   document.getElementById('ol').classList.add('show');
-  document.getElementById('olT').textContent = `${St.ex.ic} ${St.ex.n} 完成！`;
+  document.getElementById('olT').textContent = St.ex.ic + ' ' + St.ex.n + ' 完成！';
   document.getElementById('pExtraBtns').style.display = 'flex';
   document.getElementById('pBtn').textContent = '▶ 开始';
   document.getElementById('pBtn').disabled = false;
@@ -2310,7 +2164,7 @@ function searchJournalItems(query){
   }
   const q = query.trim().toLowerCase();
   qlSearchResults = DC.items.filter(x =>
-    !Dn.includes(x.i + '_' + St.pi) &&
+    true &&
     (x.n.toLowerCase().includes(q) || (x.no||'').toLowerCase().includes(q))
   ).slice(0, 8);
   const ct = document.getElementById('qlResults');
@@ -2353,7 +2207,7 @@ function submitQuickLog(){
   // Complete linked items
   if(hasLinked){
     qlLinkedItems.forEach(itemId => {
-      completeItem(itemId, St.pi);
+      completeItem(itemId);
     });
   }
 
@@ -2419,9 +2273,7 @@ function openSelf(x){
   document.getElementById('selfIcon').textContent = x.ic || '✅';
   document.getElementById('selfName').textContent = x.n;
   document.getElementById('selfTitle').textContent = (x.ic||'✅') + ' ' + x.n;
-  const slotMap = {morning:'☀️ 上午', afternoon:'🌤 下午', evening:'🌙 晚上'};
-  const slotName = slotMap[findItemSlot(x.i)] || '';
-  document.getElementById('selfMeta').textContent = (slotName?slotName+' · ':'') + '💰 ' + (x.pt||5);
+  document.getElementById('selfMeta').textContent = '💰 ' + (x.pt||5);
   
   // 备注
   const noteBox = document.getElementById('selfNoteBox');
@@ -2462,8 +2314,7 @@ let simplePendingId = null;
 function doSelf(){
   const id = simplePendingId;
   if(!id) return;
-  const slotId = St.si || St.pi;
-  completeItem(id, slotId);
+  completeItem(id);
   closeSelf();
 }
 
@@ -2477,23 +2328,20 @@ function showToast(msg){
   toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
 }
 
-// ===== 共享完成逻辑（一键打卡 + 自助详情页共用） =====
-function completeItem(itemId, slotId){
+// ===== 共享完成逻辑（可重复、走 Supabase） =====
+function completeItem(itemId){
   const x = getItem(itemId);
-  const dnKey = itemId + '_' + slotId;
-  if(!x || Dn.includes(dnKey)) return;
-  Dn.push(dnKey);
-  svDn();
+  if(!x) return;
   const pt = x.pt || 5;
   if(PS) addPoints(pt, x.n);
+  logCompletion(itemId, x.n, pt);
   SFX.play('complete');
-  showToast(`${x.ic} ${x.n} 完成！+${pt}💰`);
+  showToast(x.ic + ' ' + x.n + ' 完成！+' + pt + '💰');
   rH();
 }
 
-// 从卡片箭头打开自助详情页
-function openSelfDetail(itemId, slotId){
-  St.si = slotId;
+// 打开自助详情页
+function openSelfDetail(itemId){
   const x = getItem(itemId);
   if(x) openSelf(x);
 }
@@ -2509,7 +2357,7 @@ function goH(){
   document.getElementById('pP').classList.remove('active');
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pMg').classList.remove('active');
-  document.getElementById('pSl').classList.remove('active');
+  document.getElementById('pLib').classList.remove('active');
   document.getElementById('pME').classList.remove('active');
   document.getElementById('pPt').classList.remove('active');
   document.getElementById('pRm').classList.remove('active');
@@ -2760,12 +2608,9 @@ function finishMetronome(){
   const x = metroState?.item;
   // 独立工具：不加金币不打卡
   if(x && !x.standalone){
-    if(!Dn.includes(x.i + '_' + (St.si || St.pi))){
-      Dn.push(x.i + '_' + (St.si || St.pi));
-      svDn();
-      const pt = x.pt || 5;
-      if(PS) addPoints(pt, x.n);
-    }
+    const pt = x.pt || 5;
+    if(PS) addPoints(pt, x.n);
+    logCompletion(x.i, x.n, pt);
   }
   const completedItem = x;
   closeMetronome(true, completedItem);
@@ -3155,9 +3000,8 @@ function npFinish(){
   npSpeakGuide('numpad-all-done', '太棒了！双脚练习全部完成！', null);
 
   // 独立工具：不加金币不打卡
-  if(item && !item.standalone && !Dn.includes(item.i + '_' + (St.si || St.pi))){
-    Dn.push(item.i + '_' + (St.si || St.pi));
-    svDn();
+  if(item && !item.standalone){
+    // v4: completion logged to Supabase via logCompletion()
     if(PS) addPoints(item.pt || 10, item.n);
   }
   
@@ -3347,6 +3191,7 @@ function rStat(){
 function openSet(){
   document.getElementById('pH').classList.remove('active');
   document.getElementById('pS').classList.add('active');
+  applyAdminVisibility();
 }
 function clSet(){
   document.getElementById('pS').classList.remove('active');
@@ -3354,6 +3199,7 @@ function clSet(){
 
 // ===== 管理项目页 =====
 function openMg(){
+  if(!isAdmin()) return;
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pMg').classList.add('active');
   rMg();
@@ -3388,42 +3234,14 @@ function rMg(){
   }
 }
 
-// ===== 时段安排概览页 =====
-function openSl(){
-  document.getElementById('pS').classList.remove('active');
-  document.getElementById('pSl').classList.add('active');
-  rSl();
-}
-function clSl(){
-  document.getElementById('pSl').classList.remove('active');
-  document.getElementById('pS').classList.add('active');
-}
-function rSl(){
-  const l = document.getElementById('slotOverview');
-  l.innerHTML = DC.slots.map(s => {
-    const slotItems = getSlotItems(s.i);
-    const itemTags = slotItems.map(x => `<span class="tag">${x.ic} ${x.n}</span>`).join('');
-    return `<div class="slot-card" onclick="openSE('${s.i}')" style="cursor:pointer;">
-      <div class="hdr">
-        <span class="icn">${s.ic}</span>
-        <span class="nm">${s.n}</span>
-      </div>
-      <div class="items">${itemTags || '<span class="empty">暂未安排项目</span>'}</div>
-    </div>`;
-  }).join('');
-}
-
 function delItem(id){
   const x = getItem(id);
   if(!x) return;
   showDC(`删除「${x.n}」？`, '删除后可从「最近删除」恢复', ()=>{
     DC.items = DC.items.filter(it => it.i !== id);
-    DC.slots.forEach(s => {
-      s.ids = s.ids.filter(i => i !== id);
-    });
     DC.trash.unshift({item: x, deletedAt: Date.now()});
     flushDC();
-    enqueueSync(async () => { await syncItems(); await syncSlots(); await syncDeletedItems(); });
+    enqueueSync(async () => { await syncItems(); await syncDeletedItems(); });
     rMg();
     rH();
   });
@@ -3431,6 +3249,7 @@ function delItem(id){
 
 // ===== 最近删除（回收站） =====
 function openTr(){
+  if(!isAdmin()) return;
   rTr();
   document.getElementById('tr').classList.add('show');
 }
@@ -3469,69 +3288,6 @@ function restoreItem(idx){
   rTr();
   rH();
 }
-
-// ===== 时段安排弹窗 =====
-let seSlotId = null;
-
-function openSE(slotId){
-  seSlotId = slotId;
-  const slot = getSlot(slotId);
-  if(!slot) return;
-  document.getElementById('seT').textContent = slot.ic + ' ' + slot.n + ' · 安排项目';
-  renderSE();
-  document.getElementById('se').classList.add('show');
-}
-
-function clSE(){
-  document.getElementById('se').classList.remove('show');
-  seSlotId = null;
-}
-
-function renderSE(){
-  const l = document.getElementById('seL');
-  const slot = getSlot(seSlotId);
-  if(!slot) return;
-  l.innerHTML = DC.items.map(x => {
-    const chk = slot.ids.includes(x.i);
-    let tp = x.type === 'self' || x.type === 'simple' ? '📝 自助打卡' : '🎧 跟练型';
-    if(x.toolLink){
-      tp = x.toolLink.type === 'numberpad' ? '🦩 数字盘' : '🎵 节拍器';
-    } else if(x.type === 'tool'){
-      tp = x.toolType === 'numberpad' ? '🦩 数字盘' : '🎵 节拍器';
-    }
-    return `<div class="si ${chk?'chk':''}" onclick="tgSE('${x.i}')">
-      <div class="cb">${chk?'✓':''}</div>
-      <div class="ic">${x.ic}</div>
-      <div class="nn">${x.n}</div>
-      <span class="tp">${tp}</span>
-    </div>`;
-  }).join('');
-  if(DC.items.length===0){
-    l.innerHTML = '<div class="empty-state">还没有打卡项目<br><span style="font-size:.75rem;">先创建项目再来安排</span></div>';
-  }
-}
-
-function tgSE(id){
-  const slot = getSlot(seSlotId);
-  if(!slot) return;
-  const idx = slot.ids.indexOf(id);
-  if(idx > -1){
-    slot.ids.splice(idx, 1);
-  } else {
-    slot.ids.push(id);
-  }
-  renderSE();
-}
-
-function svSE(){
-  svSlots();
-  clSE();
-  rSl();
-  rH();
-}
-
-// ===== 项目编辑器 =====
-let editingId = null;
 
 function openEditor(id){
   editingId = id;
@@ -3852,6 +3608,7 @@ function doUseItem(){
 
 // ===== 奖励管理 =====
 function openRm(){
+  if(!isAdmin()) return;
   document.getElementById('pS').classList.remove('active');
   document.getElementById('pRm').classList.add('active');
   rRm();
@@ -3960,23 +3717,19 @@ async function startup(){
     // Load from localStorage as fallback
     currentUser = savedUser;
     initDC();
-    loadDn();
     initPS();
-    if(!getSlot(St.pi)) St.pi = DC.slots.length > 0 ? DC.slots[0].i : 'morning';
     enterHome();
   } else {
     // Show login page
     showLogin();
     // Also prepare local data as fallback
     initDC();
-    loadDn();
     initPS();
   }
 }
 
 // Initialize (will show login or restore session)
 initDC();
-loadDn();
 initPS();
 startup();
 
@@ -4316,6 +4069,235 @@ function _waitAudioThenAdvance(){
 
   // 安全超时：最多等 60 秒，防止死锁
   St.audioTimeout = setTimeout(advance, 60000);
+}
+
+// ===== v4 新增：权限、收藏、项目库、看板 =====
+
+function isAdmin(){
+  return currentUser && currentUser.role === 'admin';
+}
+
+function applyAdminVisibility(){
+  document.querySelectorAll('.admin-only').forEach(function(el){
+    el.style.display = isAdmin() ? '' : 'none';
+  });
+  var libBtns = document.getElementById('libAdminBtns');
+  if(libBtns){
+    libBtns.innerHTML = isAdmin() ? '<button onclick="openEditor()" style="padding:.25rem .75rem;border:1px solid #4fc3f7;border-radius:1rem;background:#fff;color:#4fc3f7;font-size:.75rem;cursor:pointer;">+ 新建</button>' : '';
+  }
+}
+
+// ---- 收藏管理 ----
+var userFavorites = [];
+
+async function loadFavorites(){
+  if(!currentUser) return;
+  try {
+    var data = await SB.get('user_favorites', {
+      select: '*',
+      'user_pin': 'eq.' + currentUser.pin,
+      order: 'sort_order.asc,added_at.asc'
+    });
+    userFavorites = (data || []).map(function(r){ return r.item_id; });
+  } catch(e){
+    console.warn('loadFavorites error:', e);
+    try {
+      var r = localStorage.getItem('dc_fav_' + currentUser.pin);
+      userFavorites = r ? JSON.parse(r) : [];
+    } catch(e2){ userFavorites = []; }
+  }
+  localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
+}
+
+async function addFavorite(itemId){
+  if(!currentUser || userFavorites.includes(itemId)) return;
+  userFavorites.push(itemId);
+  localStorage.setItem('dc_fav_' + currentUser.pin, JSON.stringify(userFavorites));
+  try {
+    var maxOrder = 0;
+    var existing = await SB.get('user_favorites', { select: 'sort_order', 'user_pin': 'eq.' + currentUser.pin, order: 'sort_order.desc', limit: '1' });
+    if(existing && existing.length > 0) maxOrder = (existing[0].sort_order || 0) + 1;
+    await SB.post('user_favorites', { user_pin: currentUser.pin, item_id: itemId, sort_order: maxOrder });
+  } catch(e){ console.warn('addFavorite error:', e); }
+}
+
+async function removeFavorite(itemId){
+  if(!currentUser) return;
+  userFavorites = userFavorites.filter(function(id){ return id !== itemId; });
+  localStorage.setItem('dc_fav_' + currentUser.pin, JSON.stringify(userFavorites));
+  try {
+    await SB.del('user_favorites', { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + itemId });
+  } catch(e){ console.warn('removeFavorite error:', e); }
+}
+
+function isFavorited(itemId){
+  return userFavorites.includes(itemId);
+}
+
+// ---- 每日完成记录（Supabase） ----
+var todayLogs = [];
+
+async function fetchTodayLogs(){
+  if(!currentUser){ todayLogs = []; return; }
+  try {
+    var data = await SB.get('daily_logs', {
+      select: '*',
+      'user_id': 'eq.' + currentUser.id,
+      'date_key': 'eq.' + dk(),
+      order: 'completed_at.asc'
+    });
+    todayLogs = (data || []).map(function(r){
+      return { itemId: r.item_id, itemName: r.item_name, points: r.points || 0, completedAt: r.completed_at };
+    });
+  } catch(e){
+    console.warn('fetchTodayLogs error:', e);
+    todayLogs = [];
+  }
+}
+
+async function logCompletion(itemId, itemName, points){
+  if(!currentUser) return;
+  var now = new Date().toISOString();
+  todayLogs.push({ itemId: itemId, itemName: itemName, points: points, completedAt: now });
+  try {
+    await SB.post('daily_logs', {
+      user_id: currentUser.id,
+      date_key: dk(),
+      item_id: itemId,
+      item_name: itemName,
+      points: points,
+      completed_at: now
+    });
+  } catch(e){ console.warn('logCompletion error:', e); }
+}
+
+function getTodayTotal(){
+  return todayLogs.reduce(function(s, l){ return s + (l.points || 0); }, 0);
+}
+
+function getTodayCount(){
+  return todayLogs.length;
+}
+
+// ---- 今日看板 ----
+function renderKanban(){
+  var kanban = document.getElementById('npKanban');
+  var list = document.getElementById('kanbanList');
+  var summary = document.getElementById('kanbanSummary');
+  if(!kanban || !list || !summary) return;
+  if(todayLogs.length === 0){
+    kanban.style.display = 'none';
+    return;
+  }
+  kanban.style.display = 'block';
+  var items = todayLogs.slice().reverse();
+  list.innerHTML = items.map(function(l){
+    var time = l.completedAt ? new Date(l.completedAt).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) : '';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:.25rem 0;border-bottom:1px solid #f0f0f0;"><span>' + time + ' ' + (l.itemName || l.itemId) + '</span><span style="color:#4fc3f7;font-weight:600;">+' + l.points + '💰</span></div>';
+  }).join('');
+  summary.textContent = '共 ' + getTodayCount() + ' 次 · 💰 +' + getTodayTotal();
+  document.getElementById('kanbanBody').classList.remove('hidden');
+}
+
+// ---- 项目库 ----
+function renderLibrary(){
+  var search = (document.getElementById('libSearch') || {}).value || '';
+  var list = document.getElementById('libList');
+  if(!list) return;
+  var items = DC.items.filter(function(x){
+    if(!x) return false;
+    if(search && !x.n.includes(search) && !(x.tag||[]).some(function(t){ return t.includes(search); })) return false;
+    return true;
+  });
+  applyAdminVisibility();
+  if(items.length === 0){
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:#aaa;">没有匹配的项目</div>';
+    return;
+  }
+  list.innerHTML = items.map(function(x){
+    var fav = isFavorited(x.i);
+    var favBtn = fav
+      ? '<span onclick="event.stopPropagation();removeFavorite(\'' + x.i + '\');renderLibrary();rH();" style="cursor:pointer;font-size:1.25rem;">⭐</span>'
+      : '<span onclick="event.stopPropagation();addFavorite(\'' + x.i + '\');renderLibrary();rH();" style="cursor:pointer;font-size:1.25rem;opacity:.4;">☆</span>';
+    var adminBtns = '';
+    if(isAdmin()){
+      adminBtns = '<span onclick="event.stopPropagation();editItem(\'' + x.i + '\')" style="cursor:pointer;font-size:.75rem;padding:.125rem .375rem;background:#e8f0fe;border-radius:.25rem;color:#4a7a8a;margin-left:.25rem;">✏️</span>'
+        + '<span onclick="event.stopPropagation();deleteItem(\'' + x.i + '\')" style="cursor:pointer;font-size:.75rem;padding:.125rem .375rem;background:#fee8e8;border-radius:.25rem;color:#e53935;margin-left:.25rem;">🗑</span>';
+    }
+    return '<div style="display:flex;align-items:center;padding:.625rem .5rem;border-bottom:1px solid #f0f0f0;gap:.5rem;">'
+      + '<span style="font-size:1.25rem;">' + x.ic + '</span>'
+      + '<span style="flex:1;font-size:.875rem;">' + x.n + '</span>'
+      + adminBtns
+      + favBtn
+      + '</div>';
+  }).join('');
+}
+
+function openLibrary(){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('pLib').classList.add('active');
+  document.getElementById('libSearch').value = '';
+  renderLibrary();
+}
+
+function closeLibrary(){
+  document.getElementById('pLib').classList.remove('active');
+  document.getElementById('pH').classList.add('active');
+  rH();
+}
+
+function editItem(itemId){
+  var x = getItem(itemId);
+  if(!x || !isAdmin()) return;
+  openEditor(itemId);
+  document.getElementById('pLib').classList.remove('active');
+}
+
+async function deleteItem(itemId){
+  if(!isAdmin()) return;
+  if(!confirm('确定要删除「' + (getItem(itemId)||{}).n + '」吗？')) return;
+  try {
+    await SB.patch('items', { active: false }, { 'item_id': 'eq.' + itemId });
+  } catch(e){ console.warn('deleteItem error:', e); }
+  DC.items = DC.items.filter(function(x){ return x.i !== itemId; });
+  flushDC();
+  renderLibrary();
+  rH();
+}
+
+// ---- 收藏排序 ----
+var reorderMode = false;
+function toggleReorder(){
+  reorderMode = !reorderMode;
+  rH();
+}
+
+async function moveFavoriteUp(itemId){
+  var idx = userFavorites.indexOf(itemId);
+  if(idx <= 0) return;
+  var tmp = userFavorites[idx-1];
+  userFavorites[idx-1] = userFavorites[idx];
+  userFavorites[idx] = tmp;
+  localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
+  try {
+    await SB.patch('user_favorites', { sort_order: idx-1 }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + itemId });
+    await SB.patch('user_favorites', { sort_order: idx }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + tmp });
+  } catch(e){ console.warn('moveFavoriteUp error:', e); }
+  rH();
+}
+
+async function moveFavoriteDn(itemId){
+  var idx = userFavorites.indexOf(itemId);
+  if(idx < 0 || idx >= userFavorites.length-1) return;
+  var tmp = userFavorites[idx+1];
+  userFavorites[idx+1] = userFavorites[idx];
+  userFavorites[idx] = tmp;
+  localStorage.setItem('dc_fav_' + (currentUser ? currentUser.pin : 'anon'), JSON.stringify(userFavorites));
+  try {
+    await SB.patch('user_favorites', { sort_order: idx+1 }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + itemId });
+    await SB.patch('user_favorites', { sort_order: idx }, { 'user_pin': 'eq.' + currentUser.pin, 'item_id': 'eq.' + tmp });
+  } catch(e){ console.warn('moveFavoriteDn error:', e); }
+  rH();
 }
 </script>
 </body>
